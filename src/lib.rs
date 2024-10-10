@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fs;
 use std::env;
+use std::time::Instant;
 
 pub mod year2015;
 pub mod year2016;
@@ -35,6 +36,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let aoc_input = fs::read_to_string(filename)?.trim().to_string();
 
     // Run solver
+    let timer = Instant::now();
     match config.year.as_str() {
         "2015" =>
             match config.day.as_str() {
@@ -48,6 +50,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
             }
         _ => println!("Year not implemented")
     }
+    println!("Completed in: {} μs", timer.elapsed().as_micros());
 
     Ok(())
 }
