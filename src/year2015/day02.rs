@@ -42,3 +42,36 @@ impl InputData {
             .sum()
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn part1_example_1() {
+        let testdata = String::from("2x3x4");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), 58);
+    }
+
+    #[test]
+    fn part1_example_2() {
+        let testdata = String::from("1x1x10");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), 43);
+    }
+
+    #[test]
+    fn part2_example_1() {
+        let testdata = String::from("2x3x4");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part2(), 34);
+    }
+
+    #[test]
+    fn part2_example_2() {
+        let testdata = String::from("1x1x10");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part2(), 14);
+    }
+}

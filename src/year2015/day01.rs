@@ -37,3 +37,85 @@ impl InputData {
         steps
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn part1_example_1() {
+        let testdata = String::from("(())");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), 0);
+    }
+
+    #[test]
+    fn part1_example_2() {
+        let testdata = String::from("()()");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), 0);
+    }
+
+    #[test]
+    fn part1_example_3() {
+        let testdata = String::from("(((");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), 3);
+    }
+
+    #[test]
+    fn part1_example_4() {
+        let testdata = String::from("(()(()(");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), 3);
+    }
+
+    #[test]
+    fn part1_example_5() {
+        let testdata = String::from("))(((((");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), 3);
+    }
+
+    #[test]
+    fn part1_example_6() {
+        let testdata = String::from("())");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), -1);
+    }
+
+    #[test]
+    fn part1_example_7() {
+        let testdata = String::from("))(");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), -1);
+    }
+
+    #[test]
+    fn part1_example_8() {
+        let testdata = String::from(")))");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), -3);
+    }
+
+    #[test]
+    fn part1_example_9() {
+        let testdata = String::from(")())())");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), -3);
+    }
+
+    #[test]
+    fn part2_example_1() {
+        let testdata = String::from(")");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part2(), 1);
+    }
+
+    #[test]
+    fn part2_example_2() {
+        let testdata = String::from("()())");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part2(), 5);
+    }
+}

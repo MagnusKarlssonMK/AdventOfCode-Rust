@@ -51,3 +51,50 @@ impl InputData {
         visited.len()
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn part1_example_1() {
+        let testdata = String::from(">");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), 2);
+    }
+
+    #[test]
+    fn part1_example_2() {
+        let testdata = String::from("^>v<");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), 4);
+    }
+
+    #[test]
+    fn part1_example_3() {
+        let testdata = String::from("^v^v^v^v^v");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), 2);
+    }
+
+    #[test]
+    fn part2_example_1() {
+        let testdata = String::from("^v");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part2(), 3);
+    }
+
+    #[test]
+    fn part2_example_2() {
+        let testdata = String::from("^>v<");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part2(), 3);
+    }
+
+    #[test]
+    fn part2_example_3() {
+        let testdata = String::from("^v^v^v^v^v");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part2(), 11);
+    }
+}
