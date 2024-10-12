@@ -28,7 +28,7 @@ impl InputData {
         self.gifts
             .iter()
             .map(|(l, w, h)|
-                2 * (l * w + w * h + h * l) + l * w
+                3 * (l * w) + 2 * h * (w + l)
             )
             .sum()
     }
