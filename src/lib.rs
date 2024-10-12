@@ -3,6 +3,10 @@ use std::fs;
 use std::env;
 use std::time::Instant;
 
+pub mod aoc_util {
+    pub mod point;
+}
+
 pub mod year2015;
 pub mod year2016;
 
@@ -42,6 +46,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
             match config.day.as_str() {
                 "01" => year2015::day01::solve(&aoc_input),
                 "02" => year2015::day02::solve(&aoc_input),
+                "03" => year2015::day03::solve(&aoc_input),
                 _ => println!("Day not implemented")
             }
         "2016" =>
