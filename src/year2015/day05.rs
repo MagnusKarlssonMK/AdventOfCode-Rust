@@ -1,7 +1,7 @@
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(&input);
-    println!("Part 1: {}", solution_data.solve_part1());  // 236
-    println!("Part 2: {}", solution_data.solve_part2());  // 51
+    println!("Part 1: {}", solution_data.solve_part1());
+    println!("Part 2: {}", solution_data.solve_part2());
 }
 
 struct InputData {
@@ -43,9 +43,11 @@ impl InputData {
     fn solve_part2(&self) -> usize {
         fn is_nice(word: &str) -> bool {
             if word.chars().zip(word.chars().skip(2)).any(|(c1, c2)| c1 == c2) {
-                for idx in 0..word.len() - 4 {
-                   return true;
-                    // TBC
+                for idx in 0..word.len() - 1 {
+                    let candidate = &word[idx..idx+2];
+                    if word[..idx].contains(&candidate) || word[idx+2..].contains(&candidate) {
+                        return true;
+                    }
                 }
             }
             false
