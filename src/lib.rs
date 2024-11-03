@@ -9,6 +9,7 @@ pub mod aoc_util {
 
 pub mod year2015;
 pub mod year2016;
+pub mod year2017;
 
 pub struct Config {
     pub year: String,
@@ -55,6 +56,11 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         "2016" =>
             match config.day.as_str() {
                 "01" => year2016::day01::solve(&aoc_input),
+                _ => println!("Day not implemented")
+            }
+        "2017" =>
+            match config.day.as_str() {
+                "01" => year2017::day01::solve(&aoc_input),
                 _ => println!("Day not implemented")
             }
         _ => println!("Year not implemented")
