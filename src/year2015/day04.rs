@@ -1,4 +1,4 @@
-// Parking this for now, can't get md5 crate imports to work, looks like md5 has vanished from crypto crates...
+use md5::{Digest, Md5};
 
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(&input);
@@ -15,14 +15,25 @@ impl InputData {
         Self { secret_key: input.to_string() }
     }
 
-    fn solve_part1(&self) -> u32 {
-        println!("{}", self.secret_key);
-        //let testdata = "abcdef609043";
-        1
+    fn find_lowest_number(&self, prefix: &str) -> usize {
+        let mut suffix: usize = 0;
+        loop {
+            let mut candidate = self.secret_key.clone();
+            candidate.push_str(&suffix.to_string());
+            if format!("{:x}", Md5::digest(&candidate)).starts_with(&prefix) {
+                break;
+            }
+            suffix += 1;
+        }
+        suffix
     }
 
-    fn solve_part2(&self) -> u32 {
-        1
+    fn solve_part1(&self) -> usize {
+        self.find_lowest_number("00000")
+    }
+
+    fn solve_part2(&self) -> usize {
+        self.find_lowest_number("000000")
     }
 }
 
