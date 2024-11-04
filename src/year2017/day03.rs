@@ -1,3 +1,6 @@
+use crate::aoc_util::point;
+use std::collections::{HashSet, HashMap};
+
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(&input);
     println!("Part 1: {}", solution_data.solve_part1());
@@ -14,12 +17,48 @@ impl InputData {
     }
 
     fn solve_part1(&self) -> usize {
-        println!("{}", self.puzzle_input);
-        1
+        let mut head = point::ORIGIN;
+        let mut direction = point::DOWN;
+        let mut value: usize = 1;
+        let mut visited: HashSet<point::Point> = vec![head].into_iter().collect();
+        while value < self.puzzle_input {
+            let left_direction = direction.rotate_left();
+            let left_point = head + left_direction;
+            if visited.contains(&left_point) {
+                head += direction;
+            } else {
+                direction = left_direction;
+                head = left_point;
+            }
+            visited.insert(head);
+            value += 1;
+        }
+        head.manhattan(&point::ORIGIN).try_into().unwrap()
     }
 
     fn solve_part2(&self) -> usize {
-        2
+        let mut head = point::ORIGIN;
+        let mut direction = point::DOWN;
+        let mut value: usize = 1;
+        let mut visited: HashMap<point::Point, usize> = vec![(head, value)].into_iter().collect();
+        while value < self.puzzle_input {
+            let left_direction = direction.rotate_left();
+            let left_point = head + left_direction;
+            if visited.contains_key(&left_point) {
+                head += direction;
+            } else {
+                direction = left_direction;
+                head = left_point;
+            }
+            value = 0;
+            for neighbor_dir in point::NEIGHBORS_ALL {
+                if let Some(neighborvalue) = visited.get(&(head + neighbor_dir)) {
+                    value += neighborvalue;
+                }
+            }
+            visited.insert(head, value);
+        }
+        value
     }
 }
 

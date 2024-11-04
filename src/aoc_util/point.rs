@@ -8,6 +8,22 @@ pub const UP: Point = Point::new(0, -1);
 pub const DOWN: Point = Point::new(0, 1);
 pub const ORIGIN: Point = Point::new(0, 0);
 
+pub const NEIGHBORS_STRAIGHT: [Point; 4] = [
+    RIGHT,
+    DOWN,
+    LEFT,
+    UP];
+
+pub const NEIGHBORS_ALL: [Point; 8] = [
+    RIGHT,
+    Point::new(1, 1),
+    DOWN,
+    Point::new(-1, 1),
+    LEFT,
+    Point::new(-1, -1),
+    UP,
+    Point::new(1, -1)];
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Point {
     x: i32,
@@ -22,12 +38,12 @@ impl Point {
 
     #[inline]
     pub fn rotate_left(&self) -> Self {
-        Point::new(-self.y, self.x)
+        Point::new(self.y, -self.x)
     }
 
     #[inline]
     pub fn rotate_right(&self) -> Self {
-        Point::new(self.y, -self.x)
+        Point::new(-self.y, self.x)
     }
 
     #[inline]
