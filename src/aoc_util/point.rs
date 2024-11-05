@@ -1,5 +1,5 @@
 // Type for handling 2-d grid points
-use std::ops::{Add, AddAssign};
+use std::ops::{Add, AddAssign, Mul};
 use std::hash::{Hash, Hasher};
 
 pub const LEFT: Point = Point::new(-1, 0);
@@ -66,6 +66,14 @@ impl AddAssign for Point {
     fn add_assign(&mut self, other: Self) {
         self.x += other.x;
         self.y += other.y;
+    }
+}
+
+impl Mul<i32> for Point {
+    type Output = Self;
+    #[inline]
+    fn mul(self, rhs: i32) -> Self {
+        Point::new(self.x * rhs, self.y * rhs)
     }
 }
 
