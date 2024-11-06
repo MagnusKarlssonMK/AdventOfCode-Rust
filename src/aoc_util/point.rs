@@ -1,5 +1,5 @@
 // Type for handling 2-d grid points
-use std::ops::{Add, AddAssign, Mul};
+use std::ops::{Add, AddAssign, Sub, SubAssign, Mul};
 use std::hash::{Hash, Hasher};
 
 pub const LEFT: Point = Point::new(-1, 0);
@@ -26,8 +26,8 @@ pub const NEIGHBORS_ALL: [Point; 8] = [
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Point {
-    x: i32,
-    y: i32,
+    pub x: i32,
+    pub y: i32,
 }
 
 impl Point {
@@ -66,6 +66,23 @@ impl AddAssign for Point {
     fn add_assign(&mut self, other: Self) {
         self.x += other.x;
         self.y += other.y;
+    }
+}
+
+impl Sub for Point {
+    type Output = Self;
+
+    #[inline]
+    fn sub(self, rhs: Self) -> Self {
+        Point::new(self.x - rhs.x, self.y - rhs.y)
+    }
+}
+
+impl SubAssign for Point {
+    #[inline]
+    fn sub_assign(&mut self, rhs: Self) {
+        self.x -= rhs.x;
+        self.y -= rhs.y;
     }
 }
 
