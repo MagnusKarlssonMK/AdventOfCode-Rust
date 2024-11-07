@@ -10,8 +10,13 @@ pub mod aoc_util {
 pub mod year2015;
 pub mod year2016;
 pub mod year2017;
+pub mod year2018;
+pub mod year2019;
+pub mod year2020;
 pub mod year2021;
 pub mod year2022;
+pub mod year2023;
+pub mod year2024;
 
 pub struct Config {
     pub year: String,
@@ -71,10 +76,26 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
                 "07" => year2017::day07::solve(&aoc_input),
                 _ => println!("Day not implemented")
             }
+        "2018" =>
+            match config.day.as_str() {
+                "01" => year2018::day01::solve(&aoc_input),
+                _ => println!("Day not implemented")
+            }
+        "2019" =>
+            match config.day.as_str() {
+                "01" => year2019::day01::solve(&aoc_input),
+                _ => println!("Day not implemented")
+            }
+        "2020" =>
+            match config.day.as_str() {
+                "01" => year2020::day01::solve(&aoc_input),
+                _ => println!("Day not implemented")
+            }
         "2021" =>
             match config.day.as_str() {
                 "01" => year2021::day01::solve(&aoc_input),
                 "02" => year2021::day02::solve(&aoc_input),
+                "03" => year2021::day03::solve(&aoc_input),
                 _ => println!("Day not implemented")
             }
         "2022" =>
@@ -83,6 +104,16 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
                 "02" => year2022::day02::solve(&aoc_input),
                 "03" => year2022::day03::solve(&aoc_input),
                 "04" => year2022::day04::solve(&aoc_input),
+                _ => println!("Day not implemented")
+            }
+        "2023" =>
+            match config.day.as_str() {
+                "01" => year2023::day01::solve(&aoc_input),
+                _ => println!("Day not implemented")
+            }
+        "2024" =>
+            match config.day.as_str() {
+                "01" => year2024::day01::solve(&aoc_input),
                 _ => println!("Day not implemented")
             }
         _ => println!("Year not implemented")
