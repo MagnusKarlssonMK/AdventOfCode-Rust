@@ -5,26 +5,27 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    directions: Vec<i32>
+    directions: Vec<isize>
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        fn translate(c: u8) -> i32 {
-            match c {
-                b'(' => 1,
-                b')' => -1,
-                _ => 0,
-            }
-        }
-        Self { directions: input.bytes().map(translate).collect() }
+        Self { directions: input.chars()
+                .map(|c| {
+                    match &c {
+                        '(' => 1,
+                        ')' => -1,
+                        _ => 0,
+                    }
+                })
+                .collect() }
     }
 
-    fn solve_part1(&self) -> i32 {
+    fn solve_part1(&self) -> isize {
         self.directions.iter().sum()
     }
 
-    fn solve_part2(&self) -> i32 {
+    fn solve_part2(&self) -> isize {
         let mut floor = 0;
         let mut steps = 0;
         for v in self.directions.iter() {

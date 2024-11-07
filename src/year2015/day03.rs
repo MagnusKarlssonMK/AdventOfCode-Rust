@@ -13,16 +13,17 @@ struct InputData {
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        fn translate(c: u8) -> Point {
-            match c {
-                b'>' => RIGHT,
-                b'<' => LEFT,
-                b'^' => UP,
-                b'v' => DOWN,
-                _ => ORIGIN,
-            }
-        }
-        Self { steps: input.bytes().map(translate).collect() }
+        Self { steps: input.chars()
+                            .map(|c| {
+                                match c {
+                                    '>' => RIGHT,
+                                    '<' => LEFT,
+                                    '^' => UP,
+                                    'v' => DOWN,
+                                    _ => ORIGIN,
+                                }
+                            })
+                            .collect() }
     }
 
     fn solve_part1(&self) -> usize {

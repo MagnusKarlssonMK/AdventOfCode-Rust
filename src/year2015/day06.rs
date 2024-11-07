@@ -32,19 +32,13 @@ struct Area {
 
 impl Area {
     fn from(line: &str) -> Self {
-        fn to_numbers(ln: &str) -> Vec<usize> {
-            ln.split(|c| c == ' ' || c == ',').filter_map(|s| s.parse().ok()).collect()
-        }
-        let numbers = to_numbers(&line);
-        // Rust rookie - There has to be a cleaner way to do this
-        let mut n_iter = numbers.iter();
-        let x1 = n_iter.next().expect("Input error");
-        let y1 = n_iter.next().expect("Input error");
-        let x2 = n_iter.next().expect("Input error");
-        let y2 = n_iter.next().expect("Input error");
+        let nbrs: Vec<usize> = line
+            .split(|c| c == ' ' || c == ',')
+            .filter_map(|s| s.parse().ok())
+            .collect();
         Self {
-            x_range: (*min(x1, x2), *max(x1, x2)),
-            y_range: (*min(y1, y2), *max(y1, y2)),
+            x_range: (min(nbrs[0], nbrs[2]), max(nbrs[0], nbrs[2])),
+            y_range: (min(nbrs[1], nbrs[3]), max(nbrs[1], nbrs[3])),
         }
     }
 }

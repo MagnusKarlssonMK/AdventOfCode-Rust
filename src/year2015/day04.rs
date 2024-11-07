@@ -6,19 +6,19 @@ pub fn solve(input: &str) {
     println!("Part 2: {}", solution_data.solve_part2());
 }
 
-struct InputData {
-    secret_key: String
+struct InputData<'a> {
+    secret_key: &'a str
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self { secret_key: input.to_string() }
+impl<'a> InputData<'a> {
+    fn parse_input(input: &'a str) -> Self {
+        Self { secret_key: &input }
     }
 
     fn find_lowest_number(&self, prefix: &str) -> usize {
         let mut suffix: usize = 0;
         loop {
-            let mut candidate = self.secret_key.clone();
+            let mut candidate = self.secret_key.to_string();
             candidate.push_str(&suffix.to_string());
             if format!("{:x}", Md5::digest(&candidate)).starts_with(&prefix) {
                 break;

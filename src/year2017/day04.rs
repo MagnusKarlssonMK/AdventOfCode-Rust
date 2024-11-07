@@ -6,15 +6,14 @@ pub fn solve(input: &str) {
     println!("Part 2: {}", solution_data.solve_part2());
 }
 
-struct InputData {
-    passphrases: Vec<Vec<String>>
+struct InputData<'a> {
+    passphrases: Vec<Vec<&'a str>>
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
+impl<'a> InputData<'a> {
+    fn parse_input(input: &'a str) -> Self {
         Self { passphrases: input.lines()
             .map(|phrase| phrase.split_whitespace()
-                .map(|password| password.to_string())
                 .collect())
             .collect() }
     }

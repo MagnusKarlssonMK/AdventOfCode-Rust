@@ -4,13 +4,13 @@ pub fn solve(input: &str) {
     println!("Part 2: {}", solution_data.solve_part2());
 }
 
-struct InputData {
-    santa_strings: Vec<String>
+struct InputData<'a> {
+    santa_strings: Vec<&'a str>
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self { santa_strings: input.lines().map(String::from).collect() }
+impl<'a> InputData<'a> {
+    fn parse_input(input: &'a str) -> Self {
+        Self { santa_strings: input.lines().collect() }
     }
 
     fn solve_part1(&self) -> usize {
