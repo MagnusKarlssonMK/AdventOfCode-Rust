@@ -1,7 +1,7 @@
-use std::{collections::HashSet, usize};
+use std::collections::HashSet;
 
 pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(&input);
+    let solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve_part1());
     println!("Part 2: {}", solution_data.solve_part2());
 }
@@ -16,7 +16,7 @@ impl InputData {
         let nbrs: Vec<&str> = input.lines().collect();
         Self {
             width: nbrs[0].len(),
-            numbers: nbrs.iter().map(|n| usize::from_str_radix(&n, 2).unwrap()).collect(),
+            numbers: nbrs.iter().map(|n| usize::from_str_radix(n, 2).unwrap()).collect(),
         }
     }
 

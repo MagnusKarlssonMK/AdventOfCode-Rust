@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 pub fn solve(input: &str) {
-    let mut solution_data = InputData::parse_input(&input);
+    let mut solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve());
     println!("Part 2: {}", solution_data.solve());
 }

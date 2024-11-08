@@ -1,7 +1,7 @@
 use crate::aoc_util::point::{self, Point};
 
 pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(&input);
+    let solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve_part1());
     println!("Part 2: {}", solution_data.solve_part2());
 }
@@ -34,7 +34,7 @@ impl InputData {
     fn parse_input(input: &str) -> Self {
         Self { instructions:
             input.lines()
-                .map(|line| Command::from(&line))
+                .map(Command::from)
                 .collect()
         }
     }

@@ -1,5 +1,5 @@
 pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(&input);
+    let solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve_part1());
     println!("Part 2: {}", solution_data.solve_part2());
 }
@@ -39,13 +39,13 @@ impl<'a> InputData<'a> {
                 let mut first: Option<usize> = None;
                 let mut last: Option<usize> = None;
 
-                while first == None {
+                while first.is_none() {
                     if chrline[0].is_ascii_digit() {
                         first = Some(chrline[0].wrapping_sub(b'0') as usize);
                         break;
                     }
                     for (i, nbr) in SPELLED_OUT.iter().enumerate() {
-                        if chrline.starts_with(&nbr) {
+                        if chrline.starts_with(nbr) {
                             first = Some(i+1);
                             break;
                         }
@@ -53,13 +53,13 @@ impl<'a> InputData<'a> {
                     chrline = &chrline[1..];
                 }
 
-                while last == None {
+                while last.is_none() {
                     if chrline[chrline.len()-1].is_ascii_digit() {
                         last = Some(chrline[chrline.len()-1].wrapping_sub(b'0') as usize);
                         break;
                     }
                     for (i, nbr) in SPELLED_OUT.iter().enumerate() {
-                        if chrline.ends_with(&nbr) {
+                        if chrline.ends_with(nbr) {
                             last = Some(i+1);
                             break;
                         }

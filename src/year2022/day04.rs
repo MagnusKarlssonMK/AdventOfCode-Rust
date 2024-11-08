@@ -1,5 +1,5 @@
 pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(&input);
+    let solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve_part1());
     println!("Part 2: {}", solution_data.solve_part2());
 }
@@ -13,7 +13,7 @@ impl InputData {
         Self { assignments:
             input.lines()
                 .map(|line| { line
-                    .split(|c| c == ',' || c == '-' )
+                    .split([',', '-'])
                     .map(|nbr| nbr.parse().unwrap())
                     .collect()
                 })

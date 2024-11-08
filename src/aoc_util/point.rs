@@ -97,7 +97,7 @@ impl Mul<i32> for Point {
 impl Hash for Point {
     #[inline]
     fn hash<H: Hasher>(&self, state: &mut H) {
-        state.write_i32(self.x as i32);
-        state.write_i32(self.y as i32);
+        state.write_i32(self.x);
+        state.write_i32(self.y);
     }
 }

@@ -2,7 +2,7 @@
 use std::collections::HashMap;
 
 pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(&input);
+    let solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve_part1());
     println!("Part 2: {}", solution_data.solve_part2());
 }
@@ -18,8 +18,8 @@ impl Program {
         let tokens: Vec<String> = line.split_whitespace().map(|token| token.to_string()).collect();
         let mut leaflist: Vec<String> = Vec::new();
         if tokens.len() > 2 {
-            for idx in 2..tokens.len() {
-                leaflist.push(tokens[idx].trim_end_matches(',').to_string());
+            for t in tokens.iter().skip(2) {
+                leaflist.push(t.trim_end_matches(',').to_string());
             }
         }
         Self { weight: tokens[0].strip_prefix('(').unwrap().strip_suffix(')').unwrap().parse().unwrap(),

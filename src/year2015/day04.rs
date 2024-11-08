@@ -1,7 +1,7 @@
 use md5::{Digest, Md5};
 
 pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(&input);
+    let solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve_part1());
     println!("Part 2: {}", solution_data.solve_part2());
 }
@@ -12,7 +12,7 @@ struct InputData<'a> {
 
 impl<'a> InputData<'a> {
     fn parse_input(input: &'a str) -> Self {
-        Self { secret_key: &input }
+        Self { secret_key: input }
     }
 
     fn find_lowest_number(&self, prefix: &str) -> usize {
@@ -20,7 +20,7 @@ impl<'a> InputData<'a> {
         loop {
             let mut candidate = self.secret_key.to_string();
             candidate.push_str(&suffix.to_string());
-            if format!("{:x}", Md5::digest(&candidate)).starts_with(&prefix) {
+            if format!("{:x}", Md5::digest(&candidate)).starts_with(prefix) {
                 break;
             }
             suffix += 1;

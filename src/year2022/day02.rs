@@ -1,5 +1,5 @@
 pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(&input);
+    let solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve_part1());
     println!("Part 2: {}", solution_data.solve_part2());
 }
@@ -91,7 +91,7 @@ impl InputData {
         Self { rounds: input.lines()
             .map(|line| {
                 let hands: Vec<&str> = line.split_whitespace().collect();
-                (Hand::from(&hands[0]), Guide::from(&hands[1]))
+                (Hand::from(hands[0]), Guide::from(hands[1]))
             })
             .collect()
         }

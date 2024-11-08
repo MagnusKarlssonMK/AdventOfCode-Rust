@@ -1,5 +1,5 @@
 pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(&input);
+    let solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve_part1());
     println!("Part 2: {}", solution_data.solve_part2());
 }
@@ -45,7 +45,7 @@ impl<'a> InputData<'a> {
             if word.chars().zip(word.chars().skip(2)).any(|(c1, c2)| c1 == c2) {
                 for idx in 0..word.len() - 1 {
                     let candidate = &word[idx..idx+2];
-                    if word[..idx].contains(&candidate) || word[idx+2..].contains(&candidate) {
+                    if word[..idx].contains(candidate) || word[idx+2..].contains(candidate) {
                         return true;
                     }
                 }
