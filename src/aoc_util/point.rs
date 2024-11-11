@@ -37,6 +37,12 @@ impl Point {
     }
 
     #[inline]
+    pub fn from_str(s: &str) -> Self {
+        let (x, y) = s.split_once([',', '-']).unwrap_or_else(|| ("0", "0"));
+        Self { x: x.parse().unwrap(), y: y.parse().unwrap() }
+    }
+
+    #[inline]
     pub fn rotate_left(&self) -> Self {
         Point::new(self.y, -self.x)
     }
