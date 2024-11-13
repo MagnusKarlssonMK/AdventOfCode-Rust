@@ -1,6 +1,8 @@
-// Type for handling 2-d grid points
+use std::error::Error;
+// Type for handling 2-d points
 use std::ops::{Add, AddAssign, Sub, SubAssign, Mul};
 use std::hash::{Hash, Hasher};
+use std::str::FromStr;
 
 pub const LEFT: Point = Point::new(-1, 0);
 pub const RIGHT: Point = Point::new(1, 0);
@@ -37,12 +39,6 @@ impl Point {
     }
 
     #[inline]
-    pub fn from_str(s: &str) -> Self {
-        let (x, y) = s.split_once([',', '-']).unwrap_or_else(|| ("0", "0"));
-        Self { x: x.parse().unwrap(), y: y.parse().unwrap() }
-    }
-
-    #[inline]
     pub fn rotate_left(&self) -> Self {
         Point::new(self.y, -self.x)
     }
@@ -55,6 +51,19 @@ impl Point {
     #[inline]
     pub fn manhattan(&self, other: &Self) -> i32 {
         (self.x - other.x).abs() + (self.y - other.y).abs()
+    }
+}
+
+impl FromStr for Point {
+    type Err = Box<dyn Error>;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Some((x, y)) = s.split_once([',', '-']) {
+            Ok(Self { x: x.parse()?, y: y.parse()? })
+        } else {
+            Err(format!("Can't parse to point: {}", s).into())
+        }
     }
 }
 

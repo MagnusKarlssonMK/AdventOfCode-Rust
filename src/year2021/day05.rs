@@ -1,4 +1,5 @@
 use crate::aoc_util::point::*;
+use std::str::FromStr;
 
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
@@ -27,12 +28,12 @@ impl InputData {
     fn parse_input(input: &str) -> Self {
         fn parse_line(line: &str) -> (Point, Point) {
             let (p1, p2) = line.split_once(" -> ").unwrap();
-            (Point::from_str(p1), Point::from_str(p2))
+            (Point::from_str(p1).unwrap(), Point::from_str(p2).unwrap())
         }
         Self {
             lines: input
                 .lines()
-                .map(|line| parse_line(line))
+                .map(parse_line)
                 .collect()
         }
     }
@@ -45,7 +46,7 @@ impl InputData {
         for (p1, p2) in &self.lines {
             if !p1.is_diagonal(p2) {
                 let dxdy = p1.get_derivate(p2);
-                let mut p = p1.clone();
+                let mut p = *p1;
                 loop {
                     if grid[p.x as usize][p.y as usize] == 1 {
                         part1 += 1;
@@ -65,7 +66,7 @@ impl InputData {
         for (p1, p2) in &self.lines {
             if p1.is_diagonal(p2) {
                 let dxdy = p1.get_derivate(p2);
-                let mut p = p1.clone();
+                let mut p = *p1;
                 loop {
                     if grid[p.x as usize][p.y as usize] == 1 {
                         part2 += 1;
