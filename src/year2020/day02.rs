@@ -51,7 +51,7 @@ impl InputData {
         Self {
             passwords: input
                 .lines()
-                .map(|line| Password::parse_str(line))
+                .map(Password::parse_str)
                 .collect()
         }
     }

@@ -22,7 +22,11 @@ impl Program {
                 leaflist.push(t.trim_end_matches(',').to_string());
             }
         }
-        Self { weight: tokens[0].strip_prefix('(').unwrap().strip_suffix(')').unwrap().parse().unwrap(),
+        Self {
+            weight: tokens[0]
+                .strip_prefix('(').unwrap()
+                .strip_suffix(')').unwrap()
+                .parse().unwrap(),
             leafs: leaflist }
     }
 }
