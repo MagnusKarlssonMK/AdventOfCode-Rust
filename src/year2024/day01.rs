@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve_part1());
@@ -18,27 +20,32 @@ impl InputData {
             left.push(nbrs.next().unwrap().parse().unwrap());
             right.push(nbrs.next().unwrap().parse().unwrap());
         }
+        left.sort_unstable();
+        right.sort_unstable();
         Self { left, right }
     }
 
     fn solve_part1(&self) -> usize {
-        let mut left = self.left.clone();
-        let mut right = self.right.clone();
-        left.sort_unstable();
-        right.sort_unstable();
-        left.iter()
-            .zip(right.iter())
+        self.left.iter()
+            .zip(self.right.iter())
             .map(|(l, r)| l.abs_diff(*r))
             .sum()
     }
 
     fn solve_part2(&self) -> usize {
-        self.left.iter()
-            .map(|left_nbr|
-                left_nbr * self.right.iter()
-                    .filter(|right_nbr| *right_nbr == left_nbr)
-                    .count())
-            .sum()
+        let mut right_idx = 0;
+        self.left.iter().map(|left_nbr| {
+            let mut delta = 0;
+            let mut score = 0;
+            while right_idx + delta < self.right.len() {
+                match self.right[right_idx + delta].cmp(left_nbr) {
+                    Ordering::Greater => break,
+                    Ordering::Equal => {score += left_nbr; delta += 1},
+                    Ordering::Less => right_idx += 1,
+                }
+            }
+            score
+        }).sum()
     }
 }
 
