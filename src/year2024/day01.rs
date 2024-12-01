@@ -35,15 +35,7 @@ impl InputData {
     fn solve_part2(&self) -> usize {
         let mut right_idx = 0;
         self.left.iter().map(|left_nbr| {
-            //let mut delta = 0;
             let mut score = 0;
-            //while right_idx + delta < self.right.len() {
-            //    match self.right[right_idx + delta].cmp(left_nbr) {
-            //        Ordering::Greater => break,
-            //        Ordering::Equal => {score += left_nbr; delta += 1},
-            //        Ordering::Less => right_idx += 1,
-            //    }
-            //}
             for right_nbr in self.right.iter().skip(right_idx) {
                 match right_nbr.cmp(left_nbr) {
                     Ordering::Greater => break,
