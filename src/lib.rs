@@ -76,6 +76,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
                 "07" => year2017::day07::solve(&aoc_input),
                 "08" => year2017::day08::solve(&aoc_input),
                 "09" => year2017::day09::solve(&aoc_input),
+                "10" => year2017::day10::solve(&aoc_input),
                 "11" => year2017::day11::solve(&aoc_input),
                 _ => println!("Day not implemented")
             }
