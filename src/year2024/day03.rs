@@ -20,15 +20,16 @@ impl <'a>InputData<'a> {
     }
 
     fn solve_part2(&self) -> usize {
-        let parts: Vec<&str> = self.program.split("don't()").collect();
-        let mut do_parts: Vec<String> = Vec::new();
-        do_parts.push(parts.first().unwrap().to_string());
-        for p in parts.iter().skip(1) {
-            if let Some((_, d)) = p.split_once("do()") {
-                do_parts.push(d.to_string());
-            }
-        }
-        do_parts.iter().map(|d| calculate(d)).sum()
+        self.program.split("do()")
+            .map(|block|
+                {
+                    if let Some((do_block, _)) = block.split_once("don't()") {
+                        calculate(do_block)
+                    } else {
+                        calculate(block)
+                    }
+                })
+            .sum()
     }
 }
 
