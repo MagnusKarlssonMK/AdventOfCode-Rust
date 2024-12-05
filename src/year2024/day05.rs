@@ -24,7 +24,6 @@ impl PageOrderingRules {
             let left: usize = left.parse().unwrap();
             let right: usize = right.parse().unwrap();
             rules.insert((left, right), Ordering::Less);
-            rules.insert((right, left), Ordering::Greater);
         }
         Self { rules }
     }
@@ -38,7 +37,10 @@ impl PageOrderingRules {
             let mut correction = vec![0; update.len()];
             correction.copy_from_slice(update);
             correction.select_nth_unstable_by(idx_mid,
-                |&left, &right| *self.rules.get(&(left, right)).unwrap());
+                |&left, &right|
+                    match self.rules.get(&(left, right)) {
+                        Some(r) => *r,
+                        None => Ordering::Greater});
             UpdateResult::CorrectedOrder(correction[idx_mid])
         }
     }
