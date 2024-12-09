@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve_part1());
@@ -56,11 +58,11 @@ impl InputData {
     }
 
     fn solve_part2(&self) -> usize {
-        let mut emptyblocks: Vec<MemBlock> = Vec::with_capacity((1 + self.disk_map.len()) / 2);
+        let mut emptyblocks: VecDeque<MemBlock> = VecDeque::with_capacity((1 + self.disk_map.len()) / 2);
         let mut mempos = 0;
         for (i, v) in self.disk_map.iter().enumerate() {
             if i % 2 == 1 && *v > 0 {
-                emptyblocks.push(MemBlock { start: mempos, length: *v });
+                emptyblocks.push_back(MemBlock { start: mempos, length: *v });
             }
             mempos += v;
         }
@@ -69,7 +71,6 @@ impl InputData {
             //Note: the memory id is actually half the index, so divide memid by 2 later when used
             mempos -= memlen;
             if memid % 2 == 0 {
-                //for e in &mut emptyblocks {
                 for eidx in 0..emptyblocks.len() {
                     if emptyblocks[eidx].start >= mempos {
                         break;
