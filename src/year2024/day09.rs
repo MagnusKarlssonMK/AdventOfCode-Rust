@@ -1,0 +1,106 @@
+pub fn solve(input: &str) {
+    let solution_data = InputData::parse_input(input);
+    println!("Part 1: {}", solution_data.solve_part1());
+    println!("Part 2: {}", solution_data.solve_part2());
+}
+
+struct MemBlock {
+    start: usize,
+    length: usize
+}
+
+struct InputData {
+    disk_map: Vec<usize>
+}
+
+impl InputData {
+    fn parse_input(input: &str) -> Self {
+        Self {
+            disk_map: input.chars().map(|c| c.to_digit(10).unwrap() as usize).collect()
+        }
+    }
+
+    fn solve_part1(&self) -> usize {
+        let mut left_idx = 0;
+        let mut right_idx = self.disk_map.len() - 1;
+        if right_idx % 2 == 1 { right_idx -= 1;}  // Just in case input is even length
+        let mut right_counter = self.disk_map[right_idx];
+        let mut target_idx = 0;
+        let mut checksum = 0;
+        let mut buffer = self.disk_map[left_idx];
+        while right_idx >= left_idx {
+            if buffer > 0 {
+                if left_idx % 2 == 0 {
+                    buffer -= 1;
+                    checksum += target_idx * left_idx / 2;
+                    target_idx += 1;
+                } else if right_counter > 0 {
+                    buffer -= 1;
+                    right_counter -= 1;
+                    checksum += target_idx * right_idx / 2;
+                    target_idx += 1;
+                } else {
+                    right_idx -= 2;
+                    right_counter = self.disk_map[right_idx];
+                }
+            } else {
+                left_idx += 1;
+                if left_idx == right_idx {
+                    buffer = right_counter;
+                } else {
+                    buffer = self.disk_map[left_idx];
+                }
+            }
+        }
+        checksum
+    }
+
+    fn solve_part2(&self) -> usize {
+        let mut emptyblocks: Vec<MemBlock> = Vec::with_capacity((1 + self.disk_map.len()) / 2);
+        let mut mempos = 0;
+        for (i, v) in self.disk_map.iter().enumerate() {
+            if i % 2 == 1 {
+                emptyblocks.push(MemBlock { start: mempos, length: *v });
+            }
+            mempos += v;
+        }
+        let mut checksum = 0;
+        'outer: for (memid, memlen) in self.disk_map.iter().enumerate().rev() {
+            //Note: the memory id is actually half the index, so divide memid by 2 later when used
+            mempos -= memlen;
+            if memid % 2 == 0 {
+                for e in &mut emptyblocks {
+                    if e.start >= mempos {
+                        break;
+                    }
+                    if e.length >= *memlen {
+                        checksum += (e.start..e.start + *memlen).map(|i| i * memid / 2).sum::<usize>();
+                        *e = MemBlock { start: e.start + *memlen, length: e.length - memlen };
+                        continue 'outer;
+                    }
+                }
+                checksum += (mempos..mempos + *memlen).map(|i| i * memid / 2).sum::<usize>();
+            }
+        }
+        checksum
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn part1_example_1() {
+        let testdata = String::from("2333133121414131402");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part1(), 1928);
+    }
+
+    #[test]
+    fn part2_example_1() {
+        let testdata = String::from("2333133121414131402");
+        let solution_data = InputData::parse_input(&testdata);
+        assert_eq!(solution_data.solve_part2(), 2858);
+    }
+}
