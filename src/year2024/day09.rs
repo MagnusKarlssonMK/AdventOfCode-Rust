@@ -59,7 +59,7 @@ impl InputData {
         let mut emptyblocks: Vec<MemBlock> = Vec::with_capacity((1 + self.disk_map.len()) / 2);
         let mut mempos = 0;
         for (i, v) in self.disk_map.iter().enumerate() {
-            if i % 2 == 1 {
+            if i % 2 == 1 && *v > 0 {
                 emptyblocks.push(MemBlock { start: mempos, length: *v });
             }
             mempos += v;
@@ -69,13 +69,19 @@ impl InputData {
             //Note: the memory id is actually half the index, so divide memid by 2 later when used
             mempos -= memlen;
             if memid % 2 == 0 {
-                for e in &mut emptyblocks {
-                    if e.start >= mempos {
+                //for e in &mut emptyblocks {
+                for eidx in 0..emptyblocks.len() {
+                    if emptyblocks[eidx].start >= mempos {
                         break;
                     }
-                    if e.length >= *memlen {
-                        checksum += (e.start..e.start + *memlen).map(|i| i * memid / 2).sum::<usize>();
-                        *e = MemBlock { start: e.start + *memlen, length: e.length - memlen };
+                    if emptyblocks[eidx].length >= *memlen {
+                        checksum += (emptyblocks[eidx].start..emptyblocks[eidx].start + *memlen).map(|i| i * memid / 2).sum::<usize>();
+                        if emptyblocks[eidx].length - memlen > 0 {
+                            emptyblocks[eidx] = MemBlock {  start: emptyblocks[eidx].start + *memlen,
+                                                            length: emptyblocks[eidx].length - memlen };
+                        } else {
+                            emptyblocks.remove(eidx);
+                        }
                         continue 'outer;
                     }
                 }
