@@ -73,7 +73,7 @@ impl InputData {
         let mut p1 = Vec::new();
         let mut p2 = Vec::new();
         for i in intersections {
-            p1.push(i.manhattan(&ORIGIN) as usize);
+            p1.push(i.manhattan(&ORIGIN));
             p2.push(2 + w1_points.iter().position(|n| n == i).unwrap() + w2_points.iter().position(|n| n == i).unwrap());
         }
         (*p1.iter().min().unwrap(), *p2.iter().min().unwrap())

@@ -1,4 +1,4 @@
-use crate::aoc_util::point::{self, Point};
+use crate::aoc_util::point::*;
 use std::collections::HashSet;
 
 pub fn solve(input: &str) {
@@ -38,8 +38,8 @@ impl InputData {
     }
 
     fn solve_part1(&self) -> usize {
-        let mut pos = point::ORIGIN;
-        let mut direction = point::UP;
+        let mut pos = ORIGIN;
+        let mut direction = UP;
         for (r, i) in &self.instructions {
             direction = match r {
                 Rotation::Left => direction.rotate_left(),
@@ -47,12 +47,12 @@ impl InputData {
             };
             pos += direction * *i;
         };
-        pos.manhattan(&point::ORIGIN).try_into().unwrap()
+        pos.manhattan(&ORIGIN)
     }
 
     fn solve_part2(&self) -> usize {
-        let mut pos = point::ORIGIN;
-        let mut direction = point::UP;
+        let mut pos = ORIGIN;
+        let mut direction = UP;
         let mut seen: HashSet<Point> = HashSet::new();
         seen.insert(pos);
         for (r, i) in &self.instructions {
@@ -63,7 +63,7 @@ impl InputData {
             for _ in 0..*i {
                 pos += direction;
                 if seen.contains(&pos) {
-                    return pos.manhattan(&point::ORIGIN).try_into().unwrap();
+                    return pos.manhattan(&ORIGIN);
                 }
                 seen.insert(pos);
             }

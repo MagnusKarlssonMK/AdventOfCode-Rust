@@ -33,7 +33,7 @@ impl InputData {
             visited.insert(head);
             value += 1;
         }
-        head.manhattan(&point::ORIGIN).try_into().unwrap()
+        head.manhattan(&point::ORIGIN)
     }
 
     fn solve_part2(&self) -> usize {

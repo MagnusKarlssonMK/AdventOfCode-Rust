@@ -76,7 +76,7 @@ impl InputData {
                 let y_range = g1.get_y_ranges(g2);
                 total_empty_space += self.empty_x.iter().filter(|x| (x_range.0+1..x_range.1).contains(x)).count() +
                     self.empty_y.iter().filter(|y| (y_range.0+1..y_range.1).contains(y)).count();
-                total_steps += g1.manhattan(g2) as usize;
+                total_steps += g1.manhattan(g2);
             }
         }
         (total_steps + total_empty_space * (small_exp_rate - 1),

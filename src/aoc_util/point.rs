@@ -49,8 +49,8 @@ impl Point {
     }
 
     #[inline]
-    pub fn manhattan(&self, other: &Self) -> i32 {
-        (self.x - other.x).abs() + (self.y - other.y).abs()
+    pub fn manhattan(&self, other: &Self) -> usize {
+        (self.x - other.x).unsigned_abs() as usize + (self.y - other.y).unsigned_abs() as usize
     }
 }
 
