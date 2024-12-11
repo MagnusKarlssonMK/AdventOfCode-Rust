@@ -21,16 +21,15 @@ impl InputData {
     fn solve(&self, blinks1: usize, blinks2: usize) -> (usize, usize) {
         let mut p1 = None;
         let mut p2 = None;
-        let mut counter = 0;
-        let mut stones = HashMap::new();
-        self.stones.iter().for_each(|s| {stones.insert(*s, 1);});
+        let mut blink_counter = 0;
+        let mut stones: HashMap<usize, usize> = self.stones.iter().map(|n| (*n, 1)).collect();
         while p1.is_none() || p2.is_none() {
-            counter += 1;
+            blink_counter += 1;
             stones = blink(&stones);
-            if p1.is_none() && counter == blinks1 {
+            if p1.is_none() && blink_counter == blinks1 {
                 p1 = Some(stones.values().sum());
             }
-            if p2.is_none() && counter == blinks2 {
+            if p2.is_none() && blink_counter == blinks2 {
                 p2 = Some(stones.values().sum());
             }
         }
