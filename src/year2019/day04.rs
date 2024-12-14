@@ -6,24 +6,30 @@ pub fn solve(input: &str) {
 
 #[derive(Debug)]
 struct PwdNbr {
-    number: usize
+    number: usize,
 }
 
 impl PwdNbr {
     fn new(input: &str) -> Self {
-        Self { number: input.parse().unwrap() }
+        Self {
+            number: input.parse().unwrap(),
+        }
     }
 
     fn from_vec(input: &[usize]) -> Self {
         Self {
-            number: input.iter().rev()
+            number: input
+                .iter()
+                .rev()
                 .enumerate()
                 .map(|(i, nbr)| 10usize.pow(i as u32) * nbr)
-                .sum() }
+                .sum(),
+        }
     }
 
     fn to_vec(&self) -> Vec<usize> {
-        (0..=5).rev()
+        (0..=5)
+            .rev()
             .map(|i| (self.number / 10usize.pow(i)) % 10)
             .collect()
     }
@@ -31,7 +37,7 @@ impl PwdNbr {
 
 struct InputData {
     range_lower: PwdNbr,
-    range_upper: PwdNbr
+    range_upper: PwdNbr,
 }
 
 impl InputData {
@@ -39,7 +45,7 @@ impl InputData {
         let (low, high) = input.split_once('-').unwrap();
         Self {
             range_lower: PwdNbr::new(low),
-            range_upper: PwdNbr::new(high)
+            range_upper: PwdNbr::new(high),
         }
     }
 
@@ -55,11 +61,11 @@ impl InputData {
         let mut digits = self.range_lower.to_vec();
         let mut tmp = 0;
         // Find the first valid initial value starting from 'lower' - the value never decreases
-        for i  in 1..digits.len() {
+        for i in 1..digits.len() {
             if digits[i] == tmp {
                 digits[i] = tmp;
             } else if digits[i] < digits[i - 1] {
-                digits[i] = digits[i-1];
+                digits[i] = digits[i - 1];
                 tmp = digits[i];
             }
         }
@@ -89,7 +95,7 @@ impl InputData {
             for i in (0..digits.len()).rev() {
                 digits[i] += 1;
                 if digits[i] <= 9 {
-                    for j in i+1..digits.len() {
+                    for j in i + 1..digits.len() {
                         digits[j] = digits[i];
                     }
                     break;

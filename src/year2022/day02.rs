@@ -25,7 +25,7 @@ impl Hand {
             "A" => Self::Rock,
             "B" => Self::Paper,
             "C" => Self::Scissors,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 
@@ -34,7 +34,7 @@ impl Hand {
             0 => Self::Rock,
             1 => Self::Paper,
             2 => Self::Scissors,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 
@@ -52,7 +52,7 @@ impl Hand {
         match other {
             Guide::Lose => Hand::from_val((self.get_val() + 2) % 3),
             Guide::Win => Hand::from_val((self.get_val() + 1) % 3),
-            Guide::Draw => Hand::from_val(self.get_val())
+            Guide::Draw => Hand::from_val(self.get_val()),
         }
     }
 }
@@ -69,7 +69,7 @@ impl Guide {
             "X" => Self::Lose,
             "Y" => Self::Draw,
             "Z" => Self::Win,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 
@@ -77,35 +77,38 @@ impl Guide {
         match self {
             Self::Lose => Hand::Rock,
             Self::Draw => Hand::Paper,
-            Self::Win => Hand::Scissors
+            Self::Win => Hand::Scissors,
         }
     }
 }
 
 struct InputData {
-    rounds: Vec<(Hand, Guide)>
+    rounds: Vec<(Hand, Guide)>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { rounds: input.lines()
-            .map(|line| {
-                let hands: Vec<&str> = line.split_whitespace().collect();
-                (Hand::from(hands[0]), Guide::from(hands[1]))
-            })
-            .collect()
+        Self {
+            rounds: input
+                .lines()
+                .map(|line| {
+                    let hands: Vec<&str> = line.split_whitespace().collect();
+                    (Hand::from(hands[0]), Guide::from(hands[1]))
+                })
+                .collect(),
         }
     }
 
     fn solve_part1(&self) -> usize {
-        self.rounds.iter()
-            .map(|(h, g)| 
-                h.get_score(&g.as_hand()))
+        self.rounds
+            .iter()
+            .map(|(h, g)| h.get_score(&g.as_hand()))
             .sum()
     }
 
     fn solve_part2(&self) -> usize {
-        self.rounds.iter()
+        self.rounds
+            .iter()
             .map(|(h, g)| h.get_score(&h.determine_response(g)))
             .sum()
     }

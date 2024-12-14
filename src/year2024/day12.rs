@@ -1,22 +1,25 @@
-/*
-- Floodfill with BFS to find the groups.
-- For each point found during the search, add +1 to the area, and +1 to 
-  the perimeter for each orthogonal neighbor having a different value.
-
-For part 2, number of sides == number of corners.
-For each point found during the BFS, then for each corner:
-- If both orthogonal neighbors have the same value, then take a sneak peek on
-  the diagonal point; if it has a different value, add +1 to corners.
-- If both orthogonal neighbors have different value(s), add +1 to corners
-  (either the diagonal also has a different value -> it's a corner; or it's
-  the same value, which could mean either same or different group, and in
-  both cases it means we've found a corner.)
-- If only one of the orthogonal neighbors have the same value, we know
-  it's not a corner.
-*/
-
-use std::collections::{HashSet, VecDeque};
+//! # 2024 day 12 - Garden Groups
+//!
+//! ## Part 1
+//!
+//! Floodfill with BFS to find the groups. For each point found during the search,
+//! add +1 to the area, and +1 to the perimeter for each orthogonal neighbor
+//! having a different value.
+//!
+//! ## Part 2
+//!
+//! Number of sides == number of corners. For each point found during the BFS,
+//! then for each corner:
+//! - If both orthogonal neighbors have the same value, then take a sneak peek on
+//!   the diagonal point; if it has a different value, add +1 to corners.
+//! - If both orthogonal neighbors have different value(s), add +1 to corners
+//!   (either the diagonal also has a different value -> it's a corner; or it's
+//!   the same value, which could mean either same or different group, and in
+//!   both cases it means we've found a corner.)
+//! - If only one of the orthogonal neighbors have the same value, we know
+//!   it's not a corner.
 use crate::aoc_util::point::*;
+use std::collections::{HashSet, VecDeque};
 
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
@@ -28,27 +31,32 @@ pub fn solve(input: &str) {
 struct Grid {
     x_max: usize,
     y_max: usize,
-    elements: Vec<char>
+    elements: Vec<char>,
 }
 
 impl Grid {
     #[inline]
     fn parse(input: &str) -> Self {
-        let lines: Vec<_> = input.lines()
-            .map(|line| line.chars()
-                .collect::<Vec<_>>())
+        let lines: Vec<_> = input
+            .lines()
+            .map(|line| line.chars().collect::<Vec<_>>())
             .collect();
         let x_max = lines[0].len();
         let y_max = lines.len();
         let mut elements = Vec::with_capacity(x_max * y_max);
-        lines.iter().for_each(|line| line.iter().for_each(|c| elements.push(*c)));
-        Self { x_max, y_max, elements }
+        lines
+            .iter()
+            .for_each(|line| line.iter().for_each(|c| elements.push(*c)));
+        Self {
+            x_max,
+            y_max,
+            elements,
+        }
     }
 
     #[inline]
     fn get_element(&self, p: &Point) -> Option<char> {
-        if (0..self.x_max).contains(&(p.x as usize)) && 
-                (0..self.y_max).contains(&(p.y as usize)) {
+        if (0..self.x_max).contains(&(p.x as usize)) && (0..self.y_max).contains(&(p.y as usize)) {
             Some(self.elements[self.x_max * (p.y as usize) + (p.x as usize)])
         } else {
             None
@@ -57,20 +65,20 @@ impl Grid {
 }
 
 struct InputData {
-    garden_map: Grid
+    garden_map: Grid,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
         Self {
-            garden_map: Grid::parse(input)
+            garden_map: Grid::parse(input),
         }
     }
 
     fn solve(&self) -> (usize, usize) {
         let mut total_perimeter = 0;
         let mut total_sides = 0;
-        let mut counted = HashSet:: new();
+        let mut counted = HashSet::new();
         for y in 0..self.garden_map.y_max {
             for x in 0..self.garden_map.x_max {
                 if !counted.contains(&(x, y)) {
@@ -109,10 +117,18 @@ impl InputData {
                                 if (n1.x == 0 && n2.x == 0) || (n1.y == 0 && n2.y == 0) {
                                     continue;
                                 }
-                                if (*v1 == 0 && *v2 == 0) || (*v1 == 1 && *v2 == 1 && 
-                                        self.garden_map.get_element(
-                                            &Point::new(current.x + n1.x + n2.x,
-                                                        current.y + n1.y + n2.y)).unwrap() != element) {
+                                if (*v1 == 0 && *v2 == 0)
+                                    || (*v1 == 1
+                                        && *v2 == 1
+                                        && self
+                                            .garden_map
+                                            .get_element(&Point::new(
+                                                current.x + n1.x + n2.x,
+                                                current.y + n1.y + n2.y,
+                                            ))
+                                            .unwrap()
+                                            != element)
+                                {
                                     sides += 1;
                                 }
                             }
@@ -135,10 +151,11 @@ mod tests {
     #[test]
     fn part1_example_1() {
         let testdata = String::from(
-"AAAA
+            "AAAA
 BBCD
 BBCC
-EEEC");
+EEEC",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (p1, _) = solution_data.solve();
         assert_eq!(p1, 140);
@@ -147,11 +164,12 @@ EEEC");
     #[test]
     fn part1_example_2() {
         let testdata = String::from(
-"OOOOO
+            "OOOOO
 OXOXO
 OOOOO
 OXOXO
-OOOOO");
+OOOOO",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (p1, _) = solution_data.solve();
         assert_eq!(p1, 772);
@@ -160,7 +178,7 @@ OOOOO");
     #[test]
     fn part1_example_3() {
         let testdata = String::from(
-"RRRRIICCFF
+            "RRRRIICCFF
 RRRRIICCCF
 VVRRRCCFFF
 VVRCCCJFFF
@@ -169,7 +187,8 @@ VVIVCCJJEE
 VVIIICJJEE
 MIIIIIJJEE
 MIIISIJEEE
-MMMISSJEEE");
+MMMISSJEEE",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (p1, _) = solution_data.solve();
         assert_eq!(p1, 1930);
@@ -178,10 +197,11 @@ MMMISSJEEE");
     #[test]
     fn part2_example_1() {
         let testdata = String::from(
-"AAAA
+            "AAAA
 BBCD
 BBCC
-EEEC");
+EEEC",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (_, p2) = solution_data.solve();
         assert_eq!(p2, 80);
@@ -190,11 +210,12 @@ EEEC");
     #[test]
     fn part2_example_2() {
         let testdata = String::from(
-"EEEEE
+            "EEEEE
 EXXXX
 EEEEE
 EXXXX
-EEEEE");
+EEEEE",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (_, p2) = solution_data.solve();
         assert_eq!(p2, 236);
@@ -203,15 +224,15 @@ EEEEE");
     #[test]
     fn part2_example_3() {
         let testdata = String::from(
-"AAAAAA
+            "AAAAAA
 AAABBA
 AAABBA
 ABBAAA
 ABBAAA
-AAAAAA");
+AAAAAA",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (_, p2) = solution_data.solve();
         assert_eq!(p2, 368);
     }
-
 }

@@ -5,34 +5,42 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    assignments: Vec<Vec<usize>>
+    assignments: Vec<Vec<usize>>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { assignments:
-            input.lines()
-                .map(|line| { line
-                    .split([',', '-'])
-                    .map(|nbr| nbr.parse().unwrap())
-                    .collect()
+        Self {
+            assignments: input
+                .lines()
+                .map(|line| {
+                    line.split([',', '-'])
+                        .map(|nbr| nbr.parse().unwrap())
+                        .collect()
                 })
-                .collect()
+                .collect(),
         }
     }
 
     fn solve_part1(&self) -> usize {
-        self.assignments.iter()
-            .map(|a|
-                if (a[0] <= a[2] && a[2] <= a[3] && a[3] <= a[1]) ||
-                    (a[2] <= a[0] && a[0] <= a[1] && a[1] <= a[3]) {1} else {0})
+        self.assignments
+            .iter()
+            .map(|a| {
+                if (a[0] <= a[2] && a[2] <= a[3] && a[3] <= a[1])
+                    || (a[2] <= a[0] && a[0] <= a[1] && a[1] <= a[3])
+                {
+                    1
+                } else {
+                    0
+                }
+            })
             .sum()
     }
 
     fn solve_part2(&self) -> usize {
-        self.assignments.iter()
-            .map(|a|
-                if a[0] <= a[3] && a[2] <= a[1] {1} else {0})
+        self.assignments
+            .iter()
+            .map(|a| if a[0] <= a[3] && a[2] <= a[1] { 1 } else { 0 })
             .sum()
     }
 }

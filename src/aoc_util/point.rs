@@ -1,7 +1,7 @@
 use std::error::Error;
 // Type for handling 2-d points
-use std::ops::{Add, AddAssign, Sub, SubAssign, Mul};
 use std::hash::{Hash, Hasher};
+use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 use std::str::FromStr;
 
 pub const LEFT: Point = Point::new(-1, 0);
@@ -10,11 +10,7 @@ pub const UP: Point = Point::new(0, -1);
 pub const DOWN: Point = Point::new(0, 1);
 pub const ORIGIN: Point = Point::new(0, 0);
 
-pub const NEIGHBORS_STRAIGHT: [Point; 4] = [
-    RIGHT,
-    DOWN,
-    LEFT,
-    UP];
+pub const NEIGHBORS_STRAIGHT: [Point; 4] = [RIGHT, DOWN, LEFT, UP];
 
 pub const NEIGHBORS_ALL: [Point; 8] = [
     RIGHT,
@@ -24,7 +20,8 @@ pub const NEIGHBORS_ALL: [Point; 8] = [
     LEFT,
     Point::new(-1, -1),
     UP,
-    Point::new(1, -1)];
+    Point::new(1, -1),
+];
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Point {
@@ -35,7 +32,7 @@ pub struct Point {
 impl Point {
     #[inline]
     pub const fn new(x: i32, y: i32) -> Self {
-        Self {x, y}
+        Self { x, y }
     }
 
     #[inline]
@@ -60,7 +57,10 @@ impl FromStr for Point {
     #[inline]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Some((x, y)) = s.split_once([',', '-']) {
-            Ok(Self { x: x.parse()?, y: y.parse()? })
+            Ok(Self {
+                x: x.parse()?,
+                y: y.parse()?,
+            })
         } else {
             Err(format!("Can't parse to point: {}", s).into())
         }

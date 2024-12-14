@@ -7,15 +7,13 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    data: Vec<isize>
+    data: Vec<isize>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { data:
-            input.lines()
-                .map(|line| line.parse().unwrap())
-                .collect()
+        Self {
+            data: input.lines().map(|line| line.parse().unwrap()).collect(),
         }
     }
 

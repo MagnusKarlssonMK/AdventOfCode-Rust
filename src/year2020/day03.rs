@@ -7,13 +7,13 @@ pub fn solve(input: &str) {
 }
 
 struct InputData<'a> {
-    grid: Vec<&'a [u8]>
+    grid: Vec<&'a [u8]>,
 }
 
 impl<'a> InputData<'a> {
     fn parse_input(input: &'a str) -> Self {
         Self {
-            grid: input.lines().map(|line| line.as_bytes()).collect()
+            grid: input.lines().map(|line| line.as_bytes()).collect(),
         }
     }
 
@@ -35,7 +35,8 @@ impl<'a> InputData<'a> {
     }
 
     fn solve_part2(&self) -> usize {
-        [(1, 1), (1, 3), (1, 5), (1, 7), (2, 1)].iter()
+        [(1, 1), (1, 3), (1, 5), (1, 7), (2, 1)]
+            .iter()
             .map(|(r, c)| self.count_trees(&Point::new(*c, *r)))
             .product()
     }
@@ -47,7 +48,8 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("..##.......
+        let testdata = String::from(
+            "..##.......
 #...#...#..
 .#....#..#.
 ..#.#...#.#
@@ -57,14 +59,16 @@ mod tests {
 .#........#
 #.##...#...
 #...##....#
-.#..#...#.#");
+.#..#...#.#",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part1(), 7);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("..##.......
+        let testdata = String::from(
+            "..##.......
 #...#...#..
 .#....#..#.
 ..#.#...#.#
@@ -74,7 +78,8 @@ mod tests {
 .#........#
 #.##...#...
 #...##....#
-.#..#...#.#");
+.#..#...#.#",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part2(), 336);
     }

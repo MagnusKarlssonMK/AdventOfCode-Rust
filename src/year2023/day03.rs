@@ -1,5 +1,5 @@
-use std::collections::{HashMap, HashSet};
 use crate::aoc_util::point::*;
+use std::collections::{HashMap, HashSet};
 
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
@@ -11,14 +11,14 @@ pub fn solve(input: &str) {
 struct PartItem {
     point: Point,
     length: usize,
-    value: usize
+    value: usize,
 }
 
 impl PartItem {
     fn get_adjacent_points(&self) -> Vec<Point> {
         let mut n = Vec::new();
-        for y in self.point.y-1..=self.point.y+1 {
-            for x in self.point.x-1..=self.point.x+self.length as i32 {
+        for y in self.point.y - 1..=self.point.y + 1 {
+            for x in self.point.x - 1..=self.point.x + self.length as i32 {
                 n.push(Point::new(x, y));
             }
         }
@@ -28,7 +28,7 @@ impl PartItem {
 
 struct InputData {
     parts: HashMap<PartItem, HashSet<Point>>,
-    symbols: HashMap<Point, char>
+    symbols: HashMap<Point, char>,
 }
 
 impl InputData {
@@ -44,12 +44,14 @@ impl InputData {
                         numberpoint.x = x as i32;
                         numberpoint.y = y as i32;
                     }
-                    number = 10*number + c.to_digit(10).unwrap() as usize;
+                    number = 10 * number + c.to_digit(10).unwrap() as usize;
                 } else {
                     if number > 0 {
-                        parts.insert(PartItem { point: numberpoint,
-                                                length: x-numberpoint.x as usize,
-                                                value: number});
+                        parts.insert(PartItem {
+                            point: numberpoint,
+                            length: x - numberpoint.x as usize,
+                            value: number,
+                        });
                         number = 0;
                     }
                     if c != '.' {
@@ -58,9 +60,11 @@ impl InputData {
                 }
             }
             if number > 0 {
-                parts.insert(PartItem { point: numberpoint,
-                                        length: line.len()-numberpoint.x as usize,
-                                        value: number});
+                parts.insert(PartItem {
+                    point: numberpoint,
+                    length: line.len() - numberpoint.x as usize,
+                    value: number,
+                });
                 number = 0;
             }
         }
@@ -76,21 +80,25 @@ impl InputData {
         }
         Self {
             parts: partmap,
-            symbols
+            symbols,
         }
     }
 
     fn solve_part1(&self) -> usize {
-        self.parts.iter()
-            .map(|(p, v)| if !v.is_empty() {p.value} else {0})
+        self.parts
+            .iter()
+            .map(|(p, v)| if !v.is_empty() { p.value } else { 0 })
             .sum()
     }
 
     fn solve_part2(&self) -> usize {
-        self.symbols.iter()
+        self.symbols
+            .iter()
             .filter(|(_, c)| **c == '*')
             .map(|(p, _)| {
-                let adj_part_values: Vec<usize> = self.parts.iter()
+                let adj_part_values: Vec<usize> = self
+                    .parts
+                    .iter()
                     .filter(|(_, value)| value.contains(p))
                     .map(|(part, _)| part.value)
                     .collect();
@@ -110,7 +118,8 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("467..114..
+        let testdata = String::from(
+            "467..114..
 ...*......
 ..35..633.
 ......#...
@@ -119,14 +128,16 @@ mod tests {
 ..592.....
 ......755.
 ...$.*....
-.664.598..");
+.664.598..",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part1(), 4361);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("467..114..
+        let testdata = String::from(
+            "467..114..
 ...*......
 ..35..633.
 ......#...
@@ -135,7 +146,8 @@ mod tests {
 ..592.....
 ......755.
 ...$.*....
-.664.598..");
+.664.598..",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part2(), 467835);
     }

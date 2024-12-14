@@ -6,19 +6,21 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    numbers: Vec<Vec<usize>>
+    numbers: Vec<Vec<usize>>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
         Self {
-            numbers: input.lines()
-                .map(|line|
+            numbers: input
+                .lines()
+                .map(|line| {
                     line.split_whitespace()
                         .filter_map(|n| n.trim_end_matches(',').parse().ok())
                         .skip(1)
-                        .collect())
-                .collect()
+                        .collect()
+                })
+                .collect(),
         }
     }
 
@@ -26,9 +28,11 @@ impl InputData {
         let size = self.numbers.len();
         let mut seen = vec![false; size];
         let mut program_groups = Vec::new();
-        (0..size).for_each(|i| if !seen[i] {
-            seen[i] = true;
-            program_groups.push(self.search_programs(&mut seen, i));
+        (0..size).for_each(|i| {
+            if !seen[i] {
+                seen[i] = true;
+                program_groups.push(self.search_programs(&mut seen, i));
+            }
         });
         (program_groups[0], program_groups.len())
     }
@@ -43,7 +47,7 @@ impl InputData {
         }
         total
     }
-    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -52,13 +56,14 @@ mod tests {
     #[test]
     fn part1_example_1() {
         let testdata = String::from(
-"0 <-> 2
+            "0 <-> 2
 1 <-> 1
 2 <-> 0, 3, 4
 3 <-> 2, 4
 4 <-> 2, 3, 6
 5 <-> 6
-6 <-> 4, 5");
+6 <-> 4, 5",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 6);

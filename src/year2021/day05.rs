@@ -14,14 +14,22 @@ impl Point {
     }
 
     fn get_derivate(&self, other: &Point) -> Point {
-        let dx = (other.x - self.x) / (other.x - self.x).abs().max((other.y - self.y).abs()).max(1);
-        let dy = (other.y - self.y) / (other.x - self.x).abs().max((other.y - self.y).abs()).max(1);
+        let dx = (other.x - self.x)
+            / (other.x - self.x)
+                .abs()
+                .max((other.y - self.y).abs())
+                .max(1);
+        let dy = (other.y - self.y)
+            / (other.x - self.x)
+                .abs()
+                .max((other.y - self.y).abs())
+                .max(1);
         Point::new(dx, dy)
     }
 }
 
 struct InputData {
-    lines: Vec<(Point, Point)>
+    lines: Vec<(Point, Point)>,
 }
 
 impl InputData {
@@ -31,10 +39,7 @@ impl InputData {
             (Point::from_str(p1).unwrap(), Point::from_str(p2).unwrap())
         }
         Self {
-            lines: input
-                .lines()
-                .map(parse_line)
-                .collect()
+            lines: input.lines().map(parse_line).collect(),
         }
     }
 
@@ -89,7 +94,8 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("0,9 -> 5,9
+        let testdata = String::from(
+            "0,9 -> 5,9
 8,0 -> 0,8
 9,4 -> 3,4
 2,2 -> 2,1
@@ -98,7 +104,8 @@ mod tests {
 0,9 -> 2,9
 3,4 -> 1,4
 0,0 -> 8,8
-5,5 -> 8,2");
+5,5 -> 8,2",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 5);

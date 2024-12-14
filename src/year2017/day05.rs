@@ -5,16 +5,14 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    instructions: Vec<i32>
+    instructions: Vec<i32>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { instructions: input.lines()
-                .map(|i|
-                    i.parse()
-                    .unwrap())
-                .collect() }
+        Self {
+            instructions: input.lines().map(|i| i.parse().unwrap()).collect(),
+        }
     }
 
     fn run_program(&self, strange: bool) -> usize {

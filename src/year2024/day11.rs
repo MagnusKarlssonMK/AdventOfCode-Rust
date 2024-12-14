@@ -1,3 +1,11 @@
+//! # 2024 day 11 - Plutonian Pebbles
+//! 
+//! Solves both parts in the same loop, since part 2 simply requires way more
+//! iterations of the same method. Since the number of stones will quickly become
+//! enormous but many will have the same value, the stones are stored in a hash-map
+//! rather than a vector, with the stone's number as key and number of stones with
+//! that number as value. Despite the desceptive description, the order of the stones
+//! is actually not important!
 use std::collections::HashMap;
 
 pub fn solve(input: &str) {
@@ -8,13 +16,16 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    stones: Vec<usize>
+    stones: Vec<usize>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
         Self {
-            stones: input.split_whitespace().map(|n| n.parse().unwrap()).collect()
+            stones: input
+                .split_whitespace()
+                .map(|n| n.parse().unwrap())
+                .collect(),
         }
     }
 
@@ -41,15 +52,27 @@ fn blink(stones: &HashMap<usize, usize>) -> HashMap<usize, usize> {
     let mut newstones = HashMap::new();
     for (stone, val) in stones.iter() {
         if *stone == 0 {
-            newstones.entry(1).and_modify(|v| *v += *val).or_insert(*val);
+            newstones
+                .entry(1)
+                .and_modify(|v| *v += *val)
+                .or_insert(*val);
         } else {
             let digits = 1 + stone.ilog10();
             if digits % 2 == 0 {
                 let power = 10_usize.pow(digits / 2);
-                newstones.entry(stone / power).and_modify(|v| *v += *val).or_insert(*val);
-                newstones.entry(stone % power).and_modify(|v| *v += *val).or_insert(*val);
+                newstones
+                    .entry(stone / power)
+                    .and_modify(|v| *v += *val)
+                    .or_insert(*val);
+                newstones
+                    .entry(stone % power)
+                    .and_modify(|v| *v += *val)
+                    .or_insert(*val);
             } else {
-                newstones.entry(stone * 2024).and_modify(|v| *v += *val).or_insert(*val);
+                newstones
+                    .entry(stone * 2024)
+                    .and_modify(|v| *v += *val)
+                    .or_insert(*val);
             }
         }
     }

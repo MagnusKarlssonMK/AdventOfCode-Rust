@@ -16,7 +16,10 @@ impl InputData {
         let nbrs: Vec<&str> = input.lines().collect();
         Self {
             width: nbrs[0].len(),
-            numbers: nbrs.iter().map(|n| usize::from_str_radix(n, 2).unwrap()).collect(),
+            numbers: nbrs
+                .iter()
+                .map(|n| usize::from_str_radix(n, 2).unwrap())
+                .collect(),
         }
     }
 
@@ -25,7 +28,11 @@ impl InputData {
         let mut epsilon: usize = 0;
         for bit in 0..self.width {
             let mask: usize = 1 << bit;
-            let onecount: usize = self.numbers.iter().map(|nbr| if nbr & mask > 0 {1} else {0} ).sum();
+            let onecount: usize = self
+                .numbers
+                .iter()
+                .map(|nbr| if nbr & mask > 0 { 1 } else { 0 })
+                .sum();
             if onecount > self.numbers.len() / 2 {
                 gamma |= mask;
             } else {
@@ -86,7 +93,8 @@ impl InputData {
                 }
             }
         }
-        self.numbers[*oxygen_candidates.iter().next().unwrap()] * self.numbers[*scrubber_candidates.iter().next().unwrap()]
+        self.numbers[*oxygen_candidates.iter().next().unwrap()]
+            * self.numbers[*scrubber_candidates.iter().next().unwrap()]
     }
 }
 
@@ -96,14 +104,18 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010");
+        let testdata = String::from(
+            "00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part1(), 198);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010");
+        let testdata = String::from(
+            "00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part2(), 230);
     }

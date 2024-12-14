@@ -9,7 +9,7 @@ pub fn solve(input: &str) {
 
 enum Rotation {
     Left,
-    Right
+    Right,
 }
 
 impl Rotation {
@@ -23,17 +23,19 @@ impl Rotation {
 }
 
 struct InputData {
-    instructions: Vec<(Rotation, i32)>
+    instructions: Vec<(Rotation, i32)>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { instructions: input.split(", ")
-            .map(|word| {
-                let (left, right) = word.split_at(1);
-                (Rotation::from(left), right.parse().unwrap())
-            })
-            .collect()
+        Self {
+            instructions: input
+                .split(", ")
+                .map(|word| {
+                    let (left, right) = word.split_at(1);
+                    (Rotation::from(left), right.parse().unwrap())
+                })
+                .collect(),
         }
     }
 
@@ -43,10 +45,10 @@ impl InputData {
         for (r, i) in &self.instructions {
             direction = match r {
                 Rotation::Left => direction.rotate_left(),
-                Rotation::Right => direction.rotate_right()
+                Rotation::Right => direction.rotate_right(),
             };
             pos += direction * *i;
-        };
+        }
         pos.manhattan(&ORIGIN)
     }
 
@@ -58,7 +60,7 @@ impl InputData {
         for (r, i) in &self.instructions {
             direction = match r {
                 Rotation::Left => direction.rotate_left(),
-                Rotation::Right => direction.rotate_right()
+                Rotation::Right => direction.rotate_right(),
             };
             for _ in 0..*i {
                 pos += direction;
@@ -67,7 +69,7 @@ impl InputData {
                 }
                 seen.insert(pos);
             }
-        };
+        }
         0
     }
 }

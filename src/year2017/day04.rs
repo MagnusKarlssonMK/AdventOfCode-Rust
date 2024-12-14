@@ -7,39 +7,49 @@ pub fn solve(input: &str) {
 }
 
 struct InputData<'a> {
-    passphrases: Vec<Vec<&'a str>>
+    passphrases: Vec<Vec<&'a str>>,
 }
 
 impl<'a> InputData<'a> {
     fn parse_input(input: &'a str) -> Self {
-        Self { passphrases: input.lines()
-            .map(|phrase| phrase.split_whitespace()
-                .collect())
-            .collect() }
+        Self {
+            passphrases: input
+                .lines()
+                .map(|phrase| phrase.split_whitespace().collect())
+                .collect(),
+        }
     }
 
     fn solve_part1(&self) -> usize {
         let mut seen: HashSet<String> = HashSet::new();
-        self.passphrases.iter()
+        self.passphrases
+            .iter()
             .filter(|phrase| {
                 seen.clear();
-                phrase.iter().all(|password| seen.insert(password.to_string()))
+                phrase
+                    .iter()
+                    .all(|password| seen.insert(password.to_string()))
             })
             .count()
     }
 
     fn solve_part2(&self) -> usize {
         let mut seen: HashSet<String> = HashSet::new();
-        self.passphrases.iter()
+        self.passphrases
+            .iter()
             .filter(|phrase| {
-                let sorted_pwds: Vec<String> = phrase.iter()
+                let sorted_pwds: Vec<String> = phrase
+                    .iter()
                     .map(|password| {
                         let mut sorted_pwd: Vec<char> = password.chars().collect();
                         sorted_pwd.sort_unstable();
                         sorted_pwd.iter().collect()
-                    }).collect();
+                    })
+                    .collect();
                 seen.clear();
-                sorted_pwds.iter().all(|password| seen.insert(password.to_string()))
+                sorted_pwds
+                    .iter()
+                    .all(|password| seen.insert(password.to_string()))
             })
             .count()
     }

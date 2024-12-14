@@ -5,43 +5,46 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    gifts: Vec<(usize, usize, usize)>
+    gifts: Vec<(usize, usize, usize)>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
         // Parse and store the dimensions sorted low to high - the order in the input
         // doesn't matter, so save some effort later by sorting it already here.
-        Self { gifts: input.lines()
-            .map(|line| {
-                let mut sides = line.split('x')
-                                                .map(|digit| digit.parse::<usize>().unwrap())
-                                                .collect::<Vec<_>>();
-                sides.sort_unstable();
-                if sides.len() != 3 { (0, 0, 0) } else { (sides[0], sides[1], sides[2]) }
-            })
-            .collect() }
+        Self {
+            gifts: input
+                .lines()
+                .map(|line| {
+                    let mut sides = line
+                        .split('x')
+                        .map(|digit| digit.parse::<usize>().unwrap())
+                        .collect::<Vec<_>>();
+                    sides.sort_unstable();
+                    if sides.len() != 3 {
+                        (0, 0, 0)
+                    } else {
+                        (sides[0], sides[1], sides[2])
+                    }
+                })
+                .collect(),
+        }
     }
 
     fn solve_part1(&self) -> usize {
         self.gifts
             .iter()
-            .map(|(l, w, h)|
-                3 * (l * w) + 2 * h * (w + l)
-            )
+            .map(|(l, w, h)| 3 * (l * w) + 2 * h * (w + l))
             .sum()
     }
 
     fn solve_part2(&self) -> usize {
         self.gifts
             .iter()
-            .map(|(l, w, h)|
-                2 * (l + w) + (l * w * h)
-            )
+            .map(|(l, w, h)| 2 * (l + w) + (l * w * h))
             .sum()
     }
 }
-
 
 #[cfg(test)]
 mod tests {

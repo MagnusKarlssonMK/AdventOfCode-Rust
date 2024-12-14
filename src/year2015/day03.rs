@@ -8,22 +8,23 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    steps: Vec<Point>
+    steps: Vec<Point>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { steps: input.chars()
-                            .map(|c| {
-                                match c {
-                                    '>' => RIGHT,
-                                    '<' => LEFT,
-                                    '^' => UP,
-                                    'v' => DOWN,
-                                    _ => ORIGIN,
-                                }
-                            })
-                            .collect() }
+        Self {
+            steps: input
+                .chars()
+                .map(|c| match c {
+                    '>' => RIGHT,
+                    '<' => LEFT,
+                    '^' => UP,
+                    'v' => DOWN,
+                    _ => ORIGIN,
+                })
+                .collect(),
+        }
     }
 
     fn solve_part1(&self) -> usize {
@@ -52,7 +53,6 @@ impl InputData {
         visited.len()
     }
 }
-
 
 #[cfg(test)]
 mod tests {

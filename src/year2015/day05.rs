@@ -5,12 +5,14 @@ pub fn solve(input: &str) {
 }
 
 struct InputData<'a> {
-    santa_strings: Vec<&'a str>
+    santa_strings: Vec<&'a str>,
 }
 
 impl<'a> InputData<'a> {
     fn parse_input(input: &'a str) -> Self {
-        Self { santa_strings: input.lines().collect() }
+        Self {
+            santa_strings: input.lines().collect(),
+        }
     }
 
     fn solve_part1(&self) -> usize {
@@ -25,9 +27,12 @@ impl<'a> InputData<'a> {
                     vowel_counter += 1;
                 }
                 if let Some(prev) = previous_char {
-                    if (prev == 'a' && c == 'b') || (prev == 'c' && c == 'd') ||
-                           (prev == 'p' && c == 'q') || (prev == 'x' && c == 'y') {
-                            return false;
+                    if (prev == 'a' && c == 'b')
+                        || (prev == 'c' && c == 'd')
+                        || (prev == 'p' && c == 'q')
+                        || (prev == 'x' && c == 'y')
+                    {
+                        return false;
                     }
                     if c == prev {
                         double_char = true;
@@ -37,25 +42,34 @@ impl<'a> InputData<'a> {
             }
             vowel_counter >= 3 && double_char
         }
-        self.santa_strings.iter().filter(|word| is_nice(word)).count()
+        self.santa_strings
+            .iter()
+            .filter(|word| is_nice(word))
+            .count()
     }
 
     fn solve_part2(&self) -> usize {
         fn is_nice(word: &str) -> bool {
-            if word.chars().zip(word.chars().skip(2)).any(|(c1, c2)| c1 == c2) {
+            if word
+                .chars()
+                .zip(word.chars().skip(2))
+                .any(|(c1, c2)| c1 == c2)
+            {
                 for idx in 0..word.len() - 1 {
-                    let candidate = &word[idx..idx+2];
-                    if word[..idx].contains(candidate) || word[idx+2..].contains(candidate) {
+                    let candidate = &word[idx..idx + 2];
+                    if word[..idx].contains(candidate) || word[idx + 2..].contains(candidate) {
                         return true;
                     }
                 }
             }
             false
         }
-        self.santa_strings.iter().filter(|word| is_nice(word)).count()
+        self.santa_strings
+            .iter()
+            .filter(|word| is_nice(word))
+            .count()
     }
 }
-
 
 #[cfg(test)]
 mod tests {

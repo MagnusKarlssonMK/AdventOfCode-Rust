@@ -1,3 +1,10 @@
+//! # 2024 day 7 - Bridge Repair
+//!
+//! Solves both parts in one go through a recursive function, which attempts to
+//! fully validate each equation, and only resorts to use the concatenation 
+//! operation if it's the only way to succeed at the validation. The state of
+//! whether or not concatenation has been used combined with the calculated value
+//! is carried up through the recursion chain through the return value.
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
     let (p1, p2) = solution_data.solve();
@@ -9,12 +16,12 @@ pub fn solve(input: &str) {
 enum CalibrationResult {
     Ok(usize),
     ConcatinatedOk(usize),
-    NotOk
+    NotOk,
 }
 
 struct Equation {
     test_value: usize,
-    numbers: Vec<usize>
+    numbers: Vec<usize>,
 }
 
 impl Equation {
@@ -22,7 +29,10 @@ impl Equation {
         let (left, right) = input.split_once(": ").unwrap();
         Self {
             test_value: left.parse().unwrap(),
-            numbers: right.split_whitespace().map(|n| n.parse().unwrap()).collect()
+            numbers: right
+                .split_whitespace()
+                .map(|n| n.parse().unwrap())
+                .collect(),
         }
     }
 
@@ -57,8 +67,10 @@ impl Equation {
                 let conc_result = self.validate(total * concatinate(nbrs[0]) + nbrs[0], &nbrs[1..]);
                 match conc_result {
                     CalibrationResult::Ok(v) => return CalibrationResult::ConcatinatedOk(v),
-                    CalibrationResult::ConcatinatedOk(v) => return CalibrationResult::ConcatinatedOk(v),
-                    CalibrationResult::NotOk => ()
+                    CalibrationResult::ConcatinatedOk(v) => {
+                        return CalibrationResult::ConcatinatedOk(v)
+                    }
+                    CalibrationResult::NotOk => (),
                 }
             }
             CalibrationResult::NotOk
@@ -74,15 +86,14 @@ fn concatinate(right: usize) -> usize {
     multiplier
 }
 
-
 struct InputData {
-    equations: Vec<Equation>
+    equations: Vec<Equation>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
         Self {
-            equations: input.lines().map(Equation::parse_str).collect()
+            equations: input.lines().map(Equation::parse_str).collect(),
         }
     }
 
@@ -91,9 +102,12 @@ impl InputData {
         let mut p2 = 0;
         for eq in &self.equations {
             match eq.calibrate() {
-                CalibrationResult::Ok(v) => {p1 += v; p2 += v;},
+                CalibrationResult::Ok(v) => {
+                    p1 += v;
+                    p2 += v;
+                }
                 CalibrationResult::ConcatinatedOk(v) => p2 += v,
-                CalibrationResult::NotOk => ()
+                CalibrationResult::NotOk => (),
             }
         }
         (p1, p2)
@@ -107,7 +121,7 @@ mod tests {
     #[test]
     fn part1_example_1() {
         let testdata = String::from(
-"190: 10 19
+            "190: 10 19
 3267: 81 40 27
 83: 17 5
 156: 15 6
@@ -115,7 +129,8 @@ mod tests {
 161011: 16 10 13
 192: 17 8 14
 21037: 9 7 18 13
-292: 11 6 16 20");
+292: 11 6 16 20",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 3749);

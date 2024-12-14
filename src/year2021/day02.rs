@@ -8,9 +8,9 @@ pub fn solve(input: &str) {
 
 #[derive(Debug)]
 enum Command {
-    Up (usize),
-    Down (usize),
-    Forward (usize),
+    Up(usize),
+    Down(usize),
+    Forward(usize),
 }
 
 impl Command {
@@ -21,21 +21,19 @@ impl Command {
             'u' => Self::Up(val),
             'd' => Self::Down(val),
             'f' => Self::Forward(val),
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
 
 struct InputData {
-    instructions: Vec<Command>
+    instructions: Vec<Command>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { instructions:
-            input.lines()
-                .map(Command::from)
-                .collect()
+        Self {
+            instructions: input.lines().map(Command::from).collect(),
         }
     }
 

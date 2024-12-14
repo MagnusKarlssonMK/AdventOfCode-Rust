@@ -16,15 +16,13 @@ fn calc_mass(mass: &usize, countfuel: bool) -> usize {
 }
 
 struct InputData {
-    data: Vec<usize>
+    data: Vec<usize>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { data:
-            input.lines()
-                .map(|line| line.parse().unwrap())
-                .collect()
+        Self {
+            data: input.lines().map(|line| line.parse().unwrap()).collect(),
         }
     }
 

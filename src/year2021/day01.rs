@@ -5,15 +5,13 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    measurements: Vec<usize>
+    measurements: Vec<usize>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { measurements:
-            input.lines()
-                .map(|line| line.parse().unwrap())
-                .collect()
+        Self {
+            measurements: input.lines().map(|line| line.parse().unwrap()).collect(),
         }
     }
 

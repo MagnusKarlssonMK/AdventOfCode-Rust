@@ -1,4 +1,4 @@
-use std:: collections::HashMap;
+use std::collections::HashMap;
 
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
@@ -7,13 +7,13 @@ pub fn solve(input: &str) {
 }
 
 struct InputData<'a> {
-    ids: Vec<&'a str>
+    ids: Vec<&'a str>,
 }
 
 impl<'a> InputData<'a> {
     fn parse_input(input: &'a str) -> Self {
         Self {
-            ids: input.lines().collect()
+            ids: input.lines().collect(),
         }
     }
 
@@ -28,9 +28,12 @@ impl<'a> InputData<'a> {
                 if let Some(x) = counts.get_mut(&c) {
                     match *x {
                         1 => two += 1,
-                        2 => {two -= 1; three += 1},
+                        2 => {
+                            two -= 1;
+                            three += 1
+                        }
                         3 => three -= 1,
-                        _ => ()
+                        _ => (),
                     }
                     *x += 1;
                 } else {
@@ -48,12 +51,12 @@ impl<'a> InputData<'a> {
     }
 
     fn solve_part2(&self) -> String {
-        for left in 0..self.ids.len()-1 {
+        for left in 0..self.ids.len() - 1 {
             for right in 1..self.ids.len() {
                 let common: String = self.ids[left]
                     .chars()
                     .zip(self.ids[right].chars())
-                    .filter_map(|(lc, rc)| if lc == rc { Some(lc)} else { None })
+                    .filter_map(|(lc, rc)| if lc == rc { Some(lc) } else { None })
                     .collect();
                 if common.len() == self.ids[left].len() - 1 {
                     return common;

@@ -5,38 +5,40 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    spreadheet: Vec<Vec<usize>>
+    spreadheet: Vec<Vec<usize>>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { spreadheet: input
-            .lines()
-            .map(|row| {
-                let mut values: Vec<_> = row
-                    .split_whitespace()
-                    .map(|nbr|
-                        nbr
-                        .parse()
-                        .unwrap())
-                    .collect();
-                values.sort_unstable();
-                values })
-            .collect() }
+        Self {
+            spreadheet: input
+                .lines()
+                .map(|row| {
+                    let mut values: Vec<_> = row
+                        .split_whitespace()
+                        .map(|nbr| nbr.parse().unwrap())
+                        .collect();
+                    values.sort_unstable();
+                    values
+                })
+                .collect(),
+        }
     }
 
     fn solve_part1(&self) -> usize {
-        self.spreadheet.iter()
+        self.spreadheet
+            .iter()
             .map(|row| row.last().unwrap() - row.first().unwrap())
             .sum()
     }
 
     fn solve_part2(&self) -> usize {
-        self.spreadheet.iter()
+        self.spreadheet
+            .iter()
             .map(|row| {
                 let mut result: usize = 0;
                 for i in 0..row.len() - 1 {
-                    for j in i+1..row.len() {
+                    for j in i + 1..row.len() {
                         if row[j] % row[i] == 0 {
                             result += row[j] / row[i];
                             break;
@@ -48,7 +50,6 @@ impl InputData {
             .sum()
     }
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -22,7 +22,7 @@ impl Hand {
                 'r' => red += nbr.parse::<usize>().unwrap(),
                 'b' => blue += nbr.parse::<usize>().unwrap(),
                 'g' => green += nbr.parse::<usize>().unwrap(),
-                _ => unreachable!()
+                _ => unreachable!(),
             }
         }
         Self { red, green, blue }
@@ -40,7 +40,8 @@ impl Hand {
         Self {
             red: self.red.max(other.red),
             blue: self.blue.max(other.blue),
-            green: self.green.max(other.green) }
+            green: self.green.max(other.green),
+        }
     }
 }
 
@@ -55,7 +56,8 @@ impl Game {
         let (_, gid) = left.split_once(' ').unwrap();
         Self {
             game_id: gid.parse().unwrap(),
-            hands: right.split("; ").map(Hand::parse).collect() }
+            hands: right.split("; ").map(Hand::parse).collect(),
+        }
     }
 
     fn is_valid(&self) -> bool {
@@ -63,7 +65,11 @@ impl Game {
     }
 
     fn get_power(&self) -> usize {
-        let mut minimum_required = Hand {red: 0, blue: 0, green: 0};
+        let mut minimum_required = Hand {
+            red: 0,
+            blue: 0,
+            green: 0,
+        };
         for h in self.hands.iter() {
             minimum_required = h.get_max(&minimum_required);
         }
@@ -72,18 +78,19 @@ impl Game {
 }
 
 struct InputData {
-    games: Vec<Game>
+    games: Vec<Game>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
         Self {
-            games: input.lines().map(Game::parse).collect()
+            games: input.lines().map(Game::parse).collect(),
         }
     }
 
     fn solve_part1(&self) -> usize {
-        self.games.iter()
+        self.games
+            .iter()
             .filter(|g| g.is_valid())
             .map(|g| g.game_id)
             .sum()
@@ -101,11 +108,12 @@ mod tests {
     #[test]
     fn part1_example_1() {
         let testdata = String::from(
-"Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+            "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
 Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
 Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
 Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
-Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green");
+Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part1(), 8);
     }
@@ -113,11 +121,12 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green");
     #[test]
     fn part2_example_1() {
         let testdata = String::from(
-"Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+            "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
 Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
 Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
 Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
-Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green");
+Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part2(), 2286);
     }

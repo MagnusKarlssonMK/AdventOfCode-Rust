@@ -61,21 +61,25 @@ impl Instruction {
 const GRIDSIZE: usize = 1000;
 
 struct InputData {
-    santa_instructions: Vec<Instruction>
+    santa_instructions: Vec<Instruction>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { santa_instructions: input.lines().map(Instruction::from).collect() }
+        Self {
+            santa_instructions: input.lines().map(Instruction::from).collect(),
+        }
     }
 
     fn solve_part1(&self) -> usize {
         let mut grid = vec![vec![false; GRIDSIZE]; GRIDSIZE];
         for instr in self.santa_instructions.iter() {
             for x in instr.area.x_range.0..=instr.area.x_range.1 {
-                for g_y in grid.iter_mut()
-                                            .take(instr.area.y_range.1 + 1)
-                                            .skip(instr.area.y_range.0) {
+                for g_y in grid
+                    .iter_mut()
+                    .take(instr.area.y_range.1 + 1)
+                    .skip(instr.area.y_range.0)
+                {
                     g_y[x] = match instr.op {
                         Operation::TurnOff => false,
                         Operation::TurnOn => true,
@@ -84,18 +88,28 @@ impl InputData {
                 }
             }
         }
-        grid.iter().map(|y| y.iter().filter(|&&state| state).count()).sum()
+        grid.iter()
+            .map(|y| y.iter().filter(|&&state| state).count())
+            .sum()
     }
 
     fn solve_part2(&self) -> usize {
         let mut grid = vec![vec![0; GRIDSIZE]; GRIDSIZE];
         for instr in self.santa_instructions.iter() {
             for x in instr.area.x_range.0..=instr.area.x_range.1 {
-                for g_y in grid.iter_mut()
-                                                .take(instr.area.y_range.1 + 1)
-                                                .skip(instr.area.y_range.0) {
+                for g_y in grid
+                    .iter_mut()
+                    .take(instr.area.y_range.1 + 1)
+                    .skip(instr.area.y_range.0)
+                {
                     g_y[x] = match instr.op {
-                        Operation::TurnOff => if g_y[x] > 0 {g_y[x] - 1} else {0},
+                        Operation::TurnOff => {
+                            if g_y[x] > 0 {
+                                g_y[x] - 1
+                            } else {
+                                0
+                            }
+                        }
                         Operation::TurnOn => g_y[x] + 1,
                         Operation::Toggle => g_y[x] + 2,
                     }
@@ -113,7 +127,7 @@ mod tests {
     fn part1_example_1() {
         let testdata = String::from("turn on 0,0 through 999,999");
         let solution_data = InputData::parse_input(&testdata);
-        assert_eq!(solution_data.solve_part1(), 1000*1000);
+        assert_eq!(solution_data.solve_part1(), 1000 * 1000);
     }
 
     #[test]
@@ -125,9 +139,10 @@ mod tests {
 
     #[test]
     fn part1_example_3() {
-        let testdata = String::from("turn on 0,0 through 999,999\nturn off 499,499 through 500,500");
+        let testdata =
+            String::from("turn on 0,0 through 999,999\nturn off 499,499 through 500,500");
         let solution_data = InputData::parse_input(&testdata);
-        assert_eq!(solution_data.solve_part1(), 1000*1000 - 4);
+        assert_eq!(solution_data.solve_part1(), 1000 * 1000 - 4);
     }
 
     #[test]

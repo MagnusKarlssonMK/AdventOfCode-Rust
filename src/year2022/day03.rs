@@ -7,34 +7,40 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    rucksacks: Vec<Vec<usize>>
+    rucksacks: Vec<Vec<usize>>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { rucksacks: input.lines()
-                .map(|line| line.chars()
-                    .map(|c| {
-                        if c.is_uppercase() {
-                            27 + (c as usize - 'A' as usize)
-                        } else {
-                            1 + (c as usize - 'a' as usize)
-                        }
-                    })
-                    .collect())
-                .collect()
+        Self {
+            rucksacks: input
+                .lines()
+                .map(|line| {
+                    line.chars()
+                        .map(|c| {
+                            if c.is_uppercase() {
+                                27 + (c as usize - 'A' as usize)
+                            } else {
+                                1 + (c as usize - 'a' as usize)
+                            }
+                        })
+                        .collect()
+                })
+                .collect(),
         }
     }
 
     fn solve_part1(&self) -> usize {
-        self.rucksacks.iter()
+        self.rucksacks
+            .iter()
             .map(|rucksack| {
                 let (left, right) = rucksack.split_at(rucksack.len() / 2);
                 let a: HashSet<usize> = HashSet::from_iter(left.to_vec());
                 let b: HashSet<usize> = HashSet::from_iter(right.to_vec());
                 let common = a.intersection(&b).next().unwrap();
                 *common
-            }).sum()
+            })
+            .sum()
     }
 
     fn solve_part2(&self) -> usize {

@@ -7,7 +7,7 @@ pub fn solve(input: &str) {
 }
 
 struct InputData<'a> {
-    secret_key: &'a str
+    secret_key: &'a str,
 }
 
 impl<'a> InputData<'a> {
@@ -36,7 +36,6 @@ impl<'a> InputData<'a> {
         self.find_lowest_number("000000")
     }
 }
-
 
 #[cfg(test)]
 mod tests {

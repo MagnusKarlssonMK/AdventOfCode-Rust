@@ -7,24 +7,27 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    memorybanks: Vec<i32>
+    memorybanks: Vec<i32>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { memorybanks: input
-            .split_whitespace()
-            .map(|nbr| nbr
-                .parse()
-                .unwrap())
-            .collect() }
+        Self {
+            memorybanks: input
+                .split_whitespace()
+                .map(|nbr| nbr.parse().unwrap())
+                .collect(),
+        }
     }
 
     fn rebalance(&mut self) {
-        let mut maxidx = self.memorybanks.iter()
+        let mut maxidx = self
+            .memorybanks
+            .iter()
             .enumerate()
-            .min_by_key(| (_, &val) | -val)
-            .unwrap().0;
+            .min_by_key(|(_, &val)| -val)
+            .unwrap()
+            .0;
         // Note - need to use min-by and negate the key to get the first index, since
         // max-by returns the last index in case of duplicate max values
         let mut maxval = self.memorybanks[maxidx];

@@ -9,12 +9,15 @@ pub fn solve(input: &str) {
 #[derive(Debug)]
 struct Program {
     weight: usize,
-    leafs: Vec<String>
+    leafs: Vec<String>,
 }
 
 impl Program {
     fn from(line: &str) -> Self {
-        let tokens: Vec<String> = line.split_whitespace().map(|token| token.to_string()).collect();
+        let tokens: Vec<String> = line
+            .split_whitespace()
+            .map(|token| token.to_string())
+            .collect();
         let mut leaflist: Vec<String> = Vec::new();
         if tokens.len() > 2 {
             for t in tokens.iter().skip(2) {
@@ -23,25 +26,31 @@ impl Program {
         }
         Self {
             weight: tokens[0]
-                .strip_prefix('(').unwrap()
-                .strip_suffix(')').unwrap()
-                .parse().unwrap(),
-            leafs: leaflist }
+                .strip_prefix('(')
+                .unwrap()
+                .strip_suffix(')')
+                .unwrap()
+                .parse()
+                .unwrap(),
+            leafs: leaflist,
+        }
     }
 }
 
 struct InputData {
     programs: HashMap<String, Program>,
-    root: String
+    root: String,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        let name_and_prog_list: Vec<(String, Program)> = input.lines()
+        let name_and_prog_list: Vec<(String, Program)> = input
+            .lines()
             .map(|line| {
                 let (name, rest) = line.split_once(' ').unwrap();
                 (name.to_string(), Program::from(rest))
-            }).collect();
+            })
+            .collect();
         let mut parents: HashMap<String, String> = HashMap::new();
         for (p_name, prog) in name_and_prog_list.iter() {
             for leaf_name in prog.leafs.iter() {
@@ -56,7 +65,8 @@ impl InputData {
         }
         Self {
             programs: HashMap::from_iter(name_and_prog_list),
-            root: root.unwrap() }
+            root: root.unwrap(),
+        }
     }
 
     fn solve_part1(&self) -> String {
@@ -77,7 +87,8 @@ impl InputData {
 
         for leaf in self.programs[prog].leafs.iter() {
             let (w, c) = self.get_weight_and_correction(leaf);
-            leafweights.entry(w)
+            leafweights
+                .entry(w)
                 .or_default()
                 //.or_insert_with(Vec::new)
                 .push(leaf.to_string());
@@ -88,8 +99,10 @@ impl InputData {
         let leafcount: usize = leafweights.values().map(|v| v.len()).sum();
         if correction != 0 {
             // A node further down the tree has reported a correction, just propagate upwards
-            return (self.programs[prog].weight + (leafweights.keys().sum::<usize>() * leafcount),
-                    correction);
+            return (
+                self.programs[prog].weight + (leafweights.keys().sum::<usize>() * leafcount),
+                correction,
+            );
         } else if leafweights.len() > 1 {
             // These leafs are not balanced; figure out which one is bad and calculate the required correction
             let mut correct_weight: usize = 0;
@@ -103,10 +116,16 @@ impl InputData {
                     bad_node = nodes.first().unwrap().to_string();
                 }
             }
-            return (self.programs[prog].weight + (correct_weight * leafcount),
-                    correct_weight as isize - (bad_weight as isize - self.programs[&bad_node].weight as isize));
-        }  // else - all leafs have reported the same weight and are thus balanced
-        (self.programs[prog].weight + (leafweights.keys().sum::<usize>() * leafcount), 0)
+            return (
+                self.programs[prog].weight + (correct_weight * leafcount),
+                correct_weight as isize
+                    - (bad_weight as isize - self.programs[&bad_node].weight as isize),
+            );
+        } // else - all leafs have reported the same weight and are thus balanced
+        (
+            self.programs[prog].weight + (leafweights.keys().sum::<usize>() * leafcount),
+            0,
+        )
     }
 }
 
@@ -116,7 +135,7 @@ mod tests {
     #[test]
     fn part1_example_1() {
         let testdata = String::from(
-"pbga (66)
+            "pbga (66)
 xhth (57)
 ebii (61)
 havc (66)
@@ -128,7 +147,8 @@ tknk (41) -> ugml, padx, fwft
 jptl (61)
 ugml (68) -> gyxo, ebii, jptl
 gyxo (61)
-cntj (57)");
+cntj (57)",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part1(), String::from("tknk"));
     }
@@ -136,7 +156,7 @@ cntj (57)");
     #[test]
     fn part2_example_1() {
         let testdata = String::from(
-"pbga (66)
+            "pbga (66)
 xhth (57)
 ebii (61)
 havc (66)
@@ -148,7 +168,8 @@ tknk (41) -> ugml, padx, fwft
 jptl (61)
 ugml (68) -> gyxo, ebii, jptl
 gyxo (61)
-cntj (57)");
+cntj (57)",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part2(), 60);
     }

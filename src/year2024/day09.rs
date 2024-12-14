@@ -1,3 +1,12 @@
+//! # 2024 day 9 - Disk Fragmenter
+//! 
+//! ## Part 1
+//! 
+//! Some index juggling...
+//! 
+//! ## Part 2
+//! 
+//! Some slightly different index juggling...
 use std::collections::VecDeque;
 
 pub fn solve(input: &str) {
@@ -8,24 +17,29 @@ pub fn solve(input: &str) {
 
 struct MemBlock {
     start: usize,
-    length: usize
+    length: usize,
 }
 
 struct InputData {
-    disk_map: Vec<usize>
+    disk_map: Vec<usize>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
         Self {
-            disk_map: input.chars().map(|c| c.to_digit(10).unwrap() as usize).collect()
+            disk_map: input
+                .chars()
+                .map(|c| c.to_digit(10).unwrap() as usize)
+                .collect(),
         }
     }
 
     fn solve_part1(&self) -> usize {
         let mut left_idx = 0;
         let mut right_idx = self.disk_map.len() - 1;
-        if right_idx % 2 == 1 { right_idx -= 1;}  // Just in case input is even length
+        if right_idx % 2 == 1 {
+            right_idx -= 1;
+        } // Just in case input is even length
         let mut right_counter = self.disk_map[right_idx];
         let mut target_idx = 0;
         let mut checksum = 0;
@@ -58,11 +72,15 @@ impl InputData {
     }
 
     fn solve_part2(&self) -> usize {
-        let mut emptyblocks: VecDeque<MemBlock> = VecDeque::with_capacity((1 + self.disk_map.len()) / 2);
+        let mut emptyblocks: VecDeque<MemBlock> =
+            VecDeque::with_capacity((1 + self.disk_map.len()) / 2);
         let mut mempos = 0;
         for (i, v) in self.disk_map.iter().enumerate() {
             if i % 2 == 1 && *v > 0 {
-                emptyblocks.push_back(MemBlock { start: mempos, length: *v });
+                emptyblocks.push_back(MemBlock {
+                    start: mempos,
+                    length: *v,
+                });
             }
             mempos += v;
         }
@@ -76,17 +94,23 @@ impl InputData {
                         break;
                     }
                     if emptyblocks[eidx].length >= *memlen {
-                        checksum += (emptyblocks[eidx].start..emptyblocks[eidx].start + *memlen).map(|i| i * memid / 2).sum::<usize>();
+                        checksum += (emptyblocks[eidx].start..emptyblocks[eidx].start + *memlen)
+                            .map(|i| i * memid / 2)
+                            .sum::<usize>();
                         if emptyblocks[eidx].length - memlen > 0 {
-                            emptyblocks[eidx] = MemBlock {  start: emptyblocks[eidx].start + *memlen,
-                                                            length: emptyblocks[eidx].length - memlen };
+                            emptyblocks[eidx] = MemBlock {
+                                start: emptyblocks[eidx].start + *memlen,
+                                length: emptyblocks[eidx].length - memlen,
+                            };
                         } else {
                             emptyblocks.remove(eidx);
                         }
                         continue 'outer;
                     }
                 }
-                checksum += (mempos..mempos + *memlen).map(|i| i * memid / 2).sum::<usize>();
+                checksum += (mempos..mempos + *memlen)
+                    .map(|i| i * memid / 2)
+                    .sum::<usize>();
             }
         }
         checksum

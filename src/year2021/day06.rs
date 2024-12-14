@@ -11,11 +11,12 @@ struct InputData {
 impl InputData {
     fn parse_input(input: &str) -> Self {
         let mut states = [0_usize; 9];
-        input.split(',')
+        input
+            .split(',')
             .map(|c| c.parse::<usize>().unwrap())
             .for_each(|n| states[n] += 1);
         Self {
-            fish_states: states
+            fish_states: states,
         }
     }
 

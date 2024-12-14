@@ -1,5 +1,5 @@
-use std::cmp::Ordering;
 use super::intcode::*;
+use std::cmp::Ordering;
 
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
@@ -8,13 +8,13 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    program: Vec<usize>
+    program: Vec<usize>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
         Self {
-            program: input.split(',').map(|n| n.parse().unwrap()).collect()
+            program: input.split(',').map(|n| n.parse().unwrap()).collect(),
         }
     }
 
@@ -51,7 +51,7 @@ impl InputData {
                         verb_max = verb - 1;
                         verb = (verb - 1 + verb_min) / 2;
                     }
-                },
+                }
                 Ordering::Less => {
                     noun_min = noun + 1;
                     if noun < noun_max {

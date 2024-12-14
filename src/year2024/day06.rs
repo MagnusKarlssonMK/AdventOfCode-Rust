@@ -1,5 +1,15 @@
-use std::collections::HashSet;
+//! # 2024 day 6 - Guard Gallivant
+//!
+//! Solves both parts in one function, since the result from part 1 is
+//! used for part 2 to determine possible roadblock positions.
+//!
+//! Part 2 solution is brute force and crawls through the simulation one
+//! step at the time and is thus really slow. Although this method is
+//! necessary for part 1 to find all points, for part 2 it would be enough
+//! to pre-calculate a graph and directly jump from one roadblock to the
+//! next. On todo-list!
 use crate::aoc_util::point::*;
+use std::collections::HashSet;
 
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
@@ -12,7 +22,7 @@ struct InputData {
     obstacles: HashSet<Point>,
     x_max: i32,
     y_max: i32,
-    guard_start_pos: Point
+    guard_start_pos: Point,
 }
 
 impl InputData {
@@ -38,7 +48,7 @@ impl InputData {
             obstacles,
             x_max,
             y_max,
-            guard_start_pos: start.unwrap()
+            guard_start_pos: start.unwrap(),
         }
     }
 
@@ -81,7 +91,6 @@ impl InputData {
 
         (visited.len(), p2)
     }
-
 }
 
 #[cfg(test)]
@@ -90,7 +99,8 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("....#.....
+        let testdata = String::from(
+            "....#.....
 .........#
 ..........
 ..#.......
@@ -99,7 +109,8 @@ mod tests {
 .#..^.....
 ........#.
 #.........
-......#...");
+......#...",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 41);

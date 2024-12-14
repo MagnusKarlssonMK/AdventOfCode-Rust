@@ -5,20 +5,21 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    directions: Vec<isize>
+    directions: Vec<isize>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { directions: input.chars()
-                .map(|c| {
-                    match &c {
-                        '(' => 1,
-                        ')' => -1,
-                        _ => 0,
-                    }
+        Self {
+            directions: input
+                .chars()
+                .map(|c| match &c {
+                    '(' => 1,
+                    ')' => -1,
+                    _ => 0,
                 })
-                .collect() }
+                .collect(),
+        }
     }
 
     fn solve_part1(&self) -> isize {
@@ -38,7 +39,6 @@ impl InputData {
         steps
     }
 }
-
 
 #[cfg(test)]
 mod tests {

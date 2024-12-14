@@ -8,7 +8,7 @@ pub fn solve(input: &str) {
 struct Password {
     nbr_range: (usize, usize),
     letter: char,
-    password: String
+    password: String,
 }
 
 impl Password {
@@ -18,41 +18,35 @@ impl Password {
         Self {
             nbr_range: (r1.parse().unwrap(), r2.parse().unwrap()),
             letter: words.next().unwrap().trim_matches(':').parse().unwrap(),
-            password: words.next().unwrap().parse().unwrap() }
+            password: words.next().unwrap().parse().unwrap(),
+        }
     }
 
     fn is_valid_old_policy(&self) -> bool {
         (self.nbr_range.0..=self.nbr_range.1)
-            .contains(&self.password
-                .chars()
-                .filter(|c| *c == self.letter)
-                .count())
+            .contains(&self.password.chars().filter(|c| *c == self.letter).count())
     }
 
     fn is_valid_new_policy(&self) -> bool {
         if self.password.len() < self.nbr_range.0 {
             false
         } else {
-            let first = self.letter == self.password.chars()
-                .nth(self.nbr_range.0 - 1).unwrap();
-            let second = self.password.len() >= self.nbr_range.1 &&
-                self.letter == self.password.chars().nth(self.nbr_range.1 - 1).unwrap();
+            let first = self.letter == self.password.chars().nth(self.nbr_range.0 - 1).unwrap();
+            let second = self.password.len() >= self.nbr_range.1
+                && self.letter == self.password.chars().nth(self.nbr_range.1 - 1).unwrap();
             first ^ second
         }
     }
 }
 
 struct InputData {
-    passwords: Vec<Password>
+    passwords: Vec<Password>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
         Self {
-            passwords: input
-                .lines()
-                .map(Password::parse_str)
-                .collect()
+            passwords: input.lines().map(Password::parse_str).collect(),
         }
     }
 
@@ -77,18 +71,22 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("1-3 a: abcde
+        let testdata = String::from(
+            "1-3 a: abcde
 1-3 b: cdefg
-2-9 c: ccccccccc");
+2-9 c: ccccccccc",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("1-3 a: abcde
+        let testdata = String::from(
+            "1-3 a: abcde
 1-3 b: cdefg
-2-9 c: ccccccccc");
+2-9 c: ccccccccc",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part2(), 1);
     }

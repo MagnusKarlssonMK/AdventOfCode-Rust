@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use crate::aoc_util::point::*;
+use std::collections::HashSet;
 
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
@@ -15,22 +15,28 @@ impl Point {
             'L' => LEFT,
             'U' => UP,
             'D' => DOWN,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
 
 struct Wire {
-    instructions: Vec<(Point, usize)>
+    instructions: Vec<(Point, usize)>,
 }
 
 impl Wire {
     fn parse_str(input: &str) -> Self {
-        Self { instructions: input.split(',')
-            .map(|s|
-                (Point::dir_to_point(s.chars().nth(0).unwrap()),
-                 s[1..].parse().unwrap()))
-            .collect() }
+        Self {
+            instructions: input
+                .split(',')
+                .map(|s| {
+                    (
+                        Point::dir_to_point(s.chars().nth(0).unwrap()),
+                        s[1..].parse().unwrap(),
+                    )
+                })
+                .collect(),
+        }
     }
 
     fn walk(&self) -> Vec<Point> {
@@ -58,7 +64,7 @@ impl InputData {
         let (left, right) = input.split_once('\n').unwrap();
         Self {
             wire_1: Wire::parse_str(left),
-            wire_2: Wire::parse_str(right)
+            wire_2: Wire::parse_str(right),
         }
     }
 
@@ -74,7 +80,10 @@ impl InputData {
         let mut p2 = Vec::new();
         for i in intersections {
             p1.push(i.manhattan(&ORIGIN));
-            p2.push(2 + w1_points.iter().position(|n| n == i).unwrap() + w2_points.iter().position(|n| n == i).unwrap());
+            p2.push(
+                2 + w1_points.iter().position(|n| n == i).unwrap()
+                    + w2_points.iter().position(|n| n == i).unwrap(),
+            );
         }
         (*p1.iter().min().unwrap(), *p2.iter().min().unwrap())
     }
@@ -94,8 +103,10 @@ mod tests {
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from("R75,D30,R83,U83,L12,D49,R71,U7,L72
-U62,R66,U55,R34,D71,R55,D58,R83");
+        let testdata = String::from(
+            "R75,D30,R83,U83,L12,D49,R71,U7,L72
+U62,R66,U55,R34,D71,R55,D58,R83",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 159);
@@ -104,12 +115,13 @@ U62,R66,U55,R34,D71,R55,D58,R83");
 
     #[test]
     fn part1_example_3() {
-        let testdata = String::from("R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51
-U98,R91,D20,R16,D67,R40,U7,R15,U6,R7");
+        let testdata = String::from(
+            "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51
+U98,R91,D20,R16,D67,R40,U7,R15,U6,R7",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 135);
         assert_eq!(p2, 410);
     }
-
 }

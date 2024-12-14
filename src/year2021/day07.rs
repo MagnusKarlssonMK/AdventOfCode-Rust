@@ -20,37 +20,38 @@ fn get_mean(nbrs: &[usize]) -> usize {
 }
 
 struct InputData {
-    crabs: Vec<usize>
+    crabs: Vec<usize>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
         Self {
-            crabs: input.split(',').map(|n| n.parse().unwrap()).collect()
+            crabs: input.split(',').map(|n| n.parse().unwrap()).collect(),
         }
     }
 
     fn get_scaling_cost(&self, cal_nbr: usize) -> usize {
-        let scale = |x: usize| { x * (x + 1) / 2 };
-        self.crabs.iter()
-            .map(|crab|
-                scale((*crab as i32 - cal_nbr as i32).unsigned_abs() as usize))
+        let scale = |x: usize| x * (x + 1) / 2;
+        self.crabs
+            .iter()
+            .map(|crab| scale((*crab as i32 - cal_nbr as i32).unsigned_abs() as usize))
             .sum()
     }
 
     fn solve_part1(&self) -> usize {
         let cal_nbr = get_median(&self.crabs);
-        self.crabs.iter()
-            .map(|crab|
-                (*crab as i32 - cal_nbr as i32).unsigned_abs() as usize)
+        self.crabs
+            .iter()
+            .map(|crab| (*crab as i32 - cal_nbr as i32).unsigned_abs() as usize)
             .sum()
     }
 
     fn solve_part2(&self) -> usize {
         let distance = get_mean(&self.crabs);
         self.get_scaling_cost(distance).min(
-            self.get_scaling_cost(distance - 1).min(
-                self.get_scaling_cost(distance + 1)))
+            self.get_scaling_cost(distance - 1)
+                .min(self.get_scaling_cost(distance + 1)),
+        )
     }
 }
 

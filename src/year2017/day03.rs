@@ -1,5 +1,5 @@
 use crate::aoc_util::point;
-use std::collections::{HashSet, HashMap};
+use std::collections::{HashMap, HashSet};
 
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
@@ -8,12 +8,14 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    puzzle_input: usize
+    puzzle_input: usize,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { puzzle_input: input.parse().unwrap() }
+        Self {
+            puzzle_input: input.parse().unwrap(),
+        }
     }
 
     fn solve_part1(&self) -> usize {
@@ -61,7 +63,6 @@ impl InputData {
         value
     }
 }
-
 
 #[cfg(test)]
 mod tests {

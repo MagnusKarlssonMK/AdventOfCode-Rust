@@ -1,3 +1,13 @@
+//! # 2024 day 1 - Historian Hysteria
+//!
+//! ## Part 1
+//! Store the two lists in sorted vectors, then simply zip them together
+//! and calculate the differences between each pair.
+//!
+//! ## Part 2
+//! Make use of the already sorted lists, and iterate over the left side.
+//! Keep track of the index of the last element used on the right side
+//! to minimize the amount of looping on the right side.
 use std::cmp::Ordering;
 
 pub fn solve(input: &str) {
@@ -8,7 +18,7 @@ pub fn solve(input: &str) {
 
 struct InputData {
     left: Vec<usize>,
-    right: Vec<usize>
+    right: Vec<usize>,
 }
 
 impl InputData {
@@ -26,7 +36,8 @@ impl InputData {
     }
 
     fn solve_part1(&self) -> usize {
-        self.left.iter()
+        self.left
+            .iter()
             .zip(self.right.iter())
             .map(|(l, r)| l.abs_diff(*r))
             .sum()
@@ -34,17 +45,20 @@ impl InputData {
 
     fn solve_part2(&self) -> usize {
         let mut right_idx = 0;
-        self.left.iter().map(|left_nbr| {
-            let mut score = 0;
-            for right_nbr in self.right.iter().skip(right_idx) {
-                match right_nbr.cmp(left_nbr) {
-                    Ordering::Greater => break,
-                    Ordering::Equal => score += left_nbr,
-                    Ordering::Less => right_idx += 1,
+        self.left
+            .iter()
+            .map(|left_nbr| {
+                let mut score = 0;
+                for right_nbr in self.right.iter().skip(right_idx) {
+                    match right_nbr.cmp(left_nbr) {
+                        Ordering::Greater => break,
+                        Ordering::Equal => score += left_nbr,
+                        Ordering::Less => right_idx += 1,
+                    }
                 }
-            }
-            score
-        }).sum()
+                score
+            })
+            .sum()
     }
 }
 
@@ -55,12 +69,13 @@ mod tests {
     #[test]
     fn part1_example_1() {
         let testdata = String::from(
-"3   4
+            "3   4
 4   3
 2   5
 1   3
 3   9
-3   3");
+3   3",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part1(), 11);
     }
@@ -68,12 +83,13 @@ mod tests {
     #[test]
     fn part2_example_1() {
         let testdata = String::from(
-"3   4
+            "3   4
 4   3
 2   5
 1   3
 3   9
-3   3");
+3   3",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part2(), 31);
     }

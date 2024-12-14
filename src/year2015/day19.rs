@@ -8,7 +8,7 @@ pub fn solve(input: &str) {
 
 struct InputData<'a> {
     replacements: HashMap<String, Vec<String>>,
-    molecule: &'a str
+    molecule: &'a str,
 }
 
 impl<'a> InputData<'a> {
@@ -17,13 +17,14 @@ impl<'a> InputData<'a> {
         let mut replacements: HashMap<String, Vec<String>> = HashMap::new();
         for line in r.lines() {
             let (left, right) = line.split_once(" => ").unwrap();
-            replacements.entry(left.to_string())
+            replacements
+                .entry(left.to_string())
                 .and_modify(|v| v.push(right.to_string()))
                 .or_insert(vec![right.to_string()]);
         }
         Self {
             replacements,
-            molecule
+            molecule,
         }
     }
 
@@ -33,9 +34,8 @@ impl<'a> InputData<'a> {
             for replacement in v.iter() {
                 for (i, _) in self.molecule.match_indices(replaced) {
                     let j = i + replaced.len();
-                    altered.insert(self.molecule[..i].to_string() +
-                                   replacement +
-                                   &self.molecule[j..]);
+                    altered
+                        .insert(self.molecule[..i].to_string() + replacement + &self.molecule[j..]);
                 }
             }
         }
@@ -43,7 +43,9 @@ impl<'a> InputData<'a> {
     }
 
     fn solve_part2(&self) -> usize {
-        let elements = self.molecule.chars()
+        let elements = self
+            .molecule
+            .chars()
             .filter(char::is_ascii_uppercase)
             .count();
         let rn = self.molecule.matches("Rn").count();
@@ -60,11 +62,12 @@ mod tests {
     #[test]
     fn part1_example_1() {
         let testdata = String::from(
-"H => HO
+            "H => HO
 H => OH
 O => HH
 
-HOH");
+HOH",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part1(), 4);
     }
@@ -72,11 +75,12 @@ HOH");
     #[test]
     fn part1_example_2() {
         let testdata = String::from(
-"H => HO
+            "H => HO
 H => OH
 O => HH
 
-HOHOHO");
+HOHOHO",
+        );
         let solution_data = InputData::parse_input(&testdata);
         assert_eq!(solution_data.solve_part1(), 7);
     }

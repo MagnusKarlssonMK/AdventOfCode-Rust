@@ -1,13 +1,16 @@
-use std::collections::HashSet;
-
-/*
-Part 1: No need to run the simulation for 100 steps, just directly calculate the positions.
-        Note that the % operator in rust gives remainder, not modulus. I.e. -3 % 10 = -3, which
-        is not what we want, so we need to use the rem_euclid function instead.
-
-Part 2: Run the simulation until all robots are in unique positions with no overlap.
-*/
+//! # 2024 day 14 - Restroom Redoubt
+//!
+//! ## Part 1:
+//!
+//! No need to run the simulation for 100 steps, just directly calculate the positions.
+//! Note that the % operator in rust gives remainder, not modulus. I.e. -3 % 10 = -3, which
+//! is not what we want, so we need to use the rem_euclid function instead.
+//!
+//! ## Part 2:
+//!
+//! Run the simulation until all robots are in unique positions with no overlap.
 use crate::aoc_util::point::*;
+use std::collections::HashSet;
 
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input, 101, 103);
@@ -17,7 +20,7 @@ pub fn solve(input: &str) {
 
 struct Robot {
     pos: Point,
-    vel: Point
+    vel: Point,
 }
 
 impl Robot {
@@ -26,8 +29,14 @@ impl Robot {
         let (left_x, left_y) = left.split_once(',').unwrap();
         let (right_x, right_y) = right.split_once(',').unwrap();
         Self {
-            pos: Point::new(left_x.strip_prefix("p=").unwrap().parse().unwrap(), left_y.parse().unwrap()),
-            vel: Point::new(right_x.strip_prefix("v=").unwrap().parse().unwrap(), right_y.parse().unwrap())
+            pos: Point::new(
+                left_x.strip_prefix("p=").unwrap().parse().unwrap(),
+                left_y.parse().unwrap(),
+            ),
+            vel: Point::new(
+                right_x.strip_prefix("v=").unwrap().parse().unwrap(),
+                right_y.parse().unwrap(),
+            ),
         }
     }
 }
@@ -35,7 +44,7 @@ impl Robot {
 struct InputData {
     robots: Vec<Robot>,
     x_max: usize,
-    y_max: usize
+    y_max: usize,
 }
 
 impl InputData {
@@ -43,7 +52,7 @@ impl InputData {
         Self {
             robots: input.lines().map(Robot::parse_input).collect(),
             x_max,
-            y_max
+            y_max,
         }
     }
 
@@ -71,7 +80,8 @@ impl InputData {
             for r in self.robots.iter() {
                 let newpoint = Point::new(
                     (r.pos.x + time * r.vel.x).rem_euclid(self.x_max as i32),
-                    (r.pos.y + time * r.vel.y).rem_euclid(self.y_max as i32));
+                    (r.pos.y + time * r.vel.y).rem_euclid(self.y_max as i32),
+                );
                 if points.contains(&newpoint) {
                     overlap = true;
                     break;
@@ -92,7 +102,7 @@ mod tests {
     #[test]
     fn part1_example_1() {
         let testdata = String::from(
-"p=0,4 v=3,-3
+            "p=0,4 v=3,-3
 p=6,3 v=-1,-3
 p=10,3 v=-1,2
 p=2,0 v=2,-1
@@ -103,7 +113,8 @@ p=3,0 v=-1,-2
 p=9,3 v=2,3
 p=7,3 v=-1,2
 p=2,4 v=2,-3
-p=9,5 v=-3,-3");
+p=9,5 v=-3,-3",
+        );
         let solution_data = InputData::parse_input(&testdata, 11, 7);
         assert_eq!(solution_data.solve_part1(), 12);
     }

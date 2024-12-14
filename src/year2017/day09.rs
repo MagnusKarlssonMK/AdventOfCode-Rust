@@ -6,14 +6,12 @@ pub fn solve(input: &str) {
 }
 
 struct InputData<'a> {
-    stream: &'a str
+    stream: &'a str,
 }
 
-impl <'a>InputData<'a> {
+impl<'a> InputData<'a> {
     fn parse_input(input: &'a str) -> Self {
-        Self {
-            stream: input
-        }
+        Self { stream: input }
     }
 
     fn solve_parts_1_2(&self) -> (usize, usize) {
@@ -26,7 +24,9 @@ impl <'a>InputData<'a> {
                 '<' => {
                     while let Some(garbage) = tokens.next() {
                         match garbage {
-                            '!' => { tokens.next(); }
+                            '!' => {
+                                tokens.next();
+                            }
                             '>' => break,
                             _ => garbage_count += 1,
                         }
@@ -39,7 +39,7 @@ impl <'a>InputData<'a> {
                 '}' => {
                     level -= 1;
                 }
-                _ => ()
+                _ => (),
             }
         }
         (score, garbage_count)

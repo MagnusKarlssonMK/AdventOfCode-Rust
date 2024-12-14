@@ -12,16 +12,22 @@ pub fn solve(input: &str) {
 struct InputData {
     galaxies: Vec<Point>,
     empty_x: HashSet<usize>,
-    empty_y: HashSet<usize>
+    empty_y: HashSet<usize>,
 }
 
 impl Point {
     fn get_x_ranges(&self, other: &Self) -> (usize, usize) {
-        (self.x.min(other.x).try_into().unwrap(), self.x.max(other.x).try_into().unwrap())
+        (
+            self.x.min(other.x).try_into().unwrap(),
+            self.x.max(other.x).try_into().unwrap(),
+        )
     }
 
     fn get_y_ranges(&self, other: &Self) -> (usize, usize) {
-        (self.y.min(other.y).try_into().unwrap(), self.y.max(other.y).try_into().unwrap())
+        (
+            self.y.min(other.y).try_into().unwrap(),
+            self.y.max(other.y).try_into().unwrap(),
+        )
     }
 }
 
@@ -63,7 +69,7 @@ impl InputData {
         Self {
             galaxies: gal,
             empty_x,
-            empty_y
+            empty_y,
         }
     }
 
@@ -74,15 +80,24 @@ impl InputData {
             for g2 in self.galaxies.iter().skip(i + 1) {
                 let x_range = g1.get_x_ranges(g2);
                 let y_range = g1.get_y_ranges(g2);
-                total_empty_space += self.empty_x.iter().filter(|x| (x_range.0+1..x_range.1).contains(x)).count() +
-                    self.empty_y.iter().filter(|y| (y_range.0+1..y_range.1).contains(y)).count();
+                total_empty_space += self
+                    .empty_x
+                    .iter()
+                    .filter(|x| (x_range.0 + 1..x_range.1).contains(x))
+                    .count()
+                    + self
+                        .empty_y
+                        .iter()
+                        .filter(|y| (y_range.0 + 1..y_range.1).contains(y))
+                        .count();
                 total_steps += g1.manhattan(g2);
             }
         }
-        (total_steps + total_empty_space * (small_exp_rate - 1),
-        total_steps + total_empty_space * (large_exp_rate - 1))
+        (
+            total_steps + total_empty_space * (small_exp_rate - 1),
+            total_steps + total_empty_space * (large_exp_rate - 1),
+        )
     }
-
 }
 
 #[cfg(test)]
@@ -91,7 +106,8 @@ mod tests {
 
     #[test]
     fn parts1_2_example_1() {
-        let testdata = String::from("...#......
+        let testdata = String::from(
+            "...#......
 .......#..
 #.........
 ..........
@@ -100,7 +116,8 @@ mod tests {
 .........#
 ..........
 .......#..
-#...#.....");
+#...#.....",
+        );
         let solution_data = InputData::parse_input(&testdata);
         let (p1, p2) = solution_data.solve(2, 10);
         assert_eq!(p1, 374);

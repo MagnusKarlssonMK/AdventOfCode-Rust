@@ -5,23 +5,21 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    sequence: Vec<usize>
+    sequence: Vec<usize>,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        Self { sequence: input
-            .chars()
-            .map(|c| c
-            .to_string()
-            .parse()
-            .unwrap())
-            .collect()
+        Self {
+            sequence: input
+                .chars()
+                .map(|c| c.to_string().parse().unwrap())
+                .collect(),
         }
     }
 
     fn get_captcha(&self, halfway: bool) -> usize {
-        let v_offset = if !halfway {1} else {self.sequence.len() / 2};
+        let v_offset = if !halfway { 1 } else { self.sequence.len() / 2 };
         let mut total: usize = 0;
         for (i, nbr) in self.sequence.iter().enumerate() {
             if *nbr == self.sequence[(i + v_offset) % self.sequence.len()] {
@@ -39,7 +37,6 @@ impl InputData {
         self.get_captcha(true)
     }
 }
-
 
 #[cfg(test)]
 mod tests {

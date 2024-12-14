@@ -10,15 +10,17 @@ struct InputData<'a> {
     rawdata: &'a str,
 }
 
-impl <'a>InputData<'a> {
+impl<'a> InputData<'a> {
     fn parse_input(input: &'a str) -> Self {
-        Self {
-            rawdata: input,
-        }
+        Self { rawdata: input }
     }
 
     fn solve_part1(&self, buffer_len: usize) -> usize {
-        let lengths: Vec<usize> = self.rawdata.split(',').map(|c| c.parse().unwrap()).collect();
+        let lengths: Vec<usize> = self
+            .rawdata
+            .split(',')
+            .map(|c| c.parse().unwrap())
+            .collect();
         let nbrs = generate_hash(&lengths, buffer_len, 1);
         nbrs.iter().take(2).product()
     }
@@ -70,27 +72,39 @@ mod tests {
     fn part2_example_1() {
         let testdata = String::from("");
         let solution_data = InputData::parse_input(&testdata);
-        assert_eq!(solution_data.solve_part2(256), "a2582a3a0e66e6e86e3812dcb672a272");
+        assert_eq!(
+            solution_data.solve_part2(256),
+            "a2582a3a0e66e6e86e3812dcb672a272"
+        );
     }
 
     #[test]
     fn part2_example_2() {
         let testdata = String::from("AoC 2017");
         let solution_data = InputData::parse_input(&testdata);
-        assert_eq!(solution_data.solve_part2(256), "33efeb34ea91902bb2f59c9920caa6cd");
+        assert_eq!(
+            solution_data.solve_part2(256),
+            "33efeb34ea91902bb2f59c9920caa6cd"
+        );
     }
 
     #[test]
     fn part2_example_3() {
         let testdata = String::from("1,2,3");
         let solution_data = InputData::parse_input(&testdata);
-        assert_eq!(solution_data.solve_part2(256), "3efbe78a8d82f29979031a4aa0b16a9d");
+        assert_eq!(
+            solution_data.solve_part2(256),
+            "3efbe78a8d82f29979031a4aa0b16a9d"
+        );
     }
 
     #[test]
     fn part2_example_4() {
         let testdata = String::from("1,2,4");
         let solution_data = InputData::parse_input(&testdata);
-        assert_eq!(solution_data.solve_part2(256), "63960835bcdc130f0b66d7ff4f6a5a8e");
+        assert_eq!(
+            solution_data.solve_part2(256),
+            "63960835bcdc130f0b66d7ff4f6a5a8e"
+        );
     }
 }

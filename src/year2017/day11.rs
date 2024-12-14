@@ -9,7 +9,7 @@ pub fn solve(input: &str) {
 
 struct Hexpoint {
     q: isize,
-    r: isize
+    r: isize,
 }
 
 impl Hexpoint {
@@ -19,13 +19,13 @@ impl Hexpoint {
 
     fn direction_from_str(input: &str) -> Self {
         match input {
-            "n" => Self { q: 0, r: -1},
-            "ne" => Self { q: 1, r: -1},
-            "se" => Self { q: 1, r: 0},
-            "s" => Self { q: 0, r: 1},
-            "sw" => Self { q: -1, r: 1},
-            "nw" => Self { q: -1, r: 0},
-            _ => unreachable!()
+            "n" => Self { q: 0, r: -1 },
+            "ne" => Self { q: 1, r: -1 },
+            "se" => Self { q: 1, r: 0 },
+            "s" => Self { q: 0, r: 1 },
+            "sw" => Self { q: -1, r: 1 },
+            "nw" => Self { q: -1, r: 0 },
+            _ => unreachable!(),
         }
     }
 
@@ -54,14 +54,12 @@ impl AddAssign for Hexpoint {
 }
 
 struct InputData<'a> {
-    moves: &'a str
+    moves: &'a str,
 }
 
-impl <'a>InputData<'a> {
+impl<'a> InputData<'a> {
     fn parse_input(input: &'a str) -> Self {
-        Self {
-            moves: input
-        }
+        Self { moves: input }
     }
 
     fn solve(&self) -> (usize, usize) {
@@ -117,5 +115,4 @@ mod tests {
         assert_eq!(p1, 3);
         assert_eq!(p2, 3);
     }
-
 }
