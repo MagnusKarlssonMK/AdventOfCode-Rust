@@ -4,7 +4,7 @@
 //! simplification that there is no need to keep track of previously visited
 //! nodes. Since the only valid neighbors have a value of +1, all paths
 //! generated during the traversal are guaranteed to be unique. Thus the answer
-//! to part 2 is given by the number of times the number 9 is found, and the 
+//! to part 2 is given by the number of times the number 9 is found, and the
 //! answer to part 1 by throwing all the points found for each trailhead into
 //! a hashset and then calculating its length.
 use crate::aoc_util::point::*;

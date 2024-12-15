@@ -1,5 +1,5 @@
 //! # 2024 day 8 - Resonant Collinearity
-//! 
+//!
 //! Solves both part 1 and part 2 in one go. For all points belonging to
 //! the same frequency (grid character), loop through the pair combinations
 //! and generate their antinode-points until both points are outside the grid.

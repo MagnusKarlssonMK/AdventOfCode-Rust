@@ -1,7 +1,7 @@
 //! # 2024 day 4 - Ceres Search
 //!
 //! ## Part 1
-//! 
+//!
 //! Scan the grid and investigate all nodes containing an 'X', and look in all
 //! eight directions and see if XMAS is created.
 //!

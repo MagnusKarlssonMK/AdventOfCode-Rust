@@ -1,11 +1,11 @@
 //! # 2024 day 9 - Disk Fragmenter
-//! 
+//!
 //! ## Part 1
-//! 
+//!
 //! Some index juggling...
-//! 
+//!
 //! ## Part 2
-//! 
+//!
 //! Some slightly different index juggling...
 use std::collections::VecDeque;
 

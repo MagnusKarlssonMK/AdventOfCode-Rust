@@ -1,5 +1,5 @@
 //! # 2024 day 11 - Plutonian Pebbles
-//! 
+//!
 //! Solves both parts in the same loop, since part 2 simply requires way more
 //! iterations of the same method. Since the number of stones will quickly become
 //! enormous but many will have the same value, the stones are stored in a hash-map

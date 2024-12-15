@@ -1,7 +1,7 @@
 //! # 2024 day 7 - Bridge Repair
 //!
 //! Solves both parts in one go through a recursive function, which attempts to
-//! fully validate each equation, and only resorts to use the concatenation 
+//! fully validate each equation, and only resorts to use the concatenation
 //! operation if it's the only way to succeed at the validation. The state of
 //! whether or not concatenation has been used combined with the calculated value
 //! is carried up through the recursion chain through the return value.
