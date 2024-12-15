@@ -4,6 +4,7 @@ use std::fs;
 use std::time::Instant;
 
 pub mod aoc_util {
+    pub mod grid;
     pub mod point;
 }
 

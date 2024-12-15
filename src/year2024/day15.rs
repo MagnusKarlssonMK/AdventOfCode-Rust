@@ -14,7 +14,7 @@
 //! is used to swap those nodes in the direction of the move, by going through the elements
 //! and finding the ones with empty space above and swapping. The number of nodes involved
 //! is mostly quite low, so we can get away with such a simplistic approach.
-use crate::aoc_util::point::*;
+use crate::aoc_util::{grid::*, point::*};
 use std::collections::{HashSet, VecDeque};
 
 pub fn solve(input: &str) {
@@ -23,33 +23,7 @@ pub fn solve(input: &str) {
     println!("Part 2: {}", solution_data.solve_part2());
 }
 
-#[derive(Clone)]
-struct Grid {
-    x_max: usize,
-    y_max: usize,
-    elements: Vec<char>,
-}
-
 impl Grid {
-    #[inline]
-    fn parse(input: &str) -> Self {
-        let lines: Vec<_> = input
-            .lines()
-            .map(|line| line.chars().collect::<Vec<_>>())
-            .collect();
-        let x_max = lines[0].len();
-        let y_max = lines.len();
-        let mut elements = Vec::with_capacity(x_max * y_max);
-        lines
-            .iter()
-            .for_each(|line| line.iter().for_each(|c| elements.push(*c)));
-        Self {
-            x_max,
-            y_max,
-            elements,
-        }
-    }
-
     #[inline]
     fn make_wide(&self) -> Self {
         let x_max = 2 * self.x_max;
@@ -74,28 +48,6 @@ impl Grid {
             y_max,
             elements,
         }
-    }
-
-    #[inline]
-    fn get_element(&self, p: &Point) -> Option<char> {
-        if (0..self.x_max).contains(&(p.x as usize)) && (0..self.y_max).contains(&(p.y as usize)) {
-            Some(self.elements[self.x_max * (p.y as usize) + (p.x as usize)])
-        } else {
-            None
-        }
-    }
-
-    #[inline]
-    fn find(&self, item: char) -> Option<Point> {
-        self.elements
-            .iter()
-            .position(|&c| c == item)
-            .map(|i| Point::new((i % self.x_max) as i32, (i / self.x_max) as i32))
-    }
-
-    #[inline]
-    fn get_index(&self, p: &Point) -> usize {
-        self.x_max * p.y as usize + p.x as usize
     }
 
     fn move_simple(&mut self, pos: &Point, dir: &Point) -> bool {

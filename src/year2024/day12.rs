@@ -18,7 +18,7 @@
 //!   both cases it means we've found a corner.)
 //! - If only one of the orthogonal neighbors have the same value, we know
 //!   it's not a corner.
-use crate::aoc_util::point::*;
+use crate::aoc_util::{grid::*, point::*};
 use std::collections::{HashSet, VecDeque};
 
 pub fn solve(input: &str) {
@@ -26,42 +26,6 @@ pub fn solve(input: &str) {
     let (p1, p2) = solution_data.solve();
     println!("Part 1: {}", p1);
     println!("Part 2: {}", p2);
-}
-
-struct Grid {
-    x_max: usize,
-    y_max: usize,
-    elements: Vec<char>,
-}
-
-impl Grid {
-    #[inline]
-    fn parse(input: &str) -> Self {
-        let lines: Vec<_> = input
-            .lines()
-            .map(|line| line.chars().collect::<Vec<_>>())
-            .collect();
-        let x_max = lines[0].len();
-        let y_max = lines.len();
-        let mut elements = Vec::with_capacity(x_max * y_max);
-        lines
-            .iter()
-            .for_each(|line| line.iter().for_each(|c| elements.push(*c)));
-        Self {
-            x_max,
-            y_max,
-            elements,
-        }
-    }
-
-    #[inline]
-    fn get_element(&self, p: &Point) -> Option<char> {
-        if (0..self.x_max).contains(&(p.x as usize)) && (0..self.y_max).contains(&(p.y as usize)) {
-            Some(self.elements[self.x_max * (p.y as usize) + (p.x as usize)])
-        } else {
-            None
-        }
-    }
 }
 
 struct InputData {

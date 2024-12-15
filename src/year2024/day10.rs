@@ -7,7 +7,7 @@
 //! to part 2 is given by the number of times the number 9 is found, and the
 //! answer to part 1 by throwing all the points found for each trailhead into
 //! a hashset and then calculating its length.
-use crate::aoc_util::point::*;
+use crate::aoc_util::{grid::*, point::*};
 use std::collections::{HashSet, VecDeque};
 
 pub fn solve(input: &str) {
@@ -15,46 +15,6 @@ pub fn solve(input: &str) {
     let (p1, p2) = solution_data.solve();
     println!("Part 1: {}", p1);
     println!("Part 2: {}", p2);
-}
-
-struct Grid {
-    x_max: usize,
-    y_max: usize,
-    elements: Vec<u8>,
-}
-
-impl Grid {
-    #[inline]
-    fn parse(input: &str) -> Self {
-        let lines: Vec<_> = input
-            .lines()
-            .map(|line| {
-                line.chars()
-                    .map(|c| c.to_digit(10).unwrap() as u8)
-                    .collect::<Vec<_>>()
-            })
-            .collect();
-        let x_max = lines[0].len();
-        let y_max = lines.len();
-        let mut elements = Vec::with_capacity(x_max * y_max);
-        lines
-            .iter()
-            .for_each(|line| line.iter().for_each(|c| elements.push(*c)));
-        Self {
-            x_max,
-            y_max,
-            elements,
-        }
-    }
-
-    #[inline]
-    fn get_element(&self, p: &Point) -> Option<u8> {
-        if (0..self.x_max).contains(&(p.x as usize)) && (0..self.y_max).contains(&(p.y as usize)) {
-            Some(self.elements[self.x_max * (p.y as usize) + (p.x as usize)])
-        } else {
-            None
-        }
-    }
 }
 
 struct InputData {
@@ -69,7 +29,7 @@ impl InputData {
             .elements
             .iter()
             .enumerate()
-            .filter(|(_, v)| **v == 0)
+            .filter(|(_, v)| **v == '0')
             .map(|(i, _)| Point::new((i % map.x_max) as i32, (i / map.y_max) as i32))
             .collect();
         Self { map, trailheads }
@@ -83,13 +43,13 @@ impl InputData {
             let mut queue: VecDeque<Point> = VecDeque::new();
             queue.push_back(*head);
             while let Some(current) = queue.pop_front() {
-                if self.map.get_element(&current).unwrap() == 9 {
+                if self.map.get_uint_element(&current).unwrap() == 9 {
                     peaks.insert(current);
                     totalrating += 1;
                 } else {
                     for neighbor in NEIGHBORS_STRAIGHT.map(|dir| dir + current) {
-                        if let Some(neighbor_val) = self.map.get_element(&neighbor) {
-                            if neighbor_val == self.map.get_element(&current).unwrap() + 1 {
+                        if let Some(neighbor_val) = self.map.get_uint_element(&neighbor) {
+                            if neighbor_val == self.map.get_uint_element(&current).unwrap() + 1 {
                                 queue.push_back(neighbor);
                             }
                         }
