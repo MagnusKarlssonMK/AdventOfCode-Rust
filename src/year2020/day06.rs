@@ -1,4 +1,4 @@
-//! - Work in progress -
+//! # 2020 day 6 - Custom Customs
 use std::collections::HashSet;
 
 pub fn solve(input: &str) {
@@ -7,14 +7,14 @@ pub fn solve(input: &str) {
     println!("Part 2: {}", solution_data.solve_part2());
 }
 
-struct Group<'a> {
-    answers: Vec<&'a str>,
+struct Group {
+    answers: Vec<String>,
 }
 
-impl<'a> Group<'a> {
-    fn parse(input: &'a str) -> Self {
+impl Group {
+    fn parse(input: &str) -> Self {
         Self {
-            answers: input.lines().collect(),
+            answers: input.lines().map(str::to_string).collect(),
         }
     }
 
@@ -27,22 +27,21 @@ impl<'a> Group<'a> {
     }
 
     fn get_yes_count_everyone(&self) -> usize {
-        //let mut yes: HashSet<char> = HashSet::from(self.answers[0].chars().collect::<Vec<char>>());
-        //for a in self.answers.iter() {
-        //    let no: HashSet<char> = HashSet::from(a.chars().collect());
-        //    yes = no.intersection(&yes).collect();
-        //}
-        //yes.len()
-        6
+        let mut yes = HashSet::from(self.answers[0].chars().collect::<HashSet<_>>());
+        for a in self.answers.iter() {
+            let no = HashSet::from(a.chars().collect::<HashSet<_>>());
+            yes = no.intersection(&yes).copied().collect();
+        }
+        yes.len()
     }
 }
 
-struct InputData<'a> {
-    forms: Vec<Group<'a>>,
+struct InputData {
+    forms: Vec<Group>,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
+impl InputData {
+    fn parse_input(input: &str) -> Self {
         Self {
             forms: input.split("\n\n").map(Group::parse).collect(),
         }
