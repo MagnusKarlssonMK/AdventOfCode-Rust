@@ -1,4 +1,4 @@
-use crate::aoc_util::point::*;
+use crate::aoc_util::{grid::*, point::*};
 
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
@@ -6,26 +6,26 @@ pub fn solve(input: &str) {
     println!("Part 2: {}", solution_data.solve_part2());
 }
 
-struct InputData<'a> {
-    grid: Vec<&'a [u8]>,
+struct InputData {
+    grid: Grid,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
+impl InputData {
+    fn parse_input(input: &str) -> Self {
         Self {
-            grid: input.lines().map(|line| line.as_bytes()).collect(),
+            grid: Grid::parse(input),
         }
     }
 
     fn count_trees(&self, step: &Point) -> usize {
         let mut pos = ORIGIN;
         let mut count = 0;
-        while pos.y < self.grid.len() as i32 {
-            if self.grid[pos.y as usize][pos.x as usize] == b'#' {
+        while let Some(e) = self.grid.get_element(&pos) {
+            if e == '#' {
                 count += 1;
             }
             pos += *step;
-            pos.x %= self.grid[0].len() as i32;
+            pos.x %= self.grid.x_max as i32;
         }
         count
     }
@@ -35,9 +35,9 @@ impl<'a> InputData<'a> {
     }
 
     fn solve_part2(&self) -> usize {
-        [(1, 1), (1, 3), (1, 5), (1, 7), (2, 1)]
+        [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
             .iter()
-            .map(|(r, c)| self.count_trees(&Point::new(*c, *r)))
+            .map(|(x, y)| self.count_trees(&Point::new(*x, *y)))
             .product()
     }
 }
