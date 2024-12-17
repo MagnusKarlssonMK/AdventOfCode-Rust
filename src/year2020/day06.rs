@@ -27,9 +27,9 @@ impl Group {
     }
 
     fn get_yes_count_everyone(&self) -> usize {
-        let mut yes = HashSet::from(self.answers[0].chars().collect::<HashSet<_>>());
+        let mut yes = self.answers[0].chars().collect::<HashSet<_>>();
         for a in self.answers.iter() {
-            let no = HashSet::from(a.chars().collect::<HashSet<_>>());
+            let no = a.chars().collect::<HashSet<_>>();
             yes = no.intersection(&yes).copied().collect();
         }
         yes.len()
