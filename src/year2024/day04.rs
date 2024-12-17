@@ -10,6 +10,8 @@
 //! This time, scan for nodes containing an 'A' instead, form words from the
 //! combination with the diagonal nodes to form the X, and see if the generated
 //! word is eithes MAS or SAM.
+use crate::aoc_util::{grid::*, point::*};
+
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve_part1());
@@ -17,56 +19,32 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    width: isize,
-    height: isize,
-    grid: Vec<Vec<char>>,
+    grid: Grid,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        let grid: Vec<Vec<char>> = input.lines().map(|line| line.chars().collect()).collect();
         Self {
-            width: grid[0].len() as isize,
-            height: grid.len() as isize,
-            grid,
-        }
-    }
-
-    fn get_value(&self, row: isize, col: isize) -> char {
-        if (0..self.height).contains(&row) && (0..self.width).contains(&col) {
-            self.grid[row as usize][col as usize]
-        } else {
-            '.'
+            grid: Grid::parse(input),
         }
     }
 
     fn solve_part1(&self) -> usize {
         let mut total = 0;
-        const DIRECTIONS: [(isize, isize); 8] = [
-            (1, 0),
-            (1, -1),
-            (0, -1),
-            (-1, -1),
-            (-1, 0),
-            (-1, 1),
-            (0, 1),
-            (1, 1),
-        ];
-        for row in 0..self.height {
-            for col in 0..self.width {
-                if self.get_value(row, col) == 'X' {
-                    for (d_row, d_col) in DIRECTIONS {
-                        let word: String = [
-                            'X',
-                            self.get_value(row + d_row, col + d_col),
-                            self.get_value(row + 2 * d_row, col + 2 * d_col),
-                            self.get_value(row + 3 * d_row, col + 3 * d_col),
-                        ]
-                        .iter()
-                        .collect();
-                        if word == "XMAS" {
-                            total += 1;
-                        }
+        for (i, c) in self.grid.elements.iter().enumerate() {
+            let current = self.grid.get_point(i);
+            if *c == 'X' {
+                for dir in &NEIGHBORS_ALL {
+                    let word: String = [
+                        'X',
+                        self.grid.get_element(&(current + *dir)).unwrap_or('.'),
+                        self.grid.get_element(&(current + *dir * 2)).unwrap_or('.'),
+                        self.grid.get_element(&(current + *dir * 3)).unwrap_or('.'),
+                    ]
+                    .iter()
+                    .collect();
+                    if word == "XMAS" {
+                        total += 1;
                     }
                 }
             }
@@ -76,27 +54,28 @@ impl InputData {
 
     fn solve_part2(&self) -> usize {
         let mut total = 0;
-        for row in 0..self.height {
-            for col in 0..self.width {
-                if self.get_value(row, col) == 'A' {
-                    let word1: String = [
-                        self.get_value(row - 1, col - 1),
+        for (i, c) in self.grid.elements.iter().enumerate() {
+            let current = self.grid.get_point(i);
+            if *c == 'A' {
+                let dir = Point::new(1, 1);
+                let word1: String = [
+                    self.grid.get_element(&(current - dir)).unwrap_or('.'),
+                    'A',
+                    self.grid.get_element(&(current + dir)).unwrap_or('.'),
+                ]
+                .iter()
+                .collect();
+                if word1 == "MAS" || word1 == "SAM" {
+                    let dir2 = Point::new(1, -1);
+                    let word2: String = [
+                        self.grid.get_element(&(current - dir2)).unwrap_or('.'),
                         'A',
-                        self.get_value(row + 1, col + 1),
+                        self.grid.get_element(&(current + dir2)).unwrap_or('.'),
                     ]
                     .iter()
                     .collect();
-                    if word1 == "MAS" || word1 == "SAM" {
-                        let word2: String = [
-                            self.get_value(row + 1, col - 1),
-                            'A',
-                            self.get_value(row - 1, col + 1),
-                        ]
-                        .iter()
-                        .collect();
-                        if word2 == "MAS" || word2 == "SAM" {
-                            total += 1;
-                        }
+                    if word2 == "MAS" || word2 == "SAM" {
+                        total += 1;
                     }
                 }
             }

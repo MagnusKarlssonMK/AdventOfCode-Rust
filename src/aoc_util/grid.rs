@@ -68,6 +68,11 @@ impl Grid {
         self.x_max * p.y as usize + p.x as usize
     }
 
+    #[inline]
+    pub fn get_point(&self, index: usize) -> Point {
+        Point::new((index % self.x_max) as i32, (index / self.x_max) as i32)
+    }
+
     pub fn print(&self) {
         for y in 0..self.y_max {
             for x in 0..self.x_max {
