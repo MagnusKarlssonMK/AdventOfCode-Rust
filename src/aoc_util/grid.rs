@@ -73,6 +73,11 @@ impl Grid {
         Point::new((index % self.x_max) as i32, (index / self.x_max) as i32)
     }
 
+    #[inline]
+    pub fn set_point(&mut self, p: &Point, val: char) {
+        self.elements[self.x_max * p.y as usize + p.x as usize] = val;
+    }
+
     pub fn print(&self) {
         for y in 0..self.y_max {
             for x in 0..self.x_max {

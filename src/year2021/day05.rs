@@ -1,4 +1,5 @@
-use crate::aoc_util::point::*;
+//! # 2021 day 5 - Hydrothermal Venture
+use crate::aoc_util::{grid::*, point::*};
 use std::str::FromStr;
 
 pub fn solve(input: &str) {
@@ -28,63 +29,83 @@ impl Point {
     }
 }
 
+struct OceanFloor {
+    points: Grid,
+    nbr_dangerous_points: usize,
+}
+
+impl OceanFloor {
+    fn new(x: usize, y: usize) -> Self {
+        Self {
+            points: Grid::new(x, y, '0'),
+            nbr_dangerous_points: 0,
+        }
+    }
+
+    fn process_line(&mut self, p1: &Point, p2: &Point) {
+        let dxdy = p1.get_derivate(p2);
+        let mut p = *p1;
+        loop {
+            match self.points.get_element(&p) {
+                Some('0') => self.points.set_point(&p, '1'),
+                Some('1') => {
+                    self.nbr_dangerous_points += 1;
+                    self.points.set_point(&p, '2');
+                }
+                _ => (),
+            };
+            if p == *p2 {
+                break;
+            }
+            p += dxdy;
+        }
+    }
+}
+
 struct InputData {
-    lines: Vec<(Point, Point)>,
+    straight_lines: Vec<(Point, Point)>,
+    diagonal_lines: Vec<(Point, Point)>,
+    x_max: usize,
+    y_max: usize,
 }
 
 impl InputData {
     fn parse_input(input: &str) -> Self {
-        fn parse_line(line: &str) -> (Point, Point) {
+        let mut x_max = 0;
+        let mut y_max = 0;
+        let mut straight_lines = Vec::new();
+        let mut diagonal_lines = Vec::new();
+        input.lines().for_each(|line| {
             let (p1, p2) = line.split_once(" -> ").unwrap();
-            (Point::from_str(p1).unwrap(), Point::from_str(p2).unwrap())
-        }
+            let p1 = Point::from_str(p1).unwrap();
+            let p2 = Point::from_str(p2).unwrap();
+            if p1.is_diagonal(&p2) {
+                diagonal_lines.push((p1, p2));
+            } else {
+                straight_lines.push((p1, p2));
+            }
+            x_max = x_max.max(p1.x as usize).max(p2.x as usize);
+            y_max = y_max.max(p1.y as usize).max(p2.y as usize);
+        });
         Self {
-            lines: input.lines().map(parse_line).collect(),
+            straight_lines,
+            diagonal_lines,
+            x_max,
+            y_max,
         }
     }
 
     fn solve(&self) -> (usize, usize) {
-        let mut grid = vec![vec![0; 1000]; 1000];
-        // Note - this is significantly faster with an array for the grid, but gets too large and blows up the stack in test mode.
-        let mut part1: usize = 0;
-        let mut part2: usize = 0;
-        for (p1, p2) in &self.lines {
-            if !p1.is_diagonal(p2) {
-                let dxdy = p1.get_derivate(p2);
-                let mut p = *p1;
-                loop {
-                    if grid[p.x as usize][p.y as usize] == 1 {
-                        part1 += 1;
-                    }
-                    grid[p.x as usize][p.y as usize] += 1;
-                    if p == *p2 {
-                        break;
-                    }
-                    p += dxdy;
-                }
-            }
-        }
+        let mut ocean_floor = OceanFloor::new(self.x_max + 1, self.y_max + 1);
+        self.straight_lines
+            .iter()
+            .for_each(|(p1, p2)| ocean_floor.process_line(p1, p2));
+        let part1 = ocean_floor.nbr_dangerous_points;
 
-        // TBD - figure out a better way to do this and avoid duplicating almost the exact same code
-        // Possibly try to separate the diagonal lines to a separate vector already at parsing
-        part2 += part1;
-        for (p1, p2) in &self.lines {
-            if p1.is_diagonal(p2) {
-                let dxdy = p1.get_derivate(p2);
-                let mut p = *p1;
-                loop {
-                    if grid[p.x as usize][p.y as usize] == 1 {
-                        part2 += 1;
-                    }
-                    grid[p.x as usize][p.y as usize] += 1;
-                    if p == *p2 {
-                        break;
-                    }
-                    p += dxdy;
-                }
-            }
-        }
-        (part1, part2)
+        self.diagonal_lines
+            .iter()
+            .for_each(|(p1, p2)| ocean_floor.process_line(p1, p2));
+        (part1, ocean_floor.nbr_dangerous_points)
     }
 }
 
