@@ -8,7 +8,7 @@ pub fn solve(input: &str) {
 }
 
 struct InputData {
-    program: Vec<usize>,
+    program: Vec<isize>,
 }
 
 impl InputData {
@@ -18,7 +18,7 @@ impl InputData {
         }
     }
 
-    fn solve_part1(&self) -> usize {
+    fn solve_part1(&self) -> isize {
         let mut cpu = Intcode::new(&self.program);
         cpu.overwrite_pos(1, 12);
         cpu.overwrite_pos(2, 2);
@@ -26,8 +26,8 @@ impl InputData {
         cpu.read_pos(0)
     }
 
-    fn solve_part2(&self) -> usize {
-        const TARGET: usize = 19690720;
+    fn solve_part2(&self) -> isize {
+        const TARGET: isize = 19690720;
         let mut noun_max = 99;
         let mut noun_min = 0;
         let mut verb_max = 99;

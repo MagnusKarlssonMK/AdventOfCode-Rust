@@ -1,36 +1,147 @@
+use std::collections::VecDeque;
+
 const ADD_MEMORY_SIZE: usize = 2_000;
 
 pub enum State {
+    Input,
+    Output(isize),
     Halted,
 }
 
 pub struct Intcode {
     i_p: usize,
-    program: Vec<usize>,
+    program: Vec<isize>,
+    input_buffer: VecDeque<isize>,
+}
+
+enum ParameterMode {
+    Position,
+    Immediate,
+}
+
+impl ParameterMode {
+    fn from_int(n: isize) -> Self {
+        match n % 10 {
+            0 => Self::Position,
+            1 => Self::Immediate,
+            _ => unreachable!(),
+        }
+    }
 }
 
 impl Intcode {
-    pub fn new(prog: &[usize]) -> Self {
+    pub fn new(prog: &[isize]) -> Self {
         let mut program = Vec::with_capacity(prog.len() + ADD_MEMORY_SIZE);
         program.extend_from_slice(prog);
         program.resize(prog.len() + ADD_MEMORY_SIZE, 0);
-        Self { i_p: 0, program }
+        Self {
+            i_p: 0,
+            program,
+            input_buffer: VecDeque::new(),
+        }
     }
 
     pub fn run(&mut self) -> State {
         loop {
             let op_code = self.program[self.i_p];
-            match op_code {
+            match op_code % 100 {
                 1 => {
                     // Add
-                    let pars: Vec<usize> = (1..=3).map(|i| self.program[self.i_p + i]).collect();
-                    self.program[pars[2]] = self.program[pars[0]] + self.program[pars[1]];
+                    let a_vec: Vec<usize> = (1..=3)
+                        .map(|i| {
+                            self.get_address(
+                                ParameterMode::from_int(op_code / (10_isize.pow(i as u32 + 1))),
+                                i,
+                            )
+                        })
+                        .collect();
+                    self.program[a_vec[2]] = self.program[a_vec[0]] + self.program[a_vec[1]];
                     self.i_p += 4;
                 }
                 2 => {
                     // Mul
-                    let pars: Vec<usize> = (1..=3).map(|i| self.program[self.i_p + i]).collect();
-                    self.program[pars[2]] = self.program[pars[0]] * self.program[pars[1]];
+                    let a_vec: Vec<usize> = (1..=3)
+                        .map(|i| {
+                            self.get_address(
+                                ParameterMode::from_int(op_code / (10_isize.pow(i as u32 + 1))),
+                                i,
+                            )
+                        })
+                        .collect();
+                    self.program[a_vec[2]] = self.program[a_vec[0]] * self.program[a_vec[1]];
+                    self.i_p += 4;
+                }
+                3 => {
+                    // Input
+                    if let Some(v) = self.input_buffer.pop_front() {
+                        let address = self.get_address(ParameterMode::from_int(op_code / 100), 1);
+                        self.program[address] = v;
+                        self.i_p += 2;
+                    } else {
+                        break State::Input;
+                    }
+                }
+                4 => {
+                    // Output
+                    let address = self.get_address(ParameterMode::from_int(op_code / 100), 1);
+                    let out = self.program[address];
+                    self.i_p += 2;
+                    break State::Output(out);
+                }
+                5 => {
+                    // Jump-if-true
+                    let first_address = self.get_address(ParameterMode::from_int(op_code / 100), 1);
+                    if self.program[first_address] != 0 {
+                        let second_address =
+                            self.get_address(ParameterMode::from_int(op_code / 1000), 2);
+                        self.i_p = self.program[second_address].try_into().unwrap();
+                    } else {
+                        self.i_p += 3;
+                    }
+                }
+                6 => {
+                    // Jump-if-false
+                    let first_address = self.get_address(ParameterMode::from_int(op_code / 100), 1);
+                    if self.program[first_address] == 0 {
+                        let second_address =
+                            self.get_address(ParameterMode::from_int(op_code / 1000), 2);
+                        self.i_p = self.program[second_address].try_into().unwrap();
+                    } else {
+                        self.i_p += 3;
+                    }
+                }
+                7 => {
+                    // Less-than
+                    let a_vec: Vec<usize> = (1..=3)
+                        .map(|i| {
+                            self.get_address(
+                                ParameterMode::from_int(op_code / (10_isize.pow(i as u32 + 1))),
+                                i,
+                            )
+                        })
+                        .collect();
+                    self.program[a_vec[2]] = if self.program[a_vec[0]] < self.program[a_vec[1]] {
+                        1
+                    } else {
+                        0
+                    };
+                    self.i_p += 4;
+                }
+                8 => {
+                    // Equals
+                    let a_vec: Vec<usize> = (1..=3)
+                        .map(|i| {
+                            self.get_address(
+                                ParameterMode::from_int(op_code / (10_isize.pow(i as u32 + 1))),
+                                i,
+                            )
+                        })
+                        .collect();
+                    self.program[a_vec[2]] = if self.program[a_vec[0]] == self.program[a_vec[1]] {
+                        1
+                    } else {
+                        0
+                    };
                     self.i_p += 4;
                 }
                 _ => {
@@ -41,12 +152,24 @@ impl Intcode {
         }
     }
 
-    pub fn overwrite_pos(&mut self, pos: usize, val: usize) {
+    pub fn input_value(&mut self, val: isize) {
+        self.input_buffer.push_back(val);
+    }
+
+    pub fn overwrite_pos(&mut self, pos: usize, val: isize) {
         self.program[pos] = val;
     }
 
-    pub fn read_pos(&self, pos: usize) -> usize {
+    pub fn read_pos(&self, pos: usize) -> isize {
         self.program[pos]
+    }
+
+    #[inline]
+    fn get_address(&self, mode: ParameterMode, offset: usize) -> usize {
+        match mode {
+            ParameterMode::Position => self.program[self.i_p + offset] as usize,
+            ParameterMode::Immediate => self.i_p + offset,
+        }
     }
 }
 
