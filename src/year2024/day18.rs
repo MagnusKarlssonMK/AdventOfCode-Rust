@@ -1,4 +1,22 @@
 //! # 2024 day 18 - RAM Run
+//!
+//! ## Part 1
+//!
+//! Solved with a simple BFS, generating the grid based on the first 1024 points
+//! in the input.
+//!
+//! ## Part 2
+//!
+//! Re-using the BFS function from part 1, and using bisection to identify the
+//! last timestamp with a possible path. As starting values, for lower limit we
+//! know from part 1 that at 1024 there is still at least one open path, and for
+//! upper limit the length of the input is the largest it can possibly be.
+//!
+//! As a possible improvement, one could generate the grid already at parsing,
+//! marking each point with its index in the input, to avoid having to generate
+//! the grid for every attempted time stamp. However the bisection finds the
+//! answer in only a handful of tries, so the time saving would be in fractions
+//! of a ms.
 use crate::aoc_util::{grid::*, point::*};
 use std::collections::{HashSet, VecDeque};
 use std::str::FromStr;
