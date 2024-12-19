@@ -26,19 +26,21 @@ impl<'a> InputData<'a> {
 
     fn solve(&self) -> (usize, usize) {
         let seen = &mut HashMap::new();
-        let a: Vec<usize> = self
+        let result: Vec<usize> = self
             .designs
             .iter()
             .map(|design| self.process_designs(seen, design))
             .collect();
-        (a.iter().filter(|n| **n > 0).count(), a.iter().sum())
+        (
+            result.iter().filter(|n| **n > 0).count(),
+            result.iter().sum(),
+        )
     }
 
     fn process_designs<'b>(&self, seen: &mut HashMap<&'b str, usize>, design: &'b str) -> usize {
         if design.is_empty() {
-            return 1;
-        }
-        if let Some(cache) = seen.get(design) {
+            1
+        } else if let Some(cache) = seen.get(design) {
             *cache
         } else {
             let count: usize = self
