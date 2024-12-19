@@ -41,20 +41,29 @@ impl<'a> InputData<'a> {
         }
     }
 
-    fn get_all_orbits(&self, obj: &str) -> usize {
-        if self.orbits.contains_key(obj) {
-            self.orbits
+    fn get_all_orbits(&self, obj: &'a str, seen: &mut HashMap<&'a str, usize>) -> usize {
+        if let Some(cache) = seen.get(obj) {
+            *cache
+        } else if self.orbits.contains_key(obj) {
+            let res = self
+                .orbits
                 .get(obj)
                 .unwrap()
                 .iter()
-                .map(|v| 1 + self.get_all_orbits(v))
-                .sum()
+                .map(|v| 1 + self.get_all_orbits(v, seen))
+                .sum();
+            seen.insert(obj, res);
+            res
         } else {
             0
         }
     }
     fn solve_part1(&self) -> usize {
-        self.orbits.keys().map(|k| self.get_all_orbits(k)).sum()
+        let seen = &mut HashMap::new();
+        self.orbits
+            .keys()
+            .map(|k| self.get_all_orbits(k, seen))
+            .sum()
     }
 
     fn solve_part2(&self) -> usize {
