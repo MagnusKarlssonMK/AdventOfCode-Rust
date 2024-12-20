@@ -8,7 +8,12 @@
 //! the manhattan distance with the points 100+ indices away in the vector,
 //! and if that manhattan distance is <=(2/20) and the gain after compensating
 //! with the travel cost for that distance is still 100+, we found a cheat.
-use crate::aoc_util::{grid::*, point::*};
+//!
+//! Although this is already decently fast, since the solution is calculated on
+//! data that doesn't change after parsing, using this to as an opportunity
+//! to check out multi-threading.
+use crate::aoc_util::{grid::*, point::*, thread::*};
+use std::sync::atomic::{AtomicU32, Ordering};
 
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
@@ -49,18 +54,24 @@ impl InputData {
     }
 
     fn find_cheats(&self, cheat_steps: usize, gain: usize) -> usize {
-        self.path
-            .iter()
-            .enumerate()
-            .map(|(i, p)| {
-                (i + gain..self.path.len())
-                    .filter(|&j| {
-                        p.manhattan(&self.path[j]) <= cheat_steps
-                            && j - i - self.path[i].manhattan(&self.path[j]) >= gain
-                    })
-                    .count()
-            })
-            .sum()
+        let total = AtomicU32::new(0);
+        let items = Vec::from_iter(0..self.path.len());
+        spawn_jobs(items, |i| self.worker(&total, cheat_steps, gain, i));
+        total.into_inner() as usize
+    }
+
+    fn worker(&self, total: &AtomicU32, cheat_steps: usize, gain: usize, idx: Vec<usize>) {
+        let mut cheats = 0;
+        for &i in &idx {
+            let p = self.path[i];
+            cheats += (i + gain..self.path.len())
+                .filter(|&j| {
+                    p.manhattan(&self.path[j]) <= cheat_steps
+                        && j - i - p.manhattan(&self.path[j]) >= gain
+                })
+                .count() as u32;
+        }
+        total.fetch_add(cheats, Ordering::Relaxed);
     }
 
     fn solve_part1(&self) -> usize {

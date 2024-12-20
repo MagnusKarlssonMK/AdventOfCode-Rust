@@ -6,6 +6,7 @@ use std::time::Instant;
 pub mod aoc_util {
     pub mod grid;
     pub mod point;
+    pub mod thread;
 }
 
 pub mod year2015;
