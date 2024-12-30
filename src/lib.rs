@@ -126,6 +126,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
             "06" => year2022::day06::solve(&aoc_input),
             "07" => year2022::day07::solve(&aoc_input),
             "08" => year2022::day08::solve(&aoc_input),
+            "09" => year2022::day09::solve(&aoc_input),
             _ => println!("Day not implemented"),
         },
         "2023" => match config.day.as_str() {
