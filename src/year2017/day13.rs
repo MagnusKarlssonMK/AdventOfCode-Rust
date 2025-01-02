@@ -1,4 +1,6 @@
 //! # 2017 day 13 - Packet Scanners
+use crate::aoc_util::math;
+
 pub fn solve(input: &str) {
     let solution_data = InputData::parse_input(input);
     println!("Part 1: {}", solution_data.solve_part1());
@@ -28,19 +30,6 @@ impl Scanner {
     }
 }
 
-fn gcd(a: usize, b: usize) -> usize {
-    let mut a = a;
-    let mut b = b;
-    while b != 0 {
-        (a, b) = (b, a % b);
-    }
-    a
-}
-
-fn lcm(a: usize, b: usize) -> usize {
-    a * (b / gcd(a, b))
-}
-
 struct InputData {
     scanners: Vec<Scanner>,
 }
@@ -64,7 +53,7 @@ impl InputData {
         let mut current_lcm = 1;
         let mut delays = Vec::from([1]);
         for s in self.scanners.iter() {
-            let new_lcm = lcm(current_lcm, s.cycle);
+            let new_lcm = math::lcm(current_lcm, s.cycle);
             let mut new_delays = Vec::new();
             for extra in (0..new_lcm).step_by(current_lcm) {
                 delays
