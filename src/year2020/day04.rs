@@ -43,77 +43,48 @@ impl Field {
         match self {
             Self::Byr => {
                 if let Ok(v) = value.parse::<usize>() {
-                    if !(1920..=2002).contains(&v) {
-                        return false;
-                    }
+                    (1920..=2002).contains(&v)
                 } else {
-                    return false;
+                    false
                 }
             }
             Self::Iyr => {
                 if let Ok(v) = value.parse::<usize>() {
-                    if !(2010..=2020).contains(&v) {
-                        return false;
-                    }
+                    (2010..=2020).contains(&v)
                 } else {
-                    return false;
+                    false
                 }
             }
             Self::Eyr => {
                 if let Ok(v) = value.parse::<usize>() {
-                    if !(2020..=2030).contains(&v) {
-                        return false;
-                    }
+                    (2020..=2030).contains(&v)
                 } else {
-                    return false;
+                    false
                 }
             }
             Self::Hgt => {
                 let (left, right) = value.split_at(value.len() - 2);
                 if let Ok(n) = left.parse::<usize>() {
                     match right {
-                        "cm" => {
-                            if !(150..=193).contains(&n) {
-                                return false;
-                            }
-                        }
-                        "in" => {
-                            if !(59..=76).contains(&n) {
-                                return false;
-                            }
-                        }
-                        _ => {
-                            return false;
-                        }
+                        "cm" => (150..=193).contains(&n),
+                        "in" => (59..=76).contains(&n),
+                        _ => false,
                     }
                 } else {
-                    return false;
+                    false
                 }
             }
             Self::Hcl => {
                 if let Some(v) = value.strip_prefix('#') {
-                    if !v.chars().all(|c| "abcdef0123456789".contains(c)) {
-                        return false;
-                    }
+                    v.chars().all(|c| "abcdef0123456789".contains(c))
                 } else {
-                    return false;
+                    false
                 }
             }
-            Self::Ecl => {
-                if !&["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]
-                    .contains(&value)
-                {
-                    return false;
-                }
-            }
-            Self::Pid => {
-                if value.len() != 9 || value.parse::<usize>().is_err() {
-                    return false;
-                }
-            }
-            Self::Cid => (),
+            Self::Ecl => ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].contains(&value),
+            Self::Pid => value.len() == 9 && value.parse::<usize>().is_ok(),
+            Self::Cid => true,
         }
-        true
     }
 }
 
