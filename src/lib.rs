@@ -105,6 +105,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
             "01" => year2020::day01::solve(&aoc_input),
             "02" => year2020::day02::solve(&aoc_input),
             "03" => year2020::day03::solve(&aoc_input),
+            "04" => year2020::day04::solve(&aoc_input),
             "06" => year2020::day06::solve(&aoc_input),
             _ => println!("Day not implemented"),
         },
