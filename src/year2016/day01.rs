@@ -1,10 +1,13 @@
+//! # 2016 day 1 - No Time for a Taxicab
 use crate::aoc_util::point::*;
-use std::collections::HashSet;
+use std::{collections::HashSet, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 enum Rotation {
@@ -12,12 +15,13 @@ enum Rotation {
     Right,
 }
 
-impl Rotation {
-    fn from(s: &str) -> Self {
-        if s == "R" {
-            Self::Right
-        } else {
-            Self::Left
+impl FromStr for Rotation {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.chars().nth(0) {
+            Some('L') => Ok(Self::Left),
+            Some('R') => Ok(Self::Right),
+            _ => panic!("Can't parse rotation"),
         }
     }
 }
@@ -26,19 +30,22 @@ struct InputData {
     instructions: Vec<(Rotation, i32)>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            instructions: input
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            instructions: s
                 .split(", ")
                 .map(|word| {
                     let (left, right) = word.split_at(1);
-                    (Rotation::from(left), right.parse().unwrap())
+                    (Rotation::from_str(left).unwrap(), right.parse().unwrap())
                 })
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         let mut pos = ORIGIN;
         let mut direction = UP;
@@ -79,29 +86,29 @@ mod tests {
     use super::*;
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("R2, L3");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "R2, L3";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 5);
     }
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from("R2, R2, R2");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "R2, R2, R2";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
     fn part1_example_3() {
-        let testdata = String::from("R5, L5, R5, R3");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "R5, L5, R5, R3";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 12);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("R8, R4, R4, R8");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "R8, R4, R4, R8";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 4);
     }
 }

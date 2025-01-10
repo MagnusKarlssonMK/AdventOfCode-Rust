@@ -1,22 +1,28 @@
-use std::collections::HashMap;
+//! # 2018 day 2 - Inventory Management System
+use std::{collections::HashMap, error::Error};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::try_from(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData<'a> {
     ids: Vec<&'a str>,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
-        Self {
-            ids: input.lines().collect(),
-        }
+impl<'a> TryFrom<&'a str> for InputData<'a> {
+    type Error = ();
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        Ok(Self {
+            ids: s.lines().collect(),
+        })
     }
+}
 
+impl InputData<'_> {
     fn solve_part1(&self) -> usize {
         let mut twos: usize = 0;
         let mut threes: usize = 0;
@@ -73,15 +79,15 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("abcdef\nbababc\nabbcde\nabcccd\naabcdd\nabcdee\nababab");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "abcdef\nbababc\nabbcde\nabcccd\naabcdd\nabcdee\nababab";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 12);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("abcde\nfghij\nklmno\npqrst\nfguij\naxcye\nwvxyz");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "abcde\nfghij\nklmno\npqrst\nfguij\naxcye\nwvxyz";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), "fgij");
     }
 }

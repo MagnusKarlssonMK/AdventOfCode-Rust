@@ -1,20 +1,28 @@
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+//! # 2021 day 1 - Sonar Sweep
+use std::{error::Error, str::FromStr};
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData {
     measurements: Vec<usize>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            measurements: input.lines().map(|line| line.parse().unwrap()).collect(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            measurements: s.lines().map(|line| line.parse().unwrap()).collect(),
+        })
     }
+}
 
+impl InputData {
     fn get_depth(&self, windowsize: usize) -> usize {
         self.measurements
             .windows(windowsize + 1)
@@ -35,17 +43,17 @@ impl InputData {
 mod tests {
     use super::*;
 
+    const TEST_DATA: &str = "199\n200\n208\n210\n200\n207\n240\n269\n260\n263";
+
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("199\n200\n208\n210\n200\n207\n240\n269\n260\n263");
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), 7);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("199\n200\n208\n210\n200\n207\n240\n269\n260\n263");
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), 5);
     }
 }

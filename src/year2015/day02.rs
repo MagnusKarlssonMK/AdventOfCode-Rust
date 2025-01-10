@@ -1,19 +1,23 @@
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+//! # 2015 day 2 - I Was Told There Would Be No Math
+use std::{error::Error, str::FromStr};
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData {
     gifts: Vec<(usize, usize, usize)>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        // Parse and store the dimensions sorted low to high - the order in the input
-        // doesn't matter, so save some effort later by sorting it already here.
-        Self {
-            gifts: input
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            gifts: s
                 .lines()
                 .map(|line| {
                     let mut sides = line
@@ -28,9 +32,11 @@ impl InputData {
                     }
                 })
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         self.gifts
             .iter()
@@ -51,29 +57,29 @@ mod tests {
     use super::*;
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("2x3x4");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "2x3x4";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 58);
     }
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from("1x1x10");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "1x1x10";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 43);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("2x3x4");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "2x3x4";
+        let solution_data = InputData::from_str(&testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 34);
     }
 
     #[test]
     fn part2_example_2() {
-        let testdata = String::from("1x1x10");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "1x1x10";
+        let solution_data = InputData::from_str(&testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 14);
     }
 }

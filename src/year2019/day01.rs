@@ -1,9 +1,12 @@
-use std::cmp::max;
+//! # 2019 day 1 - The Tyranny of the Rocket Equation
+use std::{cmp::max, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 fn calc_mass(mass: &usize, countfuel: bool) -> usize {
@@ -16,22 +19,25 @@ fn calc_mass(mass: &usize, countfuel: bool) -> usize {
 }
 
 struct InputData {
-    data: Vec<usize>,
+    masses: Vec<usize>,
+}
+
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            masses: s.lines().map(|line| line.parse().unwrap()).collect(),
+        })
+    }
 }
 
 impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            data: input.lines().map(|line| line.parse().unwrap()).collect(),
-        }
-    }
-
     fn solve_part1(&self) -> usize {
-        self.data.iter().map(|m| calc_mass(m, false)).sum()
+        self.masses.iter().map(|m| calc_mass(m, false)).sum()
     }
 
     fn solve_part2(&self) -> usize {
-        self.data.iter().map(|m| calc_mass(m, true)).sum()
+        self.masses.iter().map(|m| calc_mass(m, true)).sum()
     }
 }
 
@@ -41,50 +47,50 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("12");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "12";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from("14");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "14";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
     fn part1_example_3() {
-        let testdata = String::from("1969");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "1969";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 654);
     }
 
     #[test]
     fn part1_example_4() {
-        let testdata = String::from("100756");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "100756";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 33583);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("14");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "14";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 2);
     }
 
     #[test]
     fn part2_example_2() {
-        let testdata = String::from("1969");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "1969";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 966);
     }
 
     #[test]
     fn part2_example_3() {
-        let testdata = String::from("100756");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "100756";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 50346);
     }
 }

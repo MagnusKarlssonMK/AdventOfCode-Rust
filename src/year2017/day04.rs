@@ -1,25 +1,31 @@
-use std::collections::HashSet;
+//! # 2017 day 4 - High-Entropy Passphrases
+use std::{collections::HashSet, error::Error};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::try_from(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData<'a> {
     passphrases: Vec<Vec<&'a str>>,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
-        Self {
-            passphrases: input
+impl<'a> TryFrom<&'a str> for InputData<'a> {
+    type Error = ();
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        Ok(Self {
+            passphrases: s
                 .lines()
                 .map(|phrase| phrase.split_whitespace().collect())
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData<'_> {
     fn solve_part1(&self) -> usize {
         let mut seen: HashSet<String> = HashSet::new();
         self.passphrases
@@ -60,57 +66,57 @@ mod tests {
     use super::*;
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("aa bb cc dd ee");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "aa bb cc dd ee";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 1);
     }
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from("aa bb cc dd aa");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "aa bb cc dd aa";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
     fn part1_example_3() {
-        let testdata = String::from("aa bb cc dd aaa");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "aa bb cc dd aaa";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 1);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("abcde fghij");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "abcde fghij";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 1);
     }
 
     #[test]
     fn part2_example_2() {
-        let testdata = String::from("abcde xyz ecdab");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "abcde xyz ecdab";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 0);
     }
 
     #[test]
     fn part2_example_3() {
-        let testdata = String::from("a ab abc abd abf abj");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "a ab abc abd abf abj";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 1);
     }
 
     #[test]
     fn part2_example_4() {
-        let testdata = String::from("iiii oiii ooii oooi oooo");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "iiii oiii ooii oooi oooo";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 1);
     }
 
     #[test]
     fn part2_example_5() {
-        let testdata = String::from("oiii ioii iioi iiio");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "oiii ioii iioi iiio";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 0);
     }
 }

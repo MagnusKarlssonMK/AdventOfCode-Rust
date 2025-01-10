@@ -1,25 +1,32 @@
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+//! # 2021 day 6 - Lanternfish
+use std::{error::Error, str::FromStr};
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData {
     fish_states: [usize; 9],
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut states = [0_usize; 9];
-        input
-            .split(',')
+        s.split(',')
             .map(|c| c.parse::<usize>().unwrap())
             .for_each(|n| states[n] += 1);
-        Self {
+        Ok(Self {
             fish_states: states,
-        }
+        })
     }
+}
 
+impl InputData {
     fn simulate_fishies(&self, days: usize) -> usize {
         let mut states = self.fish_states;
         for d in 0..days {
@@ -41,17 +48,17 @@ impl InputData {
 mod tests {
     use super::*;
 
+    const TEST_DATA: &str = "3,4,3,1,2";
+
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("3,4,3,1,2");
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), 5934);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("3,4,3,1,2");
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), 26984457539);
     }
 }

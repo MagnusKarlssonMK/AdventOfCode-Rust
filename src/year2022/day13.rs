@@ -2,12 +2,14 @@
 //!
 //! Taking the opportunity to work with Box / Cons list and implementing
 //! the ordering trait.
-use std::cmp::Ordering;
+use std::{cmp::Ordering, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 #[derive(PartialEq, Eq)]
@@ -22,8 +24,9 @@ enum Packet {
     Empty,
 }
 
-impl Packet {
-    fn new(input: &str) -> Self {
+impl FromStr for Packet {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         fn parse_chars(c_input: &mut impl Iterator<Item = char>) -> Packet {
             let mut int_buffer: Option<u8> = None;
             while let Some(c) = c_input.next() {
@@ -58,8 +61,8 @@ impl Packet {
             }
             Packet::Empty
         }
-        let mut chars = input.chars().skip(1);
-        parse_chars(&mut chars)
+        let mut chars = s.chars().skip(1);
+        Ok(parse_chars(&mut chars))
     }
 }
 
@@ -107,18 +110,24 @@ struct InputData {
     pairs: Vec<(Packet, Packet)>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        let pairs = input
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let pairs = s
             .split("\n\n")
             .map(|pair| {
                 let (left, right) = pair.split_once('\n').unwrap();
-                (Packet::new(left), Packet::new(right))
+                (
+                    Packet::from_str(left).unwrap(),
+                    Packet::from_str(right).unwrap(),
+                )
             })
             .collect();
-        Self { pairs }
+        Ok(Self { pairs })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         self.pairs
             .iter()
@@ -129,8 +138,8 @@ impl InputData {
     }
 
     fn solve_part2(&self) -> usize {
-        let divider_packet1 = Packet::new("[[2]]");
-        let divider_packet2 = Packet::new("[[6]]");
+        let divider_packet1 = Packet::from_str("[[2]]").unwrap();
+        let divider_packet2 = Packet::from_str("[[6]]").unwrap();
         let mut packets = Vec::new();
         for (left, right) in self.pairs.iter() {
             packets.push(left);
@@ -149,10 +158,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "[1,1,3,1,1]
+    const TEST_DATA: &str = "[1,1,3,1,1]
 [1,1,5,1,1]
 
 [[1],[2,3,4]]
@@ -174,40 +180,17 @@ mod tests {
 [[]]
 
 [1,[2,[3,[4,[5,6,7]]]],8,9]
-[1,[2,[3,[4,[5,6,0]]]],8,9]",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+[1,[2,[3,[4,[5,6,0]]]],8,9]";
+
+    #[test]
+    fn part1_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), 13);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "[1,1,3,1,1]
-[1,1,5,1,1]
-
-[[1],[2,3,4]]
-[[1],4]
-
-[9]
-[[8,7,6]]
-
-[[4,4],4,4]
-[[4,4],4,4,4]
-
-[7,7,7,7]
-[7,7,7]
-
-[]
-[3]
-
-[[[]]]
-[[]]
-
-[1,[2,[3,[4,[5,6,7]]]],8,9]
-[1,[2,[3,[4,[5,6,0]]]],8,9]",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), 140);
     }
 }

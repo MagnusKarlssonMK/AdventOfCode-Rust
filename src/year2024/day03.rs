@@ -1,8 +1,12 @@
 //! # 2024 day 3 - Mull It Over
-pub fn solve(input: &str) {
+use std::error::Error;
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData<'a> {
@@ -57,18 +61,15 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata =
-            String::from("xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
+        let solution_data = InputData::parse_input(testdata);
         assert_eq!(solution_data.solve_part1(), 161);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
+        let solution_data = InputData::parse_input(testdata);
         assert_eq!(solution_data.solve_part2(), 48);
     }
 }

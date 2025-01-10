@@ -2,11 +2,15 @@
 use crate::aoc_util::point::*;
 use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::error::Error;
+use std::str::FromStr;
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 const NUMPAD: &str = "789\n456\n123\n.0A";
@@ -17,19 +21,22 @@ struct Keypad {
     positions: HashMap<Point, char>,
 }
 
-impl Keypad {
-    fn new(input: &str) -> Self {
+impl FromStr for Keypad {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut keys = HashMap::new();
         let mut positions = HashMap::new();
-        for (y, line) in input.lines().enumerate() {
+        for (y, line) in s.lines().enumerate() {
             for (x, c) in line.chars().enumerate().filter(|(_, ch)| *ch != '.') {
                 keys.insert(c, Point::new(x as i32, y as i32));
                 positions.insert(Point::new(x as i32, y as i32), c);
             }
         }
-        Self { keys, positions }
+        Ok(Self { keys, positions })
     }
+}
 
+impl Keypad {
     fn get_commands(&self, path: &[char]) -> Vec<char> {
         let mut result = Vec::new();
         let mut current = 'A';
@@ -97,16 +104,19 @@ struct InputData {
     codes: Vec<Vec<char>>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            codes: input.lines().map(|line| line.chars().collect()).collect(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            codes: s.lines().map(|line| line.chars().collect()).collect(),
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
-        let num_pad = Keypad::new(NUMPAD);
-        let dir_pad = Keypad::new(DIRPAD);
+        let num_pad = Keypad::from_str(NUMPAD).unwrap();
+        let dir_pad = Keypad::from_str(DIRPAD).unwrap();
 
         let mut seqs: Vec<Vec<char>> = self
             .codes
@@ -123,8 +133,8 @@ impl InputData {
     }
 
     fn solve_part2(&self) -> usize {
-        let num_pad = Keypad::new(NUMPAD);
-        let dir_pad = Keypad::new(DIRPAD);
+        let num_pad = Keypad::from_str(NUMPAD).unwrap();
+        let dir_pad = Keypad::from_str(DIRPAD).unwrap();
         let num_seqs: Vec<Vec<char>> = self
             .codes
             .iter()
@@ -170,29 +180,21 @@ fn code_to_num(input: &[char]) -> usize {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "029A
+    const TEST_DATA: &str = "029A
 980A
 179A
 456A
-379A",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+379A";
+
+    #[test]
+    fn part1_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), 126384);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "029A
-980A
-179A
-456A
-379A",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), 154115708116294);
     }
 }

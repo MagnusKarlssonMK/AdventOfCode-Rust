@@ -1,8 +1,12 @@
 //! # 2024 day 17 - Chronospatial Computer
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+use std::{error::Error, str::FromStr};
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 enum Opcodes {
@@ -127,9 +131,10 @@ struct InputData {
     program: Vec<u8>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        let (regs, prog) = input.split_once("\n\n").unwrap();
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (regs, prog) = s.split_once("\n\n").unwrap();
         let mut regs = regs.lines();
         let reg_a = regs
             .next()
@@ -152,7 +157,7 @@ impl InputData {
             .unwrap()
             .parse()
             .unwrap();
-        Self {
+        Ok(Self {
             reg_a,
             reg_b,
             reg_c,
@@ -162,9 +167,11 @@ impl InputData {
                 .split(',')
                 .map(|c| c.parse().unwrap())
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> String {
         let mut computer = Computer::new(self.reg_a, self.reg_b, self.reg_c, &self.program);
         let out = computer.run();
@@ -202,14 +209,12 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "Register A: 729
+        let testdata = "Register A: 729
 Register B: 0
 Register C: 0
 
-Program: 0,1,5,4,3,0",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+Program: 0,1,5,4,3,0";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(
             solution_data.solve_part1(),
             "4,6,3,5,6,3,5,2,1,0".to_string()
@@ -218,14 +223,12 @@ Program: 0,1,5,4,3,0",
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "Register A: 2024
+        let testdata = "Register A: 2024
 Register B: 0
 Register C: 0
 
-Program: 0,3,5,4,3,0",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+Program: 0,3,5,4,3,0";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 117440);
     }
 }

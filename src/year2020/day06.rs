@@ -1,23 +1,28 @@
 //! # 2020 day 6 - Custom Customs
-use std::collections::HashSet;
+use std::{collections::HashSet, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct Group {
     answers: Vec<String>,
 }
 
-impl Group {
-    fn parse(input: &str) -> Self {
-        Self {
-            answers: input.lines().map(str::to_string).collect(),
-        }
+impl FromStr for Group {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            answers: s.lines().map(str::to_string).collect(),
+        })
     }
+}
 
+impl Group {
     fn get_yes_count_anyone(&self) -> usize {
         let mut yes: HashSet<char> = HashSet::from_iter(self.answers[0].chars());
         for a in self.answers.iter() {
@@ -40,13 +45,19 @@ struct InputData {
     forms: Vec<Group>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            forms: input.split("\n\n").map(Group::parse).collect(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            forms: s
+                .split("\n\n")
+                .map(|g| Group::from_str(g).unwrap())
+                .collect(),
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         self.forms.iter().map(|f| f.get_yes_count_anyone()).sum()
     }
@@ -60,36 +71,28 @@ impl InputData {
 mod tests {
     use super::*;
 
+    const TEST_DATA_1: &str = "abcx\nabcy\nabcz";
+    const TEST_DATA_2: &str = "abc\n
+a\nb\nc\n
+ab\nac\n
+a\na\na\na\n
+b";
+
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("abcx\nabcy\nabcz");
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA_1).unwrap();
         assert_eq!(solution_data.solve_part1(), 6);
     }
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from(
-            "abc\n
-a\nb\nc\n
-ab\nac\n
-a\na\na\na\n
-b",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA_2).unwrap();
         assert_eq!(solution_data.solve_part1(), 11);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "abc\n
-a\nb\nc\n
-ab\nac\n
-a\na\na\na\n
-b",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA_2).unwrap();
         assert_eq!(solution_data.solve_part2(), 6);
     }
 }

@@ -1,14 +1,19 @@
 //! # 2022 day 15 - Beacon Exclusion Zone
 //!
 //! Transfered straight from python solution; probably room for improvement.
-use std::collections::{HashMap, HashSet};
-
 use crate::aoc_util::point::*;
+use std::{
+    collections::{HashMap, HashSet},
+    error::Error,
+    str::FromStr,
+};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 #[derive(Debug)]
@@ -18,24 +23,27 @@ struct Sensor {
     range: usize,
 }
 
-impl Sensor {
-    fn new(input: &str) -> Self {
+impl FromStr for Sensor {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut nbrs: Vec<i32> = Vec::new();
-        for s in input.split(&['=', ',', ':'][..]) {
-            if let Ok(n) = s.parse() {
+        for w in s.split(&['=', ',', ':'][..]) {
+            if let Ok(n) = w.parse() {
                 nbrs.push(n);
             }
         }
         let position = Point::new(nbrs[0], nbrs[1]);
         let beacon = Point::new(nbrs[2], nbrs[3]);
         let range = position.manhattan(&beacon);
-        Self {
+        Ok(Self {
             position,
             beacon,
             range,
-        }
+        })
     }
+}
 
+impl Sensor {
     fn is_inrange(&self, pos: &Point) -> bool {
         self.range >= self.position.manhattan(pos)
     }
@@ -45,13 +53,19 @@ struct InputData {
     sensors: Vec<Sensor>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            sensors: input.lines().map(Sensor::new).collect(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            sensors: s
+                .lines()
+                .map(|line| Sensor::from_str(line).unwrap())
+                .collect(),
+        })
     }
+}
 
+impl InputData {
     fn get_coverage(&self, row: usize) -> usize {
         let mut x_ranges = Vec::new();
         for sensor in &self.sensors {
@@ -161,10 +175,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
+    const TEST_DATA: &str = "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
 Sensor at x=9, y=16: closest beacon is at x=10, y=16
 Sensor at x=13, y=2: closest beacon is at x=15, y=3
 Sensor at x=12, y=14: closest beacon is at x=10, y=16
@@ -177,31 +188,17 @@ Sensor at x=20, y=14: closest beacon is at x=25, y=17
 Sensor at x=17, y=20: closest beacon is at x=21, y=22
 Sensor at x=16, y=7: closest beacon is at x=15, y=3
 Sensor at x=14, y=3: closest beacon is at x=15, y=3
-Sensor at x=20, y=1: closest beacon is at x=15, y=3",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+Sensor at x=20, y=1: closest beacon is at x=15, y=3";
+
+    #[test]
+    fn part1_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.get_coverage(10), 26);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
-Sensor at x=9, y=16: closest beacon is at x=10, y=16
-Sensor at x=13, y=2: closest beacon is at x=15, y=3
-Sensor at x=12, y=14: closest beacon is at x=10, y=16
-Sensor at x=10, y=20: closest beacon is at x=10, y=16
-Sensor at x=14, y=17: closest beacon is at x=10, y=16
-Sensor at x=8, y=7: closest beacon is at x=2, y=10
-Sensor at x=2, y=0: closest beacon is at x=2, y=10
-Sensor at x=0, y=11: closest beacon is at x=2, y=10
-Sensor at x=20, y=14: closest beacon is at x=25, y=17
-Sensor at x=17, y=20: closest beacon is at x=21, y=22
-Sensor at x=16, y=7: closest beacon is at x=15, y=3
-Sensor at x=14, y=3: closest beacon is at x=15, y=3
-Sensor at x=20, y=1: closest beacon is at x=15, y=3",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.get_darkpointfreq(20), 56000011);
     }
 }

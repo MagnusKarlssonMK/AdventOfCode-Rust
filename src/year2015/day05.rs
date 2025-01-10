@@ -1,20 +1,28 @@
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+//! # 2015 day 5 - Doesn't He Have Intern-Elves For This?
+use std::error::Error;
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::try_from(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData<'a> {
     santa_strings: Vec<&'a str>,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
-        Self {
-            santa_strings: input.lines().collect(),
-        }
+impl<'a> TryFrom<&'a str> for InputData<'a> {
+    type Error = ();
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        Ok(Self {
+            santa_strings: s.lines().collect(),
+        })
     }
+}
 
+impl InputData<'_> {
     fn solve_part1(&self) -> usize {
         const VOWELS: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
 
@@ -76,64 +84,64 @@ mod tests {
     use super::*;
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("ugknbfddgicrmopn");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "ugknbfddgicrmopn";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 1);
     }
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from("aaa");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "aaa";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 1);
     }
 
     #[test]
     fn part1_example_3() {
-        let testdata = String::from("jchzalrnumimnmhp");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "jchzalrnumimnmhp";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
     fn part1_example_4() {
-        let testdata = String::from("haegwjzuvuyypxyu");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "haegwjzuvuyypxyu";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
     fn part1_example_5() {
-        let testdata = String::from("dvszwmarrgswjxmb");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "dvszwmarrgswjxmb";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("qjhvhtzxzqqjkmpb");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "qjhvhtzxzqqjkmpb";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 1);
     }
 
     #[test]
     fn part2_example_2() {
-        let testdata = String::from("xxyxx");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "xxyxx";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 1);
     }
 
     #[test]
     fn part2_example_3() {
-        let testdata = String::from("uurcxstgmygtbstg");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "uurcxstgmygtbstg";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 0);
     }
 
     #[test]
     fn part2_example_4() {
-        let testdata = String::from("ieodomkazucvgmuy");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "ieodomkazucvgmuy";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 0);
     }
 }

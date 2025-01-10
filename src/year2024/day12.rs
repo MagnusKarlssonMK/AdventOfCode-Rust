@@ -19,26 +19,32 @@
 //! - If only one of the orthogonal neighbors have the same value, we know
 //!   it's not a corner.
 use crate::aoc_util::{grid::*, point::*};
-use std::collections::{HashSet, VecDeque};
+use std::{
+    collections::{HashSet, VecDeque},
+    error::Error,
+    str::FromStr,
+};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData {
     garden_map: Grid,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            garden_map: Grid::parse(input),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            garden_map: Grid::parse(s),
+        })
     }
+}
 
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let mut total_perimeter = 0;
         let mut total_sides = 0;
@@ -112,37 +118,16 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "AAAA
+    const TEST_DATA_1: &str = "AAAA
 BBCD
 BBCC
-EEEC",
-        );
-        let solution_data = InputData::parse_input(&testdata);
-        let (p1, _) = solution_data.solve();
-        assert_eq!(p1, 140);
-    }
-
-    #[test]
-    fn part1_example_2() {
-        let testdata = String::from(
-            "OOOOO
+EEEC";
+    const TEST_DATA_2: &str = "OOOOO
 OXOXO
 OOOOO
 OXOXO
-OOOOO",
-        );
-        let solution_data = InputData::parse_input(&testdata);
-        let (p1, _) = solution_data.solve();
-        assert_eq!(p1, 772);
-    }
-
-    #[test]
-    fn part1_example_3() {
-        let testdata = String::from(
-            "RRRRIICCFF
+OOOOO";
+    const TEST_DATA_3: &str = "RRRRIICCFF
 RRRRIICCCF
 VVRRRCCFFF
 VVRCCCJFFF
@@ -151,51 +136,57 @@ VVIVCCJJEE
 VVIIICJJEE
 MIIIIIJJEE
 MIIISIJEEE
-MMMISSJEEE",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+MMMISSJEEE";
+    const TEST_DATA_4: &str = "EEEEE
+EXXXX
+EEEEE
+EXXXX
+EEEEE";
+    const TEST_DATA_5: &str = "AAAAAA
+AAABBA
+AAABBA
+ABBAAA
+ABBAAA
+AAAAAA";
+
+    #[test]
+    fn part1_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA_1).unwrap();
+        let (p1, _) = solution_data.solve();
+        assert_eq!(p1, 140);
+    }
+
+    #[test]
+    fn part1_example_2() {
+        let solution_data = InputData::from_str(TEST_DATA_2).unwrap();
+        let (p1, _) = solution_data.solve();
+        assert_eq!(p1, 772);
+    }
+
+    #[test]
+    fn part1_example_3() {
+        let solution_data = InputData::from_str(TEST_DATA_3).unwrap();
         let (p1, _) = solution_data.solve();
         assert_eq!(p1, 1930);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "AAAA
-BBCD
-BBCC
-EEEC",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA_1).unwrap();
         let (_, p2) = solution_data.solve();
         assert_eq!(p2, 80);
     }
 
     #[test]
     fn part2_example_2() {
-        let testdata = String::from(
-            "EEEEE
-EXXXX
-EEEEE
-EXXXX
-EEEEE",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA_4).unwrap();
         let (_, p2) = solution_data.solve();
         assert_eq!(p2, 236);
     }
 
     #[test]
     fn part2_example_3() {
-        let testdata = String::from(
-            "AAAAAA
-AAABBA
-AAABBA
-ABBAAA
-ABBAAA
-AAAAAA",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA_5).unwrap();
         let (_, p2) = solution_data.solve();
         assert_eq!(p2, 368);
     }

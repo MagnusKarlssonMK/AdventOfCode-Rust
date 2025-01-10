@@ -10,12 +10,14 @@
 //!
 //! Run the simulation until all robots are in unique positions with no overlap.
 use crate::aoc_util::point::*;
-use std::collections::HashSet;
+use std::{collections::HashSet, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data = InputData::parse_input(input, 101, 103);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct Robot {
@@ -23,12 +25,13 @@ struct Robot {
     vel: Point,
 }
 
-impl Robot {
-    fn parse_input(input: &str) -> Self {
-        let (left, right) = input.split_once(' ').unwrap();
+impl FromStr for Robot {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (left, right) = s.split_once(' ').unwrap();
         let (left_x, left_y) = left.split_once(',').unwrap();
         let (right_x, right_y) = right.split_once(',').unwrap();
-        Self {
+        Ok(Self {
             pos: Point::new(
                 left_x.strip_prefix("p=").unwrap().parse().unwrap(),
                 left_y.parse().unwrap(),
@@ -37,7 +40,7 @@ impl Robot {
                 right_x.strip_prefix("v=").unwrap().parse().unwrap(),
                 right_y.parse().unwrap(),
             ),
-        }
+        })
     }
 }
 
@@ -50,7 +53,10 @@ struct InputData {
 impl InputData {
     fn parse_input(input: &str, x_max: usize, y_max: usize) -> Self {
         Self {
-            robots: input.lines().map(Robot::parse_input).collect(),
+            robots: input
+                .lines()
+                .map(|line| Robot::from_str(line).unwrap())
+                .collect(),
             x_max,
             y_max,
         }
@@ -101,8 +107,7 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "p=0,4 v=3,-3
+        let testdata = "p=0,4 v=3,-3
 p=6,3 v=-1,-3
 p=10,3 v=-1,2
 p=2,0 v=2,-1
@@ -113,9 +118,8 @@ p=3,0 v=-1,-2
 p=9,3 v=2,3
 p=7,3 v=-1,2
 p=2,4 v=2,-3
-p=9,5 v=-3,-3",
-        );
-        let solution_data = InputData::parse_input(&testdata, 11, 7);
+p=9,5 v=-3,-3";
+        let solution_data = InputData::parse_input(testdata, 11, 7);
         assert_eq!(solution_data.solve_part1(), 12);
     }
 }

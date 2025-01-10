@@ -7,12 +7,14 @@
 //! ## Part 2
 //!
 //! Some slightly different index juggling...
-use std::collections::VecDeque;
+use std::{collections::VecDeque, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct MemBlock {
@@ -24,16 +26,19 @@ struct InputData {
     disk_map: Vec<usize>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            disk_map: input
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            disk_map: s
                 .chars()
                 .map(|c| c.to_digit(10).unwrap() as usize)
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         let mut left_idx = 0;
         let mut right_idx = self.disk_map.len() - 1;
@@ -121,17 +126,17 @@ impl InputData {
 mod tests {
     use super::*;
 
+    const TEST_DATA: &str = "2333133121414131402";
+
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("2333133121414131402");
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), 1928);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("2333133121414131402");
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), 2858);
     }
 }

@@ -9,13 +9,12 @@
 //! to pre-calculate a graph and directly jump from one roadblock to the
 //! next. On todo-list!
 use crate::aoc_util::point::*;
-use std::collections::HashSet;
+use std::{collections::HashSet, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData {
@@ -25,13 +24,14 @@ struct InputData {
     guard_start_pos: Point,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut start: Option<Point> = None;
         let mut obstacles = HashSet::new();
         let mut x_max = 0;
         let mut y_max = 0;
-        for (y, line) in input.lines().enumerate() {
+        for (y, line) in s.lines().enumerate() {
             y_max += 1;
             if y == 0 {
                 x_max = line.len() as i32;
@@ -44,14 +44,16 @@ impl InputData {
                 }
             }
         }
-        Self {
+        Ok(Self {
             obstacles,
             x_max,
             y_max,
             guard_start_pos: start.unwrap(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let mut visited: HashSet<Point> = HashSet::new();
         let mut guard = self.guard_start_pos;
@@ -99,8 +101,7 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "....#.....
+        let testdata = "....#.....
 .........#
 ..........
 ..#.......
@@ -109,9 +110,8 @@ mod tests {
 .#..^.....
 ........#.
 #.........
-......#...",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+......#...";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 41);
         assert_eq!(p2, 6);

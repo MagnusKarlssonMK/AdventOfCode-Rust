@@ -1,10 +1,10 @@
-use std::collections::HashMap;
+//! # 2021 day 4 - Giant Squid
+use std::{collections::HashMap, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve_parts1_2();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct Board {
@@ -12,9 +12,10 @@ struct Board {
     cols: Vec<Vec<usize>>,
 }
 
-impl Board {
-    fn from_str(input: &str) -> Self {
-        let rows: Vec<Vec<usize>> = input
+impl FromStr for Board {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let rows: Vec<Vec<usize>> = s
             .lines()
             .map(|line| {
                 line.split_whitespace()
@@ -27,9 +28,11 @@ impl Board {
         let cols: Vec<Vec<usize>> = (0..nbr_cols)
             .map(|col| (0..nbr_rows).map(|row| rows[row][col]).collect())
             .collect();
-        Self { rows, cols }
+        Ok(Self { rows, cols })
     }
+}
 
+impl Board {
     fn get_bingoround_and_score(&self, drawmap: &HashMap<usize, usize>) -> (usize, usize) {
         let bingo_drawidx = self
             .rows
@@ -56,9 +59,10 @@ struct InputData {
     boards: Vec<Board>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        let mut blocks = input.split("\n\n");
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut blocks = s.split("\n\n");
         let draw: Vec<usize> = blocks
             .next()
             .unwrap()
@@ -69,14 +73,16 @@ impl InputData {
         for (i, d) in draw.iter().enumerate() {
             drawmap.insert(*d, i);
         }
-        let boards: Vec<Board> = blocks.map(Board::from_str).collect();
-        Self {
+        let boards: Vec<Board> = blocks.map(|b| Board::from_str(b).unwrap()).collect();
+        Ok(Self {
             draw,
             drawmap,
             boards,
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve_parts1_2(&self) -> (usize, usize) {
         let mut results: Vec<(usize, usize)> = self
             .boards
@@ -97,8 +103,7 @@ mod tests {
 
     #[test]
     fn part1_2_example_1() {
-        let testdata = String::from(
-            "7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
+        let testdata = "7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
 22 13 17 11  0
  8  2 23  4 24
@@ -116,9 +121,8 @@ mod tests {
 10 16 15  9 19
 18  8 23 26 20
 22 11 13  6  5
- 2  0 12  3  7",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+ 2  0 12  3  7";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve_parts1_2();
         assert_eq!(p1, 4512);
         assert_eq!(p2, 1924);

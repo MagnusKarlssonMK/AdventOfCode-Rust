@@ -1,11 +1,10 @@
 //! # 2024 day 5 - Print Queue
-use std::{cmp::Ordering, collections::HashMap};
+use std::{cmp::Ordering, collections::HashMap, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 enum UpdateResult {
@@ -17,18 +16,21 @@ struct PageOrderingRules {
     rules: HashMap<(usize, usize), Ordering>,
 }
 
-impl PageOrderingRules {
-    fn parse_str(input: &str) -> Self {
+impl FromStr for PageOrderingRules {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut rules = HashMap::new();
-        for line in input.lines() {
+        for line in s.lines() {
             let (left, right) = line.split_once('|').unwrap();
             let left: usize = left.parse().unwrap();
             let right: usize = right.parse().unwrap();
             rules.insert((left, right), Ordering::Less);
         }
-        Self { rules }
+        Ok(Self { rules })
     }
+}
 
+impl PageOrderingRules {
     fn validate_update(&self, update: &[usize]) -> UpdateResult {
         let idx_mid = update.len() / 2;
         if update
@@ -54,18 +56,21 @@ struct InputData {
     updates: Vec<Vec<usize>>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        let (r, u) = input.split_once("\n\n").unwrap();
-        Self {
-            rules: PageOrderingRules::parse_str(r),
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (r, u) = s.split_once("\n\n").unwrap();
+        Ok(Self {
+            rules: PageOrderingRules::from_str(r).unwrap(),
             updates: u
                 .lines()
                 .map(|line| line.split(',').map(|n| n.parse().unwrap()).collect())
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let mut p1 = 0;
         let mut p2 = 0;
@@ -85,8 +90,7 @@ mod tests {
 
     #[test]
     fn parts1_2_example_1() {
-        let testdata = String::from(
-            "47|53
+        let testdata = "47|53
 97|13
 97|61
 97|47
@@ -113,9 +117,8 @@ mod tests {
 75,29,13
 75,97,47,61,53
 61,13,29
-97,13,75,29,47",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+97,13,75,29,47";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 143);
         assert_eq!(p2, 123);

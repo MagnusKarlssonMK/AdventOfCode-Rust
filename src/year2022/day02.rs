@@ -1,7 +1,12 @@
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+//! # 2022 day 2 - Rock Paper Scissors
+use std::{error::Error, str::FromStr};
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -11,21 +16,24 @@ enum Hand {
     Scissors,
 }
 
+impl FromStr for Hand {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "A" => Ok(Self::Rock),
+            "B" => Ok(Self::Paper),
+            "C" => Ok(Self::Scissors),
+            _ => Err(()),
+        }
+    }
+}
+
 impl Hand {
     fn get_val(&self) -> usize {
         match self {
             Self::Rock => 0,
             Self::Paper => 1,
             Self::Scissors => 2,
-        }
-    }
-
-    fn from(s: &str) -> Self {
-        match s {
-            "A" => Self::Rock,
-            "B" => Self::Paper,
-            "C" => Self::Scissors,
-            _ => unreachable!(),
         }
     }
 
@@ -63,16 +71,19 @@ enum Guide {
     Draw,
 }
 
-impl Guide {
-    fn from(s: &str) -> Self {
+impl FromStr for Guide {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "X" => Self::Lose,
-            "Y" => Self::Draw,
-            "Z" => Self::Win,
-            _ => unreachable!(),
+            "X" => Ok(Self::Lose),
+            "Y" => Ok(Self::Draw),
+            "Z" => Ok(Self::Win),
+            _ => Err(()),
         }
     }
+}
 
+impl Guide {
     fn as_hand(&self) -> Hand {
         match self {
             Self::Lose => Hand::Rock,
@@ -86,19 +97,25 @@ struct InputData {
     rounds: Vec<(Hand, Guide)>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            rounds: input
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            rounds: s
                 .lines()
                 .map(|line| {
                     let hands: Vec<&str> = line.split_whitespace().collect();
-                    (Hand::from(hands[0]), Guide::from(hands[1]))
+                    (
+                        Hand::from_str(hands[0]).unwrap(),
+                        Guide::from_str(hands[1]).unwrap(),
+                    )
                 })
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         self.rounds
             .iter()
@@ -118,17 +135,17 @@ impl InputData {
 mod tests {
     use super::*;
 
+    const TEST_DATA: &str = "A Y\nB X\nC Z";
+
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("A Y\nB X\nC Z");
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), 15);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("A Y\nB X\nC Z");
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), 12);
     }
 }

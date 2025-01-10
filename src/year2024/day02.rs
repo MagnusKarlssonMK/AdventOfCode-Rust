@@ -1,11 +1,10 @@
 //! # 2024 day 2 - Red-Nosed Reports
-use std::cmp::Ordering;
+use std::{cmp::Ordering, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 #[derive(PartialEq)]
@@ -19,16 +18,19 @@ struct Report {
     levels: Vec<usize>,
 }
 
-impl Report {
-    fn new(input: &str) -> Self {
-        Self {
-            levels: input
+impl FromStr for Report {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            levels: s
                 .split_whitespace()
                 .map(|level| level.parse().unwrap())
                 .collect(),
-        }
+        })
     }
+}
 
+impl Report {
     fn get_safety_level(&self) -> SafetyLevel {
         fn is_safe(levels: &[usize]) -> bool {
             let diffs: Vec<(usize, Ordering)> = levels
@@ -63,13 +65,19 @@ struct InputData {
     reports: Vec<Report>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            reports: input.lines().map(Report::new).collect(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            reports: s
+                .lines()
+                .map(|line| Report::from_str(line).unwrap())
+                .collect(),
+        })
     }
+}
 
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let safety: Vec<SafetyLevel> = self.reports.iter().map(|r| r.get_safety_level()).collect();
         let safe: usize = safety.iter().filter(|s| **s == SafetyLevel::Safe).count();
@@ -87,15 +95,13 @@ mod tests {
 
     #[test]
     fn parts1_2_example_1() {
-        let testdata = String::from(
-            "7 6 4 2 1
+        let testdata = "7 6 4 2 1
 1 2 7 8 9
 9 7 6 2 1
 1 3 2 4 5
 8 6 4 4 1
-1 3 6 7 9",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+1 3 6 7 9";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 2);
         assert_eq!(p2, 4);

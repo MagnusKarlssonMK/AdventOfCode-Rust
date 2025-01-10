@@ -1,19 +1,24 @@
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+//! # 2017 day 9 - Stream Processing
+use std::error::Error;
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::try_from(input).unwrap();
     let (p1, p2) = solution_data.solve_parts_1_2();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData<'a> {
     stream: &'a str,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
-        Self { stream: input }
+impl<'a> TryFrom<&'a str> for InputData<'a> {
+    type Error = ();
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        Ok(Self { stream: s })
     }
+}
 
+impl InputData<'_> {
     fn solve_parts_1_2(&self) -> (usize, usize) {
         let mut tokens = self.stream.chars();
         let mut garbage_count = 0;
@@ -52,120 +57,120 @@ mod tests {
 
     #[test]
     fn part_1_example_1() {
-        let testdata = String::from("{}");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "{}";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, _) = solution_data.solve_parts_1_2();
         assert_eq!(p1, 1);
     }
 
     #[test]
     fn part_1_example_2() {
-        let testdata = String::from("{{{}}}");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "{{{}}}";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, _) = solution_data.solve_parts_1_2();
         assert_eq!(p1, 6);
     }
 
     #[test]
     fn part_1_example_3() {
-        let testdata = String::from("{{},{}}");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "{{},{}}";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, _) = solution_data.solve_parts_1_2();
         assert_eq!(p1, 5);
     }
 
     #[test]
     fn part_1_example_4() {
-        let testdata = String::from("{{{},{},{{}}}}");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "{{{},{},{{}}}}";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, _) = solution_data.solve_parts_1_2();
         assert_eq!(p1, 16);
     }
 
     #[test]
     fn part_1_example_5() {
-        let testdata = String::from("{<a>,<a>,<a>,<a>}");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "{<a>,<a>,<a>,<a>}";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, _) = solution_data.solve_parts_1_2();
         assert_eq!(p1, 1);
     }
 
     #[test]
     fn part_1_example_6() {
-        let testdata = String::from("{{<ab>},{<ab>},{<ab>},{<ab>}}");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "{{<ab>},{<ab>},{<ab>},{<ab>}}";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, _) = solution_data.solve_parts_1_2();
         assert_eq!(p1, 9);
     }
 
     #[test]
     fn part_1_example_7() {
-        let testdata = String::from("{{<!!>},{<!!>},{<!!>},{<!!>}}");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "{{<!!>},{<!!>},{<!!>},{<!!>}}";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, _) = solution_data.solve_parts_1_2();
         assert_eq!(p1, 9);
     }
 
     #[test]
     fn part_1_example_8() {
-        let testdata = String::from("{{<a!>},{<a!>},{<a!>},{<ab>}}");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "{{<a!>},{<a!>},{<a!>},{<ab>}}";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, _) = solution_data.solve_parts_1_2();
         assert_eq!(p1, 3);
     }
 
     #[test]
     fn part_2_example_1() {
-        let testdata = String::from("<>");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "<>";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (_, p2) = solution_data.solve_parts_1_2();
         assert_eq!(p2, 0);
     }
 
     #[test]
     fn part_2_example_2() {
-        let testdata = String::from("<random characters>");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "<random characters>";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (_, p2) = solution_data.solve_parts_1_2();
         assert_eq!(p2, 17);
     }
 
     #[test]
     fn part_2_example_3() {
-        let testdata = String::from("<<<<>");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "<<<<>";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (_, p2) = solution_data.solve_parts_1_2();
         assert_eq!(p2, 3);
     }
 
     #[test]
     fn part_2_example_4() {
-        let testdata = String::from("<{!>}>");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "<{!>}>";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (_, p2) = solution_data.solve_parts_1_2();
         assert_eq!(p2, 2);
     }
 
     #[test]
     fn part_2_example_5() {
-        let testdata = String::from("<!!>");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "<!!>";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (_, p2) = solution_data.solve_parts_1_2();
         assert_eq!(p2, 0);
     }
 
     #[test]
     fn part_2_example_6() {
-        let testdata = String::from("<!!!>>");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "<!!!>>";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (_, p2) = solution_data.solve_parts_1_2();
         assert_eq!(p2, 0);
     }
 
     #[test]
     fn part_2_example_7() {
-        let testdata = String::from("<{o\"i!a,<{i<a>");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "<{o\"i!a,<{i<a>";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (_, p2) = solution_data.solve_parts_1_2();
         assert_eq!(p2, 10);
     }

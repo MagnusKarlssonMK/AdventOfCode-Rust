@@ -13,21 +13,28 @@
 //! data that doesn't change after parsing, using this to as an opportunity
 //! to check out multi-threading.
 use crate::aoc_util::{grid::*, point::*, thread::*};
-use std::sync::atomic::{AtomicU32, Ordering};
+use std::{
+    error::Error,
+    str::FromStr,
+    sync::atomic::{AtomicU32, Ordering},
+};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData {
     path: Vec<Point>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        let grid = Grid::parse(input);
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let grid = Grid::parse(s);
         let start = grid.find('S').unwrap();
         let end = grid.find('E').unwrap();
         let mut grid_path = vec![start];
@@ -50,9 +57,11 @@ impl InputData {
                 }
             }
         }
-        Self { path: grid_path }
+        Ok(Self { path: grid_path })
     }
+}
 
+impl InputData {
     fn find_cheats(&self, cheat_steps: usize, gain: usize) -> usize {
         let total = AtomicU32::new(0);
         let items = Vec::from_iter(0..self.path.len());
@@ -87,10 +96,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "###############
+    const TEST_DATA: &str = "###############
 #...#...#.....#
 #.#.#.#.#.###.#
 #S#...#.#.#...#
@@ -104,9 +110,11 @@ mod tests {
 #.#...#.#.#...#
 #.#.#.#.#.#.###
 #...#...#...###
-###############",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+###############";
+
+    #[test]
+    fn part1_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.find_cheats(2, 2), 44);
         assert_eq!(solution_data.find_cheats(2, 4), 30);
         assert_eq!(solution_data.find_cheats(2, 6), 16);
@@ -122,24 +130,7 @@ mod tests {
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "###############
-#...#...#.....#
-#.#.#.#.#.###.#
-#S#...#.#.#...#
-#######.#.#.###
-#######.#.#...#
-#######.#.###.#
-###..E#...#...#
-###.#######.###
-#...###...#...#
-#.#####.#.###.#
-#.#...#.#.#...#
-#.#.#.#.#.#.###
-#...#...#...###
-###############",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.find_cheats(20, 50), 285);
         assert_eq!(solution_data.find_cheats(20, 52), 253);
         assert_eq!(solution_data.find_cheats(20, 54), 222);

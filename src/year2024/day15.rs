@@ -15,12 +15,18 @@
 //! and finding the ones with empty space above and swapping. The number of nodes involved
 //! is mostly quite low, so we can get away with such a simplistic approach.
 use crate::aoc_util::{grid::*, point::*};
-use std::collections::{HashSet, VecDeque};
+use std::{
+    collections::{HashSet, VecDeque},
+    error::Error,
+    str::FromStr,
+};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 impl Grid {
@@ -130,18 +136,21 @@ struct InputData {
     moves: Vec<Point>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        let (boxstr, movestr) = input.split_once("\n\n").unwrap();
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (boxstr, movestr) = s.split_once("\n\n").unwrap();
         let grid = Grid::parse(boxstr);
         let robot = grid.find('@').unwrap();
-        Self {
+        Ok(Self {
             grid,
             robot,
             moves: movestr.chars().filter_map(Point::from_dir).collect(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         let mut bumped_grid = self.grid.clone();
         let mut robot_pos = self.robot;
@@ -191,10 +200,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "########
+    const TEST_DATA_1: &str = "########
 #..O.O.#
 ##@.O..#
 #...O..#
@@ -203,16 +209,8 @@ mod tests {
 #......#
 ########
 
-<^^>>>vv<v>>v<<",
-        );
-        let solution_data = InputData::parse_input(&testdata);
-        assert_eq!(solution_data.solve_part1(), 2028);
-    }
-
-    #[test]
-    fn part1_example_2() {
-        let testdata = String::from(
-            "##########
+<^^>>>vv<v>>v<<";
+    const TEST_DATA_2: &str = "##########
 #..O..O.O#
 #......O.#
 #.OO..O.O#
@@ -232,16 +230,8 @@ vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
 >^>>^v>vv>^<<^v<>><<><<v<<v><>v<^vv<<<>^^v^>^^>>><<^v>>v^v><^^>>^<>vv^
 <><^^>^^^<><vvvvv^v<v<<>^v<v>v<<^><<><<><<<^^<<<^<<>><<><^^^>^^<>^>v<>
 ^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
-v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^",
-        );
-        let solution_data = InputData::parse_input(&testdata);
-        assert_eq!(solution_data.solve_part1(), 10092);
-    }
-
-    #[test]
-    fn part2_example_1() {
-        let testdata = String::from(
-            "#######
+v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^";
+    const TEST_DATA_3: &str = "#######
 #...#.#
 #.....#
 #..OO@#
@@ -249,38 +239,29 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^",
 #.....#
 #######
 
-<vv<<^^<<^^",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+<vv<<^^<<^^";
+
+    #[test]
+    fn part1_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA_1).unwrap();
+        assert_eq!(solution_data.solve_part1(), 2028);
+    }
+
+    #[test]
+    fn part1_example_2() {
+        let solution_data = InputData::from_str(TEST_DATA_2).unwrap();
+        assert_eq!(solution_data.solve_part1(), 10092);
+    }
+
+    #[test]
+    fn part2_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA_3).unwrap();
         assert_eq!(solution_data.solve_part2(), 105 + 207 + 306);
     }
 
     #[test]
     fn part2_example_2() {
-        let testdata = String::from(
-            "##########
-#..O..O.O#
-#......O.#
-#.OO..O.O#
-#..O@..O.#
-#O#..O...#
-#O..O..O.#
-#.OO.O.OO#
-#....O...#
-##########
-
-<vv>^<v^>v>^vv^v>v<>v^v<v<^vv<<<^><<><>>v<vvv<>^v^>^<<<><<v<<<v^vv^v>^
-vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
-><>vv>v^v^<>><>>>><^^>vv>v<^^^>>v^v^<^^>v^^>v^<^v>v<>>v^v^<v>v^^<^^vv<
-<<v<^>>^^^^>>>v^<>vvv^><v<<<>^^^vv^<vvv>^>v<^^^^v<>^>vvvv><>>v^<<^^^^^
-^><^><>>><>^^<<^^v>>><^<v>^<vv>>v>>>^v><>^v><<<<v>>v<v<v>vvv>^<><<>^><
-^>><>^v<><^vvv<^^<><v<<<<<><^v<<<><<<^^<v<^^^><^>>^<v^><<<^>>^v<v^v<v^
->^>>^v>vv>^<<^v<>><<><<v<<v><>v<^vv<<<>^^v^>^^>>><<^v>>v^v><^^>>^<>vv^
-<><^^>^^^<><vvvvv^v<v<<>^v<v>v<<^><<><<><<<^^<<<^<<>><<><^^^>^^<>^>v<>
-^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
-v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA_2).unwrap();
         assert_eq!(solution_data.solve_part2(), 9021);
     }
 }

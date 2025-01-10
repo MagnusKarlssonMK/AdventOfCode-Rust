@@ -22,12 +22,18 @@
 //! - Except for the first XOR, a correct XOR will connect to another XOR,
 //!   which in turn connects to output.
 
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::{
+    collections::{HashMap, HashSet, VecDeque},
+    error::Error,
+    str::FromStr,
+};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::try_from(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2(),
+    ))
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -37,16 +43,19 @@ enum Operation {
     Xor,
 }
 
-impl Operation {
-    fn new(input: &str) -> Self {
-        match input {
-            "AND" => Self::And,
-            "OR" => Self::Or,
-            "XOR" => Self::Xor,
-            _ => unreachable!(),
+impl FromStr for Operation {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "AND" => Ok(Self::And),
+            "OR" => Ok(Self::Or),
+            "XOR" => Ok(Self::Xor),
+            _ => Err(()),
         }
     }
+}
 
+impl Operation {
     const fn process(&self, a: usize, b: usize) -> usize {
         match self {
             Self::And => a & b,
@@ -63,20 +72,21 @@ struct Gate<'b> {
     op: Operation,
 }
 
-impl<'b> Gate<'b> {
-    fn new(input: &'b str) -> Self {
-        let mut tokens = input.split_whitespace();
+impl<'b> TryFrom<&'b str> for Gate<'b> {
+    type Error = ();
+    fn try_from(s: &'b str) -> Result<Self, Self::Error> {
+        let mut tokens = s.split_whitespace();
         let in_a = tokens.next().unwrap();
-        let op = Operation::new(tokens.next().unwrap());
+        let op = Operation::from_str(tokens.next().unwrap()).unwrap();
         let in_b = tokens.next().unwrap();
         tokens.next();
         let out = tokens.next().unwrap();
-        Self {
+        Ok(Self {
             in_a,
             in_b,
             out,
             op,
-        }
+        })
     }
 }
 
@@ -85,9 +95,10 @@ struct InputData<'a> {
     gates: Vec<Gate<'a>>,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
-        let (iv, g) = input.split_once("\n\n").unwrap();
+impl<'a> TryFrom<&'a str> for InputData<'a> {
+    type Error = ();
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        let (iv, g) = s.split_once("\n\n").unwrap();
         let initial_values = iv
             .lines()
             .map(|line| {
@@ -95,13 +106,18 @@ impl<'a> InputData<'a> {
                 (left, right.parse::<usize>().unwrap())
             })
             .collect();
-        let gates = g.lines().map(Gate::new).collect();
-        Self {
+        let gates = g
+            .lines()
+            .map(|line| Gate::try_from(line).unwrap())
+            .collect();
+        Ok(Self {
             initial_values,
             gates,
-        }
+        })
     }
+}
 
+impl InputData<'_> {
     fn solve_part1(&self) -> usize {
         let mut wires: HashMap<&str, usize> = HashMap::new();
         self.initial_values.iter().for_each(|(iv_name, iv_val)| {
@@ -183,8 +199,7 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "x00: 1
+        let testdata = "x00: 1
 x01: 1
 x02: 1
 y00: 0
@@ -193,16 +208,14 @@ y02: 0
 
 x00 AND y00 -> z00
 x01 XOR y01 -> z01
-x02 OR y02 -> z02",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+x02 OR y02 -> z02";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 4);
     }
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from(
-            "x00: 1
+        let testdata = "x00: 1
 x01: 0
 x02: 1
 x03: 1
@@ -248,9 +261,8 @@ bqk OR frj -> z07
 y03 OR x01 -> nrd
 hwm AND bqk -> z03
 tgd XOR rvg -> z12
-tnw OR pbm -> gnj",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+tnw OR pbm -> gnj";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 2024);
     }
 }

@@ -5,11 +5,12 @@
 //! operation if it's the only way to succeed at the validation. The state of
 //! whether or not concatenation has been used combined with the calculated value
 //! is carried up through the recursion chain through the return value.
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+use std::{error::Error, str::FromStr};
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 #[derive(PartialEq)]
@@ -24,18 +25,21 @@ struct Equation {
     numbers: Vec<usize>,
 }
 
-impl Equation {
-    fn parse_str(input: &str) -> Self {
-        let (left, right) = input.split_once(": ").unwrap();
-        Self {
+impl FromStr for Equation {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (left, right) = s.split_once(": ").unwrap();
+        Ok(Self {
             test_value: left.parse().unwrap(),
             numbers: right
                 .split_whitespace()
                 .map(|n| n.parse().unwrap())
                 .collect(),
-        }
+        })
     }
+}
 
+impl Equation {
     fn calibrate(&self) -> CalibrationResult {
         self.validate(self.numbers[0], &self.numbers[1..])
     }
@@ -90,13 +94,19 @@ struct InputData {
     equations: Vec<Equation>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            equations: input.lines().map(Equation::parse_str).collect(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            equations: s
+                .lines()
+                .map(|line| Equation::from_str(line).unwrap())
+                .collect(),
+        })
     }
+}
 
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let mut p1 = 0;
         let mut p2 = 0;
@@ -120,8 +130,7 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "190: 10 19
+        let testdata = "190: 10 19
 3267: 81 40 27
 83: 17 5
 156: 15 6
@@ -129,9 +138,8 @@ mod tests {
 161011: 16 10 13
 192: 17 8 14
 21037: 9 7 18 13
-292: 11 6 16 20",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+292: 11 6 16 20";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 3749);
         assert_eq!(p2, 11387);

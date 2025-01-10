@@ -1,11 +1,13 @@
 //! # 2022 day 9 - Rope Bridge
 use crate::aoc_util::point::*;
-use std::collections::HashSet;
+use std::{collections::HashSet, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 impl Point {
@@ -31,19 +33,22 @@ struct InputData {
     motions: Vec<(Point, usize)>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            motions: input
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            motions: s
                 .lines()
                 .map(|line| {
                     let (dir, len) = line.split_once(' ').unwrap();
                     (Point::parse_dir(dir), len.parse().unwrap())
                 })
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn get_nbr_tail_positions(&self, nbr_knots: usize) -> usize {
         let mut knotpos = vec![ORIGIN; nbr_knots];
         let mut tail_seen = HashSet::from([ORIGIN]);
@@ -75,51 +80,24 @@ impl InputData {
 mod tests {
     use super::*;
 
+    const TEST_DATA_1: &str = "R 4\nU 4\nL 3\nD 1\nR 4\nD 1\nL 5\nR 2";
+    const TEST_DATA_2: &str = "R 5\nU 8\nL 8\nD 3\nR 17\nD 10\nL 25\nU 20";
+
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "R 4
-U 4
-L 3
-D 1
-R 4
-D 1
-L 5
-R 2",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA_1).unwrap();
         assert_eq!(solution_data.solve_part1(), 13);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "R 4
-U 4
-L 3
-D 1
-R 4
-D 1
-L 5
-R 2",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA_1).unwrap();
         assert_eq!(solution_data.solve_part2(), 1);
     }
 
     #[test]
     fn part2_example_2() {
-        let testdata = String::from(
-            "R 5
-U 8
-L 8
-D 3
-R 17
-D 10
-L 25
-U 20",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA_2).unwrap();
         assert_eq!(solution_data.solve_part2(), 36);
     }
 }

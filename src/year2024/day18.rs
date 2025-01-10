@@ -19,12 +19,15 @@
 //! of a ms.
 use crate::aoc_util::{grid::*, point::*};
 use std::collections::{HashSet, VecDeque};
+use std::error::Error;
 use std::str::FromStr;
 
-pub fn solve(input: &str) {
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data = InputData::parse_input(input, 71);
-    println!("Part 1: {}", solution_data.solve_part1(1024));
-    println!("Part 2: {}", solution_data.solve_part2(1024));
+    Ok((
+        solution_data.solve_part1(1024).to_string(),
+        solution_data.solve_part2(1024),
+    ))
 }
 
 impl Point {
@@ -102,10 +105,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "5,4
+    const TEST_DATA: &str = "5,4
 4,2
 4,5
 3,0
@@ -129,42 +129,17 @@ mod tests {
 1,0
 0,5
 1,6
-2,0",
-        );
-        let solution_data = InputData::parse_input(&testdata, 7);
+2,0";
+
+    #[test]
+    fn part1_example_1() {
+        let solution_data = InputData::parse_input(TEST_DATA, 7);
         assert_eq!(solution_data.solve_part1(12), 22);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "5,4
-4,2
-4,5
-3,0
-2,1
-6,3
-2,4
-1,5
-0,6
-3,3
-2,6
-5,1
-1,2
-5,5
-2,5
-6,5
-1,4
-0,4
-6,4
-1,1
-6,1
-1,0
-0,5
-1,6
-2,0",
-        );
-        let solution_data = InputData::parse_input(&testdata, 7);
+        let solution_data = InputData::parse_input(TEST_DATA, 7);
         assert_eq!(solution_data.solve_part2(12), "6,1");
     }
 }

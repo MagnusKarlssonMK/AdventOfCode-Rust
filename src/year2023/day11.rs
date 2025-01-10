@@ -1,12 +1,11 @@
-use std::collections::HashSet;
-
+//! # 2023 day 11 - Cosmic Expansion
 use crate::aoc_util::point::*;
+use std::{collections::HashSet, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve(2, 1_000_000);
-    println!("Part 1: {}", p1);
-    println!("Part 1: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData {
@@ -31,8 +30,9 @@ impl Point {
     }
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut gal = Vec::new();
         let mut x_points = HashSet::new();
         let mut y_points = HashSet::new();
@@ -41,7 +41,7 @@ impl InputData {
         let mut y_min = 0;
         let mut y_max = 0;
         // My python solution didn't translate all that nicely into rust...
-        for (y, line) in input.lines().enumerate() {
+        for (y, line) in s.lines().enumerate() {
             for (x, c) in line.chars().enumerate() {
                 if c == '#' {
                     gal.push(Point::new(x as i32, y as i32));
@@ -66,13 +66,15 @@ impl InputData {
                 empty_y.insert(y);
             }
         }
-        Self {
+        Ok(Self {
             galaxies: gal,
             empty_x,
             empty_y,
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve(&self, small_exp_rate: usize, large_exp_rate: usize) -> (usize, usize) {
         let mut total_steps: usize = 0;
         let mut total_empty_space: usize = 0;
@@ -106,8 +108,7 @@ mod tests {
 
     #[test]
     fn parts1_2_example_1() {
-        let testdata = String::from(
-            "...#......
+        let testdata = "...#......
 .......#..
 #.........
 ..........
@@ -116,9 +117,8 @@ mod tests {
 .........#
 ..........
 .......#..
-#...#.....",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+#...#.....";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve(2, 10);
         assert_eq!(p1, 374);
         assert_eq!(p2, 1030);

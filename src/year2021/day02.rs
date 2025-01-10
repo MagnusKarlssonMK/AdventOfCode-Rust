@@ -2,32 +2,37 @@
 //!
 //! Some practice with rust enums.
 use crate::aoc_util::point::*;
+use std::{error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
-#[derive(Debug)]
 enum Command {
     Up(usize),
     Down(usize),
     Forward(usize),
 }
 
-impl Command {
-    fn from(s: &str) -> Self {
+impl FromStr for Command {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (_, right) = s.split_once(' ').unwrap();
         let val: usize = right.parse().unwrap();
         match s.chars().nth(0).unwrap() {
-            'u' => Self::Up(val),
-            'd' => Self::Down(val),
-            'f' => Self::Forward(val),
-            _ => unreachable!(),
+            'u' => Ok(Self::Up(val)),
+            'd' => Ok(Self::Down(val)),
+            'f' => Ok(Self::Forward(val)),
+            _ => Err(()),
         }
     }
+}
 
+impl Command {
     fn get_move(&self) -> Point {
         match self {
             Self::Up(v) => Point::new(0, -(*v as i32)),
@@ -56,13 +61,19 @@ struct InputData {
     commands: Vec<Command>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            commands: input.lines().map(Command::from).collect(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            commands: s
+                .lines()
+                .map(|line| Command::from_str(line).unwrap())
+                .collect(),
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         let mut position = ORIGIN;
         self.commands
@@ -88,17 +99,17 @@ impl InputData {
 mod tests {
     use super::*;
 
+    const TEST_DATA: &str = "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2";
+
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2");
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), 150);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2");
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), 900);
     }
 }

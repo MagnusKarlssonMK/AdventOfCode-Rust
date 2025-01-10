@@ -8,13 +8,16 @@
 //! answer to part 1 by throwing all the points found for each trailhead into
 //! a hashset and then calculating its length.
 use crate::aoc_util::{grid::*, point::*};
-use std::collections::{HashSet, VecDeque};
+use std::{
+    collections::{HashSet, VecDeque},
+    error::Error,
+    str::FromStr,
+};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData {
@@ -22,9 +25,10 @@ struct InputData {
     trailheads: Vec<Point>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        let map = Grid::parse(input);
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let map = Grid::parse(s);
         let trailheads = map
             .elements
             .iter()
@@ -32,9 +36,11 @@ impl InputData {
             .filter(|(_, v)| **v == '0')
             .map(|(i, _)| Point::new((i % map.x_max) as i32, (i / map.y_max) as i32))
             .collect();
-        Self { map, trailheads }
+        Ok(Self { map, trailheads })
     }
+}
 
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let mut totalscore = 0;
         let mut totalrating = 0;
@@ -69,30 +75,26 @@ mod tests {
 
     #[test]
     fn parts1_2_example_1() {
-        let testdata = String::from(
-            "0123
+        let testdata = "0123
 1234
 8765
-9876",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+9876";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, _) = solution_data.solve();
         assert_eq!(p1, 1);
     }
 
     #[test]
     fn parts1_2_example_2() {
-        let testdata = String::from(
-            "89010123
+        let testdata = "89010123
 78121874
 87430965
 96549874
 45678903
 32019012
 01329801
-10456732",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+10456732";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 36);
         assert_eq!(p2, 81);

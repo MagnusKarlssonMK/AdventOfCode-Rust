@@ -1,18 +1,21 @@
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+//! # 2017 day 12 - Digital Plumber
+use std::{error::Error, str::FromStr};
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData {
     numbers: Vec<Vec<usize>>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            numbers: input
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            numbers: s
                 .lines()
                 .map(|line| {
                     line.split_whitespace()
@@ -21,9 +24,11 @@ impl InputData {
                         .collect()
                 })
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let size = self.numbers.len();
         let mut seen = vec![false; size];
@@ -39,7 +44,7 @@ impl InputData {
 
     fn search_programs(&self, seen: &mut [bool], index: usize) -> usize {
         let mut total = 1;
-        for program_id in self.numbers[index].iter() {
+        for program_id in &self.numbers[index] {
             if !seen[*program_id] {
                 seen[*program_id] = true;
                 total += self.search_programs(seen, *program_id);
@@ -55,16 +60,14 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "0 <-> 2
+        let testdata = "0 <-> 2
 1 <-> 1
 2 <-> 0, 3, 4
 3 <-> 2, 4
 4 <-> 2, 3, 6
 5 <-> 6
-6 <-> 4, 5",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+6 <-> 4, 5";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 6);
         assert_eq!(p2, 2);

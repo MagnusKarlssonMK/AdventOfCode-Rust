@@ -1,23 +1,24 @@
-use std::collections::HashMap;
+//! # 2017 day 8 - I Heard You Like Registers
+use std::{collections::HashMap, error::Error};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::try_from(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData<'a> {
     instructions: &'a str,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
-        Self {
-            instructions: input,
-        }
+impl<'a> TryFrom<&'a str> for InputData<'a> {
+    type Error = ();
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        Ok(Self { instructions: s })
     }
+}
 
+impl InputData<'_> {
     fn solve(&self) -> (isize, isize) {
         let mut registers = HashMap::new();
         let mut maxval = 0;
@@ -63,13 +64,11 @@ mod tests {
 
     #[test]
     fn parts_1_2_example_1() {
-        let testdata = String::from(
-            "b inc 5 if a > 1
+        let testdata = "b inc 5 if a > 1
 a inc 1 if b < 5
 c dec -10 if a >= 1
-c inc -20 if c == 10",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+c inc -20 if c == 10";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 1);
         assert_eq!(p2, 10);

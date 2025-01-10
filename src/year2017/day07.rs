@@ -1,20 +1,23 @@
-use std::collections::HashMap;
+//! # 2017 day 7 - Recursive Circus
+use std::{collections::HashMap, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
-#[derive(Debug)]
 struct Program {
     weight: usize,
     leafs: Vec<String>,
 }
 
-impl Program {
-    fn from(line: &str) -> Self {
-        let tokens: Vec<String> = line
+impl FromStr for Program {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let tokens: Vec<String> = s
             .split_whitespace()
             .map(|token| token.to_string())
             .collect();
@@ -24,7 +27,7 @@ impl Program {
                 leaflist.push(t.trim_end_matches(',').to_string());
             }
         }
-        Self {
+        Ok(Self {
             weight: tokens[0]
                 .strip_prefix('(')
                 .unwrap()
@@ -33,7 +36,7 @@ impl Program {
                 .parse()
                 .unwrap(),
             leafs: leaflist,
-        }
+        })
     }
 }
 
@@ -42,13 +45,14 @@ struct InputData {
     root: String,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        let name_and_prog_list: Vec<(String, Program)> = input
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let name_and_prog_list: Vec<(String, Program)> = s
             .lines()
             .map(|line| {
                 let (name, rest) = line.split_once(' ').unwrap();
-                (name.to_string(), Program::from(rest))
+                (name.to_string(), Program::from_str(rest).unwrap())
             })
             .collect();
         let mut parents: HashMap<String, String> = HashMap::new();
@@ -63,12 +67,14 @@ impl InputData {
                 root = Some(p_name.clone());
             }
         }
-        Self {
+        Ok(Self {
             programs: HashMap::from_iter(name_and_prog_list),
             root: root.unwrap(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> String {
         self.root.clone()
     }
@@ -132,10 +138,8 @@ impl InputData {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "pbga (66)
+
+    const TEST_DATA: &str = "pbga (66)
 xhth (57)
 ebii (61)
 havc (66)
@@ -147,30 +151,17 @@ tknk (41) -> ugml, padx, fwft
 jptl (61)
 ugml (68) -> gyxo, ebii, jptl
 gyxo (61)
-cntj (57)",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+cntj (57)";
+
+    #[test]
+    fn part1_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), String::from("tknk"));
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "pbga (66)
-xhth (57)
-ebii (61)
-havc (66)
-ktlj (57)
-fwft (72) -> ktlj, cntj, xhth
-qoyq (66)
-padx (45) -> pbga, havc, qoyq
-tknk (41) -> ugml, padx, fwft
-jptl (61)
-ugml (68) -> gyxo, ebii, jptl
-gyxo (61)
-cntj (57)",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), 60);
     }
 }

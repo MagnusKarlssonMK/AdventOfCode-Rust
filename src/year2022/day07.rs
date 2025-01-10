@@ -1,26 +1,30 @@
 //! # 2022 day 7 - No Space Left On Device
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+use std::error::Error;
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::try_from(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData<'a> {
     command_blocks: Vec<&'a str>,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
-        Self {
-            command_blocks: input
+impl<'a> TryFrom<&'a str> for InputData<'a> {
+    type Error = ();
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        Ok(Self {
+            command_blocks: s
                 .split("$ ")
                 .filter(|s| !s.is_empty())
                 .map(|s| s.trim_end())
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData<'_> {
     fn solve(&self) -> (usize, usize) {
         let mut dir_sizes = Vec::new();
         let mut buffer = Vec::new();
@@ -74,8 +78,7 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "$ cd /
+        let testdata = "$ cd /
 $ ls
 dir a
 14848514 b.txt
@@ -97,9 +100,8 @@ $ ls
 4060174 j
 8033020 d.log
 5626152 d.ext
-7214296 k",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+7214296 k";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 95437);
         assert_eq!(p2, 24933642);

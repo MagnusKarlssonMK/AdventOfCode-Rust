@@ -1,10 +1,13 @@
-use std::ops::{Add, AddAssign};
+//! # 2017 day 11 - Hex Ed
+use std::{
+    error::Error,
+    ops::{Add, AddAssign},
+};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::try_from(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct Hexpoint {
@@ -57,11 +60,14 @@ struct InputData<'a> {
     moves: &'a str,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
-        Self { moves: input }
+impl<'a> TryFrom<&'a str> for InputData<'a> {
+    type Error = ();
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        Ok(Self { moves: s })
     }
+}
 
+impl InputData<'_> {
     fn solve(&self) -> (usize, usize) {
         let start_point = Hexpoint::new(0, 0);
         let mut current_location = Hexpoint::new(0, 0);
@@ -82,8 +88,8 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("ne,ne,ne");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "ne,ne,ne";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 3);
         assert_eq!(p2, 3);
@@ -91,8 +97,8 @@ mod tests {
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from("ne,ne,sw,sw");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "ne,ne,sw,sw";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 0);
         assert_eq!(p2, 2);
@@ -100,8 +106,8 @@ mod tests {
 
     #[test]
     fn part1_example_3() {
-        let testdata = String::from("ne,ne,s,s");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "ne,ne,s,s";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 2);
         assert_eq!(p2, 2);
@@ -109,8 +115,8 @@ mod tests {
 
     #[test]
     fn part1_example_4() {
-        let testdata = String::from("se,sw,se,sw,sw");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "se,sw,se,sw,sw";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 3);
         assert_eq!(p2, 3);

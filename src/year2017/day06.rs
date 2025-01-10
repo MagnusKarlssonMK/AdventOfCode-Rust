@@ -1,25 +1,31 @@
-use std::collections::HashSet;
+//! # 2017 day 6 - Memory Reallocation
+use std::{collections::HashSet, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let mut solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve());
-    println!("Part 2: {}", solution_data.solve());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let mut solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve().to_string(),
+        solution_data.solve().to_string(),
+    ))
 }
 
 struct InputData {
     memorybanks: Vec<i32>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            memorybanks: input
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            memorybanks: s
                 .split_whitespace()
                 .map(|nbr| nbr.parse().unwrap())
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn rebalance(&mut self) {
         let mut maxidx = self
             .memorybanks
@@ -55,8 +61,8 @@ mod tests {
     use super::*;
     #[test]
     fn part1_2_example_1() {
-        let testdata = String::from("0 2 7 0");
-        let mut solution_data = InputData::parse_input(&testdata);
+        let testdata = "0 2 7 0";
+        let mut solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve(), 5);
         assert_eq!(solution_data.solve(), 4);
     }

@@ -6,29 +6,28 @@
 //! rather than a vector, with the stone's number as key and number of stones with
 //! that number as value. Despite the desceptive description, the order of the stones
 //! is actually not important!
-use std::collections::HashMap;
+use std::{collections::HashMap, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve(25, 75);
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData {
     stones: Vec<usize>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            stones: input
-                .split_whitespace()
-                .map(|n| n.parse().unwrap())
-                .collect(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            stones: s.split_whitespace().map(|n| n.parse().unwrap()).collect(),
+        })
     }
+}
 
+impl InputData {
     fn solve(&self, blinks1: usize, blinks2: usize) -> (usize, usize) {
         let mut p1 = None;
         let mut p2 = None;
@@ -85,16 +84,16 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("0 1 10 99 999");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "0 1 10 99 999";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, _) = solution_data.solve(1, 1);
         assert_eq!(p1, 7);
     }
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from("125 17");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "125 17";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve(6, 25);
         assert_eq!(p1, 22);
         assert_eq!(p2, 55312);

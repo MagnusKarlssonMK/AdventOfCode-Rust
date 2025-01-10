@@ -1,20 +1,27 @@
 //! # 2024 day 23 - LAN Party
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    error::Error,
+    str::FromStr,
+};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2(),
+    ))
 }
 
 struct InputData {
     connections: HashMap<String, HashSet<String>>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut connections: HashMap<String, HashSet<String>> = HashMap::new();
-        input.lines().for_each(|line| {
+        s.lines().for_each(|line| {
             let (left, right) = line.split_once('-').unwrap();
             connections
                 .entry(left.to_string())
@@ -29,9 +36,11 @@ impl InputData {
                 })
                 .or_insert(HashSet::from([left.to_string()]));
         });
-        Self { connections }
+        Ok(Self { connections })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         let mut seen = HashSet::new();
         self.connections
@@ -82,10 +91,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "kh-tc
+    const TEST_DATA: &str = "kh-tc
 qp-kh
 de-cg
 ka-co
@@ -116,49 +122,17 @@ kh-ta
 co-tc
 wh-qp
 tb-vc
-td-yn",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+td-yn";
+
+    #[test]
+    fn part1_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), 7);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "kh-tc
-qp-kh
-de-cg
-ka-co
-yn-aq
-qp-ub
-cg-tb
-vc-aq
-tb-ka
-wh-tc
-yn-cg
-kh-ub
-ta-co
-de-co
-tc-td
-tb-wq
-wh-td
-ta-ka
-td-qp
-aq-cg
-wq-ub
-ub-vc
-de-ta
-wq-aq
-wq-vc
-wh-yn
-ka-de
-kh-ta
-co-tc
-wh-qp
-tb-vc
-td-yn",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), "co,de,ka,ta");
     }
 }

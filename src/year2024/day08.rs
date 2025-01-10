@@ -7,13 +7,16 @@
 //! respective part from their final lengths. Remember that also the original
 //! nodes needs to be included for the part2 calculation.
 use crate::aoc_util::point::*;
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    error::Error,
+    str::FromStr,
+};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 impl Point {
@@ -37,12 +40,13 @@ struct InputData {
     map_height: usize,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut antennas = HashMap::new();
         let mut map_height = 0;
         let mut map_width = 0;
-        for (y, line) in input.lines().enumerate() {
+        for (y, line) in s.lines().enumerate() {
             map_height += 1;
             if y == 0 {
                 map_width = line.len();
@@ -56,13 +60,15 @@ impl InputData {
                 }
             }
         }
-        Self {
+        Ok(Self {
             antennas,
             map_width,
             map_height,
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let mut antinodes = HashSet::new();
         let mut antinodes_w_harmonics = HashSet::new();
@@ -107,8 +113,7 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "............
+        let testdata = "............
 ........0...
 .....0......
 .......0....
@@ -119,9 +124,8 @@ mod tests {
 ........A...
 .........A..
 ............
-............",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+............";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 14);
         assert_eq!(p2, 34);

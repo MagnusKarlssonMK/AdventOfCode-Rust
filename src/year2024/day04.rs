@@ -11,24 +11,29 @@
 //! combination with the diagonal nodes to form the X, and see if the generated
 //! word is eithes MAS or SAM.
 use crate::aoc_util::{grid::*, point::*};
+use std::{error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData {
     grid: Grid,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            grid: Grid::parse(input),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            grid: Grid::parse(s),
+        })
     }
-
+}
+impl InputData {
     fn solve_part1(&self) -> usize {
         let mut total = 0;
         for (i, c) in self.grid.elements.iter().enumerate() {
@@ -88,10 +93,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "MMMSXXMASM
+    const TEST_DATA: &str = "MMMSXXMASM
 MSAMXMSMSA
 AMXSXMAAMM
 MSAMASMSMX
@@ -100,27 +102,17 @@ XXAMMXXAMA
 SMSMSASXSS
 SAXAMASAAA
 MAMMMXMMMM
-MXMXAXMASX",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+MXMXAXMASX";
+
+    #[test]
+    fn part1_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), 18);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "MMMSXXMASM
-MSAMXMSMSA
-AMXSXMAAMM
-MSAMASMSMX
-XMASAMXAMM
-XXAMMXXAMA
-SMSMSASXSS
-SAXAMASAAA
-MAMMMXMMMM
-MXMXAXMASX",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), 9);
     }
 }

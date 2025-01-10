@@ -1,7 +1,12 @@
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+//! # 2023 day 6 - Wait For It
+use std::{error::Error, str::FromStr};
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 #[derive(Debug)]
@@ -35,21 +40,24 @@ struct InputData {
     races: Vec<Race>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        let (times, distances) = input.split_once('\n').unwrap();
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (times, distances) = s.split_once('\n').unwrap();
         let (_, times) = times.split_once(':').unwrap();
         let (_, distances) = distances.split_once(':').unwrap();
-        Self {
+        Ok(Self {
             races: times
                 .split_whitespace()
                 .map(|v| v.parse().unwrap())
                 .zip(distances.split_whitespace().map(|v| v.parse().unwrap()))
                 .map(Race::from)
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         self.races.iter().map(|r| r.get_score()).product()
     }
@@ -75,23 +83,18 @@ impl InputData {
 mod tests {
     use super::*;
 
+    const TEST_DATA: &str = "Time:      7  15   30
+Distance:  9  40  200";
+
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "Time:      7  15   30
-Distance:  9  40  200",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), 288);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "Time:      7  15   30
-Distance:  9  40  200",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), 71503);
     }
 }

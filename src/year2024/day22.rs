@@ -1,26 +1,32 @@
 //! # 2024 day 22 - Monkey Market
 //!
 //! Really slow part 2...
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    error::Error,
+    str::FromStr,
+};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData {
     secret_numbers: Vec<usize>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            secret_numbers: input.lines().map(|line| line.parse().unwrap()).collect(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            secret_numbers: s.lines().map(|line| line.parse().unwrap()).collect(),
+        })
     }
+}
 
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let mut bananas: HashMap<Vec<isize>, isize> = HashMap::new();
         let p1 = self
@@ -65,26 +71,22 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "1
+        let testdata = "1
 10
 100
-2024",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+2024";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, _) = solution_data.solve();
         assert_eq!(p1, 37327623);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "1
+        let testdata = "1
 2
 3
-2024",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+2024";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (_, p2) = solution_data.solve();
         assert_eq!(p2, 23);
     }

@@ -1,32 +1,41 @@
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+//! # 2017 day 1 - Inverse Captcha
+use std::{error::Error, str::FromStr};
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData {
-    sequence: Vec<usize>,
+    sequence: Vec<u8>,
+}
+
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            sequence: s.chars().map(|c| c.to_digit(10).unwrap() as u8).collect(),
+        })
+    }
 }
 
 impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            sequence: input
-                .chars()
-                .map(|c| c.to_string().parse().unwrap())
-                .collect(),
-        }
-    }
-
     fn get_captcha(&self, halfway: bool) -> usize {
         let v_offset = if !halfway { 1 } else { self.sequence.len() / 2 };
-        let mut total: usize = 0;
-        for (i, nbr) in self.sequence.iter().enumerate() {
-            if *nbr == self.sequence[(i + v_offset) % self.sequence.len()] {
-                total += *nbr;
-            }
-        }
-        total
+        self.sequence
+            .iter()
+            .enumerate()
+            .filter(|(i, nbr)| {
+                self.sequence
+                    .get((i + v_offset) % self.sequence.len())
+                    .unwrap()
+                    == *nbr
+            })
+            .map(|(_, &nbr)| nbr as usize)
+            .sum::<usize>()
     }
 
     fn solve_part1(&self) -> usize {
@@ -43,64 +52,64 @@ mod tests {
     use super::*;
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("1122");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "1122";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 3);
     }
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from("1111");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "1111";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 4);
     }
 
     #[test]
     fn part1_example_3() {
-        let testdata = String::from("1234");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "1234";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
     fn part1_example_4() {
-        let testdata = String::from("91212129");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "91212129";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 9);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("1212");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "1212";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 6);
     }
 
     #[test]
     fn part2_example_2() {
-        let testdata = String::from("1221");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "1221";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 0);
     }
 
     #[test]
     fn part2_example_3() {
-        let testdata = String::from("123425");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "123425";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 4);
     }
 
     #[test]
     fn part2_example_4() {
-        let testdata = String::from("123123");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "123123";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 12);
     }
 
     #[test]
     fn part2_example_5() {
-        let testdata = String::from("12131415");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "12131415";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 4);
     }
 }

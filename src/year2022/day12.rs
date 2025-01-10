@@ -1,11 +1,17 @@
 //! # 2022 day 12 - Hill Climbing Algorithm
 use crate::aoc_util::{grid::*, point::*};
-use std::collections::{HashSet, VecDeque};
+use std::{
+    collections::{HashSet, VecDeque},
+    error::Error,
+    str::FromStr,
+};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData {
@@ -14,16 +20,19 @@ struct InputData {
     end: Point,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        let mut grid = Grid::parse(input);
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut grid = Grid::parse(s);
         let start = grid.find('S').unwrap();
         let end = grid.find('E').unwrap();
         grid.set_point(&start, 'a');
         grid.set_point(&end, 'z');
-        Self { grid, start, end }
+        Ok(Self { grid, start, end })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         self.bfs(false)
     }
@@ -72,29 +81,21 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "Sabqponm
+    const TEST_DATA: &str = "Sabqponm
 abcryxxl
 accszExk
 acctuvwj
-abdefghi",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+abdefghi";
+
+    #[test]
+    fn part1_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), 31);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "Sabqponm
-abcryxxl
-accszExk
-acctuvwj
-abdefghi",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), 29);
     }
 }

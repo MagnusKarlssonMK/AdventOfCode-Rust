@@ -10,24 +10,25 @@
 use crate::aoc_util::point::*;
 use std::{
     collections::{HashSet, VecDeque},
+    error::Error,
     str::FromStr,
 };
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData {
     rock_joints: Vec<Vec<Point>>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            rock_joints: input
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            rock_joints: s
                 .lines()
                 .map(|line| {
                     line.split(" -> ")
@@ -35,9 +36,11 @@ impl InputData {
                         .collect()
                 })
                 .collect(),
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let mut rocks = HashSet::new();
         for joints in &self.rock_joints {
@@ -96,12 +99,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "498,4 -> 498,6 -> 496,6
-503,4 -> 502,4 -> 502,9 -> 494,9",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+    fn part1_2_example_1() {
+        let testdata = "498,4 -> 498,6 -> 496,6
+503,4 -> 502,4 -> 502,9 -> 494,9";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 24);
         assert_eq!(p2, 93);

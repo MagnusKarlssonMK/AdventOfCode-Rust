@@ -1,10 +1,12 @@
 //! # 2019 day 6 - Universal Orbit Map
-use std::collections::HashMap;
+use std::{collections::HashMap, error::Error};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::try_from(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData<'a> {
@@ -14,13 +16,14 @@ struct InputData<'a> {
     santa: &'a str,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
+impl<'a> TryFrom<&'a str> for InputData<'a> {
+    type Error = ();
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
         let mut orbits = HashMap::new();
         let mut orbiting = HashMap::new();
         let mut you = None;
         let mut santa = None;
-        for line in input.lines() {
+        for line in s.lines() {
             let (left, right) = line.split_once(')').unwrap();
             orbits
                 .entry(left)
@@ -33,14 +36,16 @@ impl<'a> InputData<'a> {
                 santa = Some(left);
             }
         }
-        Self {
+        Ok(Self {
             orbits,
             orbiting,
             you: you.unwrap_or_default(),
             santa: santa.unwrap_or_default(),
-        }
+        })
     }
+}
 
+impl<'a> InputData<'a> {
     fn get_all_orbits(&self, obj: &'a str, seen: &mut HashMap<&'a str, usize>) -> usize {
         if let Some(cache) = seen.get(obj) {
             *cache
@@ -89,8 +94,7 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "COM)B
+        let testdata = "COM)B
 B)C
 C)D
 D)E
@@ -100,16 +104,14 @@ G)H
 D)I
 E)J
 J)K
-K)L",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+K)L";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 42);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from(
-            "COM)B
+        let testdata = "COM)B
 B)C
 C)D
 D)E
@@ -121,9 +123,8 @@ E)J
 J)K
 K)L
 K)YOU
-I)SAN",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+I)SAN";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 4);
     }
 }

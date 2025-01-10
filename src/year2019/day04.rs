@@ -1,7 +1,12 @@
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+//! # 2019 day 4 - Secure Container
+use std::{error::Error, str::FromStr};
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 #[derive(Debug)]
@@ -9,13 +14,16 @@ struct PwdNbr {
     number: usize,
 }
 
-impl PwdNbr {
-    fn new(input: &str) -> Self {
-        Self {
-            number: input.parse().unwrap(),
-        }
+impl FromStr for PwdNbr {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            number: s.parse().unwrap(),
+        })
     }
+}
 
+impl PwdNbr {
     fn from_vec(input: &[usize]) -> Self {
         Self {
             number: input
@@ -40,15 +48,18 @@ struct InputData {
     range_upper: PwdNbr,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        let (low, high) = input.split_once('-').unwrap();
-        Self {
-            range_lower: PwdNbr::new(low),
-            range_upper: PwdNbr::new(high),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (low, high) = s.split_once('-').unwrap();
+        Ok(Self {
+            range_lower: PwdNbr::from_str(low).unwrap(),
+            range_upper: PwdNbr::from_str(high).unwrap(),
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         self.pw_generator(false)
     }
@@ -62,9 +73,7 @@ impl InputData {
         let mut tmp = 0;
         // Find the first valid initial value starting from 'lower' - the value never decreases
         for i in 1..digits.len() {
-            if digits[i] == tmp {
-                digits[i] = tmp;
-            } else if digits[i] < digits[i - 1] {
+            if digits[i] != tmp && digits[i] < digits[i - 1] {
                 digits[i] = digits[i - 1];
                 tmp = digits[i];
             }

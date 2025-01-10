@@ -1,7 +1,12 @@
-pub fn solve(input: &str) {
+//! # 2023 day 1 - Trebuchet?!
+use std::error::Error;
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 const SPELLED_OUT: [&[u8]; 9] = [
@@ -87,15 +92,15 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("1abc2\npqr3stu8vwx\na1b2c3d4e5f\ntreb7uchet");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "1abc2\npqr3stu8vwx\na1b2c3d4e5f\ntreb7uchet";
+        let solution_data = InputData::parse_input(testdata);
         assert_eq!(solution_data.solve_part1(), 142);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("two1nine\neightwothree\nabcone2threexyz\nxtwone3four\n4nineeightseven2\nzoneight234\n7pqrstsixteen");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "two1nine\neightwothree\nabcone2threexyz\nxtwone3four\n4nineeightseven2\nzoneight234\n7pqrstsixteen";
+        let solution_data = InputData::parse_input(testdata);
         assert_eq!(solution_data.solve_part2(), 281);
     }
 }

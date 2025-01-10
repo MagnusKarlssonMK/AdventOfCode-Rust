@@ -1,12 +1,11 @@
 //! # 2021 day 5 - Hydrothermal Venture
 use crate::aoc_util::{grid::*, point::*};
-use std::str::FromStr;
+use std::{error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 impl Point {
@@ -69,13 +68,14 @@ struct InputData {
     y_max: usize,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut x_max = 0;
         let mut y_max = 0;
         let mut straight_lines = Vec::new();
         let mut diagonal_lines = Vec::new();
-        input.lines().for_each(|line| {
+        s.lines().for_each(|line| {
             let (p1, p2) = line.split_once(" -> ").unwrap();
             let p1 = Point::from_str(p1).unwrap();
             let p2 = Point::from_str(p2).unwrap();
@@ -87,14 +87,16 @@ impl InputData {
             x_max = x_max.max(p1.x as usize).max(p2.x as usize);
             y_max = y_max.max(p1.y as usize).max(p2.y as usize);
         });
-        Self {
+        Ok(Self {
             straight_lines,
             diagonal_lines,
             x_max,
             y_max,
-        }
+        })
     }
+}
 
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let mut ocean_floor = OceanFloor::new(self.x_max + 1, self.y_max + 1);
         self.straight_lines
@@ -115,8 +117,7 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "0,9 -> 5,9
+        let testdata = "0,9 -> 5,9
 8,0 -> 0,8
 9,4 -> 3,4
 2,2 -> 2,1
@@ -125,9 +126,8 @@ mod tests {
 0,9 -> 2,9
 3,4 -> 1,4
 0,0 -> 8,8
-5,5 -> 8,2",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+5,5 -> 8,2";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 5);
         assert_eq!(p2, 12);

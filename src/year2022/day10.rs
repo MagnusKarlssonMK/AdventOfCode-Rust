@@ -1,10 +1,13 @@
 //! # 2022 day 10 - Cathode-Ray Tube
 use crate::aoc_util::{grid::*, point::*};
+use std::{error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2(),
+    ))
 }
 
 enum Opcode {
@@ -12,13 +15,16 @@ enum Opcode {
     Addx(isize),
 }
 
-impl Opcode {
-    fn new(input: &str) -> Self {
-        if input.starts_with('n') {
-            Self::Noop
-        } else {
-            let (_, v) = input.split_once(' ').unwrap();
-            Self::Addx(v.parse().unwrap())
+impl FromStr for Opcode {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.chars().nth(0) {
+            Some('n') => Ok(Self::Noop),
+            Some('a') => {
+                let (_, v) = s.split_once(' ').unwrap();
+                Ok(Self::Addx(v.parse().unwrap()))
+            }
+            _ => Err(()),
         }
     }
 }
@@ -27,13 +33,19 @@ struct InputData {
     program: Vec<Opcode>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            program: input.lines().map(Opcode::new).collect(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            program: s
+                .lines()
+                .map(|line| Opcode::from_str(line).unwrap())
+                .collect(),
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         const INTERVALS: [usize; 6] = [20, 60, 100, 140, 180, 220];
         let mut total: isize = 0;
@@ -102,10 +114,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "addx 15
+    const TEST_DATA: &str = "addx 15
 addx -11
 addx 6
 addx -3
@@ -250,10 +259,17 @@ addx -6
 addx -11
 noop
 noop
-noop",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+noop";
+
+    #[test]
+    fn part1_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part1(), 13140);
+    }
+
+    #[test]
+    fn part2_example_1() {
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(
             solution_data.solve_part2(),
             "\n##  ##  ##  ##  ##  ##  ##  ##  ##  ##  

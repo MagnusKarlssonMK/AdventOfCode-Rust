@@ -2,10 +2,14 @@
 //!
 //! Calculates the answer basically by solving a matrix. The same function can be
 //! used for both parts, with an argument to input the extra scaling value for part 2.
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+use std::{error::Error, str::FromStr};
+
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 #[derive(Debug)]
@@ -15,13 +19,14 @@ struct ClawMachine {
     prize: (isize, isize),
 }
 
-impl ClawMachine {
-    fn parse(input: &str) -> Self {
-        let mut lines = input.lines();
+impl FromStr for ClawMachine {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut lines = s.lines();
         let a: Vec<&str> = lines.next().unwrap().split_whitespace().collect();
         let b: Vec<&str> = lines.next().unwrap().split_whitespace().collect();
         let p: Vec<&str> = lines.next().unwrap().split_whitespace().collect();
-        Self {
+        Ok(Self {
             button_a: (
                 a[2].strip_suffix(',')
                     .unwrap()
@@ -52,9 +57,11 @@ impl ClawMachine {
                     .unwrap(),
                 p[2].split_once('=').unwrap().1.parse().unwrap(),
             ),
-        }
+        })
     }
+}
 
+impl ClawMachine {
     fn get_win_tokens(&self, extra: usize) -> Option<usize> {
         let p_x = self.prize.0 + extra as isize;
         let p_y = self.prize.1 + extra as isize;
@@ -77,13 +84,19 @@ struct InputData {
     machines: Vec<ClawMachine>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            machines: input.split("\n\n").map(ClawMachine::parse).collect(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            machines: s
+                .split("\n\n")
+                .map(|m| ClawMachine::from_str(m).unwrap())
+                .collect(),
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         self.machines
             .iter()
@@ -105,8 +118,7 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "Button A: X+94, Y+34
+        let testdata = "Button A: X+94, Y+34
 Button B: X+22, Y+67
 Prize: X=8400, Y=5400
 
@@ -120,9 +132,8 @@ Prize: X=7870, Y=6450
 
 Button A: X+69, Y+23
 Button B: X+27, Y+71
-Prize: X=18641, Y=10279",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+Prize: X=18641, Y=10279";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 480);
     }
 }

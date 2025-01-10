@@ -1,28 +1,38 @@
+//! # 2017 day 3 - Spiral Memory
 use crate::aoc_util::point;
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    error::Error,
+    str::FromStr,
+};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData {
     puzzle_input: usize,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            puzzle_input: input.parse().unwrap(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            puzzle_input: s.parse().unwrap(),
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> usize {
         let mut head = point::ORIGIN;
         let mut direction = point::DOWN;
         let mut value: usize = 1;
-        let mut visited: HashSet<point::Point> = vec![head].into_iter().collect();
+        let mut visited = HashSet::from([head]);
         while value < self.puzzle_input {
             let left_direction = direction.rotate_left();
             let left_point = head + left_direction;
@@ -42,7 +52,7 @@ impl InputData {
         let mut head = point::ORIGIN;
         let mut direction = point::DOWN;
         let mut value: usize = 1;
-        let mut visited: HashMap<point::Point, usize> = vec![(head, value)].into_iter().collect();
+        let mut visited = HashMap::from([(head, value)]);
         while value < self.puzzle_input {
             let left_direction = direction.rotate_left();
             let left_point = head + left_direction;
@@ -52,12 +62,10 @@ impl InputData {
                 direction = left_direction;
                 head = left_point;
             }
-            value = 0;
-            for neighbor_dir in point::NEIGHBORS_ALL {
-                if let Some(neighborvalue) = visited.get(&(head + neighbor_dir)) {
-                    value += neighborvalue;
-                }
-            }
+            value = point::NEIGHBORS_ALL
+                .iter()
+                .filter_map(|d| visited.get(&(head + *d)))
+                .sum();
             visited.insert(head, value);
         }
         value
@@ -69,36 +77,36 @@ mod tests {
     use super::*;
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("1");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "1";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from("12");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "12";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 3);
     }
 
     #[test]
     fn part1_example_3() {
-        let testdata = String::from("23");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "23";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
     fn part1_example_4() {
-        let testdata = String::from("1024");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "1024";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 31);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = String::from("750");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "750";
+        let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 806);
     }
 }

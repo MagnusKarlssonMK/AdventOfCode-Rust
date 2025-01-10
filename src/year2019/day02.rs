@@ -1,23 +1,29 @@
+//! # 2019 day 2 - 1202 Program Alarm
 use super::intcode::*;
-use std::cmp::Ordering;
+use std::{cmp::Ordering, error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData {
     program: Vec<isize>,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        Self {
-            program: input.split(',').map(|n| n.parse().unwrap()).collect(),
-        }
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            program: s.split(',').map(|n| n.parse().unwrap()).collect(),
+        })
     }
+}
 
+impl InputData {
     fn solve_part1(&self) -> isize {
         let mut cpu = Intcode::new(&self.program);
         cpu.overwrite_pos(1, 12);

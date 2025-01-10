@@ -2,12 +2,13 @@
 use crate::aoc_util::{grid::*, point::*};
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashSet, VecDeque};
+use std::error::Error;
+use std::str::FromStr;
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::from_str(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 impl Point {
@@ -47,14 +48,17 @@ struct InputData {
     exit: Point,
 }
 
-impl InputData {
-    fn parse_input(input: &str) -> Self {
-        let maze = Grid::parse(input);
+impl FromStr for InputData {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let maze = Grid::parse(s);
         let start = maze.find('S').unwrap();
         let exit = maze.find('E').unwrap();
-        Self { maze, start, exit }
+        Ok(Self { maze, start, exit })
     }
+}
 
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let mut dist: Vec<_> = (0..self.maze.elements.len())
             .map(|_| [usize::MAX; 4])
@@ -138,9 +142,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part1_example_1() {
-        let testdata = String::from(
-            "###############
+    fn part1_2_example_1() {
+        let testdata = "###############
 #.......#....E#
 #.#.###.#.###.#
 #.....#.#...#.#
@@ -154,18 +157,16 @@ mod tests {
 #.....#...#.#.#
 #.###.#.#.#.#.#
 #S..#.....#...#
-###############",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+###############";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 7036);
         assert_eq!(p2, 45);
     }
 
     #[test]
-    fn part1_example_2() {
-        let testdata = String::from(
-            "#################
+    fn part1_2_example_2() {
+        let testdata = "#################
 #...#...#...#..E#
 #.#.#.#.#.#.#.#.#
 #.#.#.#...#...#.#
@@ -181,9 +182,8 @@ mod tests {
 #.#.#.........#.#
 #.#.#.#########.#
 #S#.............#
-#################",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+#################";
+        let solution_data = InputData::from_str(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 11048);
         assert_eq!(p2, 64);

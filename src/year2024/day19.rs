@@ -1,13 +1,12 @@
 //! # 2024 day 19 - Linen Layout
 //!
 //! Recursive solution with memo, solving both parts in one go.
-use std::collections::HashMap;
+use std::{collections::HashMap, error::Error};
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::try_from(input).unwrap();
     let (p1, p2) = solution_data.solve();
-    println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData<'a> {
@@ -15,15 +14,18 @@ struct InputData<'a> {
     designs: Vec<&'a str>,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
-        let (p, d) = input.split_once("\n\n").unwrap();
-        Self {
+impl<'a> TryFrom<&'a str> for InputData<'a> {
+    type Error = ();
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        let (p, d) = s.split_once("\n\n").unwrap();
+        Ok(Self {
             patterns: p.split(", ").collect(),
             designs: d.lines().collect(),
-        }
+        })
     }
+}
 
+impl InputData<'_> {
     fn solve(&self) -> (usize, usize) {
         let seen = &mut HashMap::new();
         let result: Vec<usize> = self
@@ -61,8 +63,7 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = String::from(
-            "r, wr, b, g, bwu, rb, gb, br
+        let testdata = "r, wr, b, g, bwu, rb, gb, br
 
 brwrr
 bggr
@@ -71,9 +72,8 @@ rrbgbr
 ubwu
 bwurrg
 brgr
-bbrgwb",
-        );
-        let solution_data = InputData::parse_input(&testdata);
+bbrgwb";
+        let solution_data = InputData::try_from(testdata).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 6);
         assert_eq!(p2, 16);

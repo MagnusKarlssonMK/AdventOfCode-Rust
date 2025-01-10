@@ -1,20 +1,27 @@
+//! # 2015 day 4 - The Ideal Stocking Stuffer
 use md5::{Digest, Md5};
+use std::error::Error;
 
-pub fn solve(input: &str) {
-    let solution_data = InputData::parse_input(input);
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+    let solution_data = InputData::try_from(input).unwrap();
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData<'a> {
     secret_key: &'a str,
 }
 
-impl<'a> InputData<'a> {
-    fn parse_input(input: &'a str) -> Self {
-        Self { secret_key: input }
+impl<'a> TryFrom<&'a str> for InputData<'a> {
+    type Error = ();
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        Ok(Self { secret_key: s })
     }
+}
 
+impl InputData<'_> {
     fn find_lowest_number(&self, prefix: &str) -> usize {
         let mut suffix: usize = 0;
         loop {
@@ -42,15 +49,15 @@ mod tests {
     use super::*;
     #[test]
     fn part1_example_1() {
-        let testdata = String::from("abcdef");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "abcdef";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 609043);
     }
 
     #[test]
     fn part1_example_2() {
-        let testdata = String::from("pqrstuv");
-        let solution_data = InputData::parse_input(&testdata);
+        let testdata = "pqrstuv";
+        let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 1048970);
     }
 }
