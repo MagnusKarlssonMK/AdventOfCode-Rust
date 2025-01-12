@@ -69,6 +69,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         },
         "2016" => match config.day.as_str() {
             "01" => year2016::day01::solve(&aoc_input)?,
+            "02" => year2016::day02::solve(&aoc_input)?,
             "03" => year2016::day03::solve(&aoc_input)?,
             _ => return Err(DAY_ERROR_MSG.into()),
         },

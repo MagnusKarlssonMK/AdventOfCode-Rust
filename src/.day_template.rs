@@ -1,10 +1,12 @@
 //! # 20xx day xx - 
-use std::error::Error;
+use std::{error::Error, str::FromStr};
 
-pub fn solve(input: &str) {
+pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data = InputData::from_str(input).unwrap();
-    println!("Part 1: {}", solution_data.solve_part1());
-    println!("Part 2: {}", solution_data.solve_part2());
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
 
 struct InputData {

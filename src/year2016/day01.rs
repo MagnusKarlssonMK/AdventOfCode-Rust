@@ -21,7 +21,7 @@ impl FromStr for Rotation {
         match s.chars().nth(0) {
             Some('L') => Ok(Self::Left),
             Some('R') => Ok(Self::Right),
-            _ => panic!("Can't parse rotation"),
+            _ => Err(()),
         }
     }
 }
