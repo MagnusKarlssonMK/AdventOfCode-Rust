@@ -51,7 +51,9 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         .join("AdventOfCode-Input")
         .join(&config.year)
         .join(format!("day{:02}.txt", &config.day));
-    let aoc_input = fs::read_to_string(filename)?.trim().to_string();
+    let aoc_input = fs::read_to_string(filename)?
+        .trim_end_matches('\n')
+        .to_string();
 
     const DAY_ERROR_MSG: &str = "Day not implemented";
     // Run solver
@@ -91,6 +93,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
             "11" => year2017::day11::solve(&aoc_input)?,
             "12" => year2017::day12::solve(&aoc_input)?,
             "13" => year2017::day13::solve(&aoc_input)?,
+            "19" => year2017::day19::solve(&aoc_input)?,
             _ => return Err(DAY_ERROR_MSG.into()),
         },
         "2018" => match config.day.as_str() {
