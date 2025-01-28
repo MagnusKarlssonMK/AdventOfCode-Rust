@@ -9,18 +9,15 @@ pub const RIGHT: Point = Point::new(1, 0);
 pub const UP: Point = Point::new(0, -1);
 pub const DOWN: Point = Point::new(0, 1);
 pub const ORIGIN: Point = Point::new(0, 0);
+pub const DIAG_R_D: Point = Point::new(1, 1);
+pub const DIAG_L_D: Point = Point::new(-1, 1);
+pub const DIAG_L_U: Point = Point::new(-1, -1);
+pub const DIAG_R_U: Point = Point::new(1, -1);
 
 pub const NEIGHBORS_STRAIGHT: [Point; 4] = [RIGHT, DOWN, LEFT, UP];
 
 pub const NEIGHBORS_ALL: [Point; 8] = [
-    RIGHT,
-    Point::new(1, 1),
-    DOWN,
-    Point::new(-1, 1),
-    LEFT,
-    Point::new(-1, -1),
-    UP,
-    Point::new(1, -1),
+    RIGHT, DIAG_R_D, DOWN, DIAG_L_D, LEFT, DIAG_L_U, UP, DIAG_R_U,
 ];
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
