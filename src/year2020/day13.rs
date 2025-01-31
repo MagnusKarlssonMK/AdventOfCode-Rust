@@ -13,7 +13,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 
 struct InputData {
     estimate: usize,
-    buslist: Vec<(usize, usize)>,  // busid, offset-idx
+    buslist: Vec<(usize, usize)>, // busid, offset-idx
 }
 
 impl FromStr for InputData {
