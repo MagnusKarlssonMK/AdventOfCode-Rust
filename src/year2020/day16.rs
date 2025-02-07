@@ -1,5 +1,7 @@
 //! # 2020 day 16 - Ticket Translation
-use std::{collections::{HashSet, VecDeque}, error::Error, str::FromStr};
+//!
+//! Kind of like Sudoku.
+use std::{collections::VecDeque, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data = InputData::from_str(input).unwrap();
@@ -37,7 +39,7 @@ impl FieldRule {
 }
 
 struct InputData {
-    fields: Vec<FieldRule>,
+    fieldrules: Vec<FieldRule>,
     your: Vec<usize>,
     nearby: Vec<Vec<usize>>,
 }
@@ -69,7 +71,7 @@ impl FromStr for InputData {
             .map(|line| line.split(',').map(|n| n.parse().unwrap()).collect())
             .collect();
         Ok(Self {
-            fields,
+            fieldrules: fields,
             your,
             nearby,
         })
@@ -82,7 +84,7 @@ impl InputData {
         let mut valid = Vec::new();
         'outer: for ticket in &self.nearby {
             for nbr in ticket {
-                if !self.fields.iter().any(|f| f.is_in_range(nbr)) {
+                if !self.fieldrules.iter().any(|f| f.is_in_range(nbr)) {
                     invalid += nbr;
                     continue 'outer;
                 }
@@ -91,17 +93,45 @@ impl InputData {
         }
 
         let nbrcols = self.nearby.first().unwrap().len();
-        let mut nbrsets: Vec<HashSet<usize>> = Vec::with_capacity(nbrcols);
-        for i in 0..nbrcols {
-            nbrsets.push(HashSet::from_iter(self.nearby.iter().map(|n| *n.get(i).unwrap())));
-        }
-        let possible: Vec<Vec<usize>> = nbrsets.iter().map(|nbrset| self.fields.iter().filter(|field| nbrset.iter().all(|nbr| field.is_in_range(nbr))).enumerate().map(|(i, _)| i).collect::<Vec<usize>>()).collect();
-        let mut possible: Vec<_> = possible.iter().enumerate().map(|(i, p)| (i, p)).collect();
+        // Create vec of possible rule indices for each position, wrapped with the index of the position to keep track after sorting
+        let mut possible: Vec<(usize, Vec<usize>)> = (0..nbrcols)
+            .map(|i| {
+                (
+                    i,
+                    self.fieldrules
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, f)| valid.iter().all(|n| f.is_in_range(n.get(i).unwrap())))
+                        .map(|(idx, _)| idx)
+                        .collect(),
+                )
+            })
+            .collect();
+        // Sort the vec by number of possible values, to minimize the number of possible paths when traversing
         possible.sort_unstable_by(|a, b| a.1.len().cmp(&b.1.len()));
-        let mut queue = VecDeque::from_iter(possible.first().unwrap().1);
-        //let mut paths = Vec::new();
-        while let Some(current) = queue.pop_front() {break;}
-        (invalid, 1)
+        // Ugly! - start with a vector of some invalid value to avoid getting false matches on 'contains' check later in the search
+        let mut path = vec![nbrcols + 1; nbrcols];
+        let mut queue = VecDeque::from([(path.clone(), 0)]);
+        while let Some((current, nbr)) = queue.pop_front() {
+            if nbr == nbrcols {
+                path = current;
+                break;
+            }
+            for nxt in possible.get(nbr).unwrap().1.iter() {
+                if !current.contains(nxt) {
+                    let mut n = current.clone();
+                    n[possible.get(nbr).unwrap().0] = *nxt;
+                    queue.push_back((n, nbr + 1));
+                }
+            }
+        }
+        let departures = path
+            .iter()
+            .enumerate()
+            .filter(|(_, &p)| self.fieldrules.get(p).unwrap().is_departure)
+            .map(|(i, _)| self.your.get(i).unwrap())
+            .product();
+        (invalid, departures)
     }
 }
 
