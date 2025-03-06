@@ -10,23 +10,31 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct InputData<'a> {
-    lines: Vec<&'a str>
+    lines: Vec<&'a str>,
 }
 
 impl<'a> TryFrom<&'a str> for InputData<'a> {
     type Error = ();
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
-        Ok(Self { lines: s.lines().collect() })
+        Ok(Self {
+            lines: s.lines().collect(),
+        })
     }
 }
 
 impl InputData<'_> {
     fn solve_part1(&self) -> usize {
-        self.lines.iter().map(|line| shunting_yard(line, false)).sum()
+        self.lines
+            .iter()
+            .map(|line| shunting_yard(line, false))
+            .sum()
     }
 
     fn solve_part2(&self) -> usize {
-        self.lines.iter().map(|line| shunting_yard(line, true)).sum()
+        self.lines
+            .iter()
+            .map(|line| shunting_yard(line, true))
+            .sum()
     }
 }
 
@@ -48,10 +56,10 @@ fn shunting_yard(s: &str, is_advanced: bool) -> usize {
                         }
                     }
                     opstack.push_back(c);
-                },
+                }
                 '(' => {
                     opstack.push_back(c);
-                },
+                }
                 ')' => {
                     while let Some(o) = opstack.pop_back() {
                         if o != '(' {
@@ -60,7 +68,7 @@ fn shunting_yard(s: &str, is_advanced: bool) -> usize {
                             break;
                         }
                     }
-                },
+                }
                 _ => (),
             }
         }
@@ -77,10 +85,10 @@ fn shunting_yard(s: &str, is_advanced: bool) -> usize {
                 let v2 = evaluated.pop_back().unwrap();
                 let n = if *c == '+' { v1 + v2 } else { v1 * v2 };
                 evaluated.push_back(n);
-            },
+            }
             _ => {
                 evaluated.push_back(c.to_digit(10).unwrap() as usize);
-            },
+            }
         }
     }
     *evaluated.front().unwrap()

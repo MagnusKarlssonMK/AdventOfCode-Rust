@@ -127,6 +127,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
             "14" => year2020::day14::solve(&aoc_input)?,
             "15" => year2020::day15::solve(&aoc_input)?,
             "16" => year2020::day16::solve(&aoc_input)?,
+            "17" => year2020::day17::solve(&aoc_input)?,
             "18" => year2020::day18::solve(&aoc_input)?,
             _ => return Err(DAY_ERROR_MSG.into()),
         },
