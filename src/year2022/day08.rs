@@ -86,13 +86,11 @@ impl InputData {
     }
 
     fn solve_part2(&self) -> usize {
-        let mut scorelist = vec![0; 10];
+        let mut scorelist = [0; 10];
         let mut gridscore = vec![1; self.grid.x_max * self.grid.y_max];
         for y in 0..self.grid.y_max {
             // Right
-            for s in &mut scorelist {
-                *s = 0;
-            }
+            scorelist.fill(0);
             for x in 0..self.grid.x_max {
                 let p = Point::new(x as i32, y as i32);
                 let v = self.grid.get_uint_element(&p).unwrap() as usize;
@@ -107,9 +105,7 @@ impl InputData {
                 }
             }
             // Left
-            for s in &mut scorelist {
-                *s = 0;
-            }
+            scorelist.fill(0);
             for x in (0..self.grid.x_max).rev() {
                 let p = Point::new(x as i32, y as i32);
                 let v = self.grid.get_uint_element(&p).unwrap() as usize;
@@ -127,9 +123,7 @@ impl InputData {
         let mut largest = 0;
         for x in 0..self.grid.x_max {
             // Down
-            for s in &mut scorelist {
-                *s = 0;
-            }
+            scorelist.fill(0);
             for y in 0..self.grid.y_max {
                 let p = Point::new(x as i32, y as i32);
                 let v = self.grid.get_uint_element(&p).unwrap() as usize;
@@ -144,9 +138,7 @@ impl InputData {
                 }
             }
             // Up
-            for s in &mut scorelist {
-                *s = 0;
-            }
+            scorelist.fill(0);
             for y in (0..self.grid.y_max).rev() {
                 let p = Point::new(x as i32, y as i32);
                 let v = self.grid.get_uint_element(&p).unwrap() as usize;

@@ -96,9 +96,7 @@ impl InputData {
                 return next.iter().filter(|c| **c == '#').count();
             }
             current.elements = next;
-            for v in &mut counts {
-                *v = 0
-            }
+            counts.fill(0);
         }
     }
 

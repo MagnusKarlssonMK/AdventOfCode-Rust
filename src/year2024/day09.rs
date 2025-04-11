@@ -78,7 +78,7 @@ impl InputData {
 
     fn solve_part2(&self) -> usize {
         let mut emptyblocks: VecDeque<MemBlock> =
-            VecDeque::with_capacity((1 + self.disk_map.len()) / 2);
+            VecDeque::with_capacity(self.disk_map.len().div_ceil(2));
         let mut mempos = 0;
         for (i, v) in self.disk_map.iter().enumerate() {
             if i % 2 == 1 && *v > 0 {
