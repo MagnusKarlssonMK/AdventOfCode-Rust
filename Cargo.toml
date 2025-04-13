@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 md-5 = "0.10.6"
+itertools = "0.14.0"
