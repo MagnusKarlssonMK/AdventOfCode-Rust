@@ -59,7 +59,7 @@ impl FromStr for Point {
                 y: y.parse()?,
             })
         } else {
-            Err(format!("Can't parse to point: {}", s).into())
+            Err(format!("Can't parse to point: {s}").into())
         }
     }
 }
