@@ -40,10 +40,10 @@ impl InputData<'_> {
         for row in &self.instructions {
             for step in row.chars().map(|c| Point::to_dir(&c)) {
                 let next = step + current;
-                if let Some(e) = keypad.get_element(&next) {
-                    if e != ' ' {
-                        current = next;
-                    }
+                if let Some(e) = keypad.get_element(&next)
+                    && e != ' '
+                {
+                    current = next;
                 }
             }
             result.push(keypad.get_element(&current).unwrap());

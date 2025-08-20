@@ -136,10 +136,10 @@ impl InputData<'_> {
         }
         let mut z = 0;
         for (wire, val) in wires {
-            if let Some(rest) = wire.strip_prefix('z') {
-                if let Ok(nbr) = rest.parse::<usize>() {
-                    z |= val << nbr;
-                }
+            if let Some(rest) = wire.strip_prefix('z')
+                && let Ok(nbr) = rest.parse::<usize>()
+            {
+                z |= val << nbr;
             }
         }
         z

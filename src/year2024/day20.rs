@@ -47,11 +47,11 @@ impl FromStr for InputData {
                     if e == '#' {
                         continue;
                     }
-                    if let Some(previous) = grid_path.get(grid_path.len().wrapping_sub(2)) {
-                        if *previous == neighbor {
-                            continue;
-                        }
-                    };
+                    if let Some(previous) = grid_path.get(grid_path.len().wrapping_sub(2))
+                        && *previous == neighbor
+                    {
+                        continue;
+                    }
                     grid_path.push(neighbor);
                     break;
                 }

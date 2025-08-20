@@ -35,7 +35,7 @@ impl FromStr for Packet {
                         return Packet::Cons(
                             Value::List(Box::new(parse_chars(c_input))),
                             Box::new(parse_chars(c_input)),
-                        )
+                        );
                     }
                     ']' => {
                         if let Some(v) = int_buffer {

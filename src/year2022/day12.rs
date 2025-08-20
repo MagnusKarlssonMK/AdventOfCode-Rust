@@ -64,12 +64,11 @@ impl InputData {
                 if neighbor == prev {
                     continue;
                 }
-                if let Some(e) = self.grid.get_element(&neighbor) {
-                    if (!backwards && e as isize - v as isize <= 1)
-                        || (backwards && v as isize - e as isize <= 1)
-                    {
-                        queue.push_back((neighbor, steps + 1, current));
-                    }
+                if let Some(e) = self.grid.get_element(&neighbor)
+                    && ((!backwards && e as isize - v as isize <= 1)
+                        || (backwards && v as isize - e as isize <= 1))
+                {
+                    queue.push_back((neighbor, steps + 1, current));
                 }
             }
         }

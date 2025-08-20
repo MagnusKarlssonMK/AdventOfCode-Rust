@@ -31,7 +31,7 @@ impl InputData {
             .memorybanks
             .iter()
             .enumerate()
-            .min_by_key(|(_, &val)| -val)
+            .min_by_key(|(_, val)| -*val)
             .unwrap()
             .0;
         // Note - need to use min-by and negate the key to get the first index, since

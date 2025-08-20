@@ -94,16 +94,16 @@ impl InputData {
                 (cost + 1000, position, direction.rotate_left()),
                 (cost + 1000, position, direction.rotate_right()),
             ] {
-                if let Some(e) = self.maze.get_element(&newpos) {
-                    if e != '#' && newcost < dist[self.maze.get_index(&newpos)][newdir.dir_to_idx()]
-                    {
-                        queue.push(State {
-                            cost: newcost,
-                            position: newpos,
-                            direction: newdir,
-                        });
-                        dist[self.maze.get_index(&newpos)][newdir.dir_to_idx()] = newcost;
-                    }
+                if let Some(e) = self.maze.get_element(&newpos)
+                    && e != '#'
+                    && newcost < dist[self.maze.get_index(&newpos)][newdir.dir_to_idx()]
+                {
+                    queue.push(State {
+                        cost: newcost,
+                        position: newpos,
+                        direction: newdir,
+                    });
+                    dist[self.maze.get_index(&newpos)][newdir.dir_to_idx()] = newcost;
                 }
             }
         }

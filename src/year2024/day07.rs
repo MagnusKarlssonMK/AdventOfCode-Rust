@@ -72,7 +72,7 @@ impl Equation {
                 match conc_result {
                     CalibrationResult::Ok(v) => return CalibrationResult::ConcatinatedOk(v),
                     CalibrationResult::ConcatinatedOk(v) => {
-                        return CalibrationResult::ConcatinatedOk(v)
+                        return CalibrationResult::ConcatinatedOk(v);
                     }
                     CalibrationResult::NotOk => (),
                 }

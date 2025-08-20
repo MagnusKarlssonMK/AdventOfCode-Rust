@@ -54,10 +54,10 @@ impl InputData {
                     totalrating += 1;
                 } else {
                     for neighbor in NEIGHBORS_STRAIGHT.map(|dir| dir + current) {
-                        if let Some(neighbor_val) = self.map.get_uint_element(&neighbor) {
-                            if neighbor_val == self.map.get_uint_element(&current).unwrap() + 1 {
-                                queue.push_back(neighbor);
-                            }
+                        if let Some(neighbor_val) = self.map.get_uint_element(&neighbor)
+                            && neighbor_val == self.map.get_uint_element(&current).unwrap() + 1
+                        {
+                            queue.push_back(neighbor);
                         }
                     }
                 }

@@ -128,7 +128,7 @@ impl InputData {
         let departures = path
             .iter()
             .enumerate()
-            .filter(|(_, &p)| self.fieldrules.get(p).unwrap().is_departure)
+            .filter(|(_, p)| self.fieldrules.get(**p).unwrap().is_departure)
             .map(|(i, _)| self.your.get(i).unwrap())
             .product();
         (invalid, departures)
