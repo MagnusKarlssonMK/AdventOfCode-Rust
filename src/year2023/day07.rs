@@ -189,10 +189,10 @@ QQQJA 483";
     fn part2_example_1() {
         let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.hands[0].get_joker_power(), 0x232a3d);
-        assert_eq!(solution_data.hands[1].get_joker_power(), 0x6a55b5);
+        assert_eq!(solution_data.hands[1].get_joker_power(), 0x6a5515);
         assert_eq!(solution_data.hands[2].get_joker_power(), 0x3dd677);
-        assert_eq!(solution_data.hands[3].get_joker_power(), 0x6dabba);
-        assert_eq!(solution_data.hands[4].get_joker_power(), 0x6cccbe);
+        assert_eq!(solution_data.hands[3].get_joker_power(), 0x6da11a);
+        assert_eq!(solution_data.hands[4].get_joker_power(), 0x6ccc1e);
         assert_eq!(solution_data.solve_part2(), 5905);
     }
 }
