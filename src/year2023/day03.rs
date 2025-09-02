@@ -137,6 +137,13 @@ mod tests {
 ...$.*....
 .664.598..";
 
+    // Home made test to cover items in the rightmost column
+    const TEST_DATA_CUSTOM: &str = ".23+..4.
+.......*
+11.....7
+*.5..+..
+3..2..*6";
+
     #[test]
     fn part1_example_1() {
         let solution_data = InputData::from_str(TEST_DATA).unwrap();
@@ -144,8 +151,20 @@ mod tests {
     }
 
     #[test]
+    fn part1_example_2() {
+        let solution_data = InputData::from_str(TEST_DATA_CUSTOM).unwrap();
+        assert_eq!(solution_data.solve_part1(), 54);
+    }
+
+    #[test]
     fn part2_example_1() {
         let solution_data = InputData::from_str(TEST_DATA).unwrap();
         assert_eq!(solution_data.solve_part2(), 467835);
+    }
+
+    #[test]
+    fn part2_example_2() {
+        let solution_data = InputData::from_str(TEST_DATA_CUSTOM).unwrap();
+        assert_eq!(solution_data.solve_part2(), 61);
     }
 }
