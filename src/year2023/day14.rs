@@ -36,7 +36,7 @@ impl Grid {
 
     fn tilt_south(&mut self) {
         for x in 0..self.x_max as i32 {
-            let mut floor = self.x_max as i32 - 1;
+            let mut floor = self.y_max as i32 - 1;
             for y in (0..self.y_max as i32).rev() {
                 let current_point = Point::new(x, y);
                 if let Some(e) = self.get_element(&current_point) {
@@ -58,7 +58,7 @@ impl Grid {
 
     fn tilt_east(&mut self) {
         for y in 0..self.y_max as i32 {
-            let mut floor = self.y_max as i32 - 1;
+            let mut floor = self.x_max as i32 - 1;
             for x in (0..self.x_max as i32).rev() {
                 let current_point = Point::new(x, y);
                 if let Some(e) = self.get_element(&current_point) {
