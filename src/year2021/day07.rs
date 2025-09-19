@@ -27,7 +27,7 @@ impl InputData {
         let mut crabs = self.crabs.to_vec();
         crabs.sort_unstable();
         let middle = crabs.len() / 2;
-        if crabs.len() % 2 == 0 {
+        if crabs.len().is_multiple_of(2) {
             (crabs[middle - 1] + crabs[middle]) / 2
         } else {
             crabs[middle]

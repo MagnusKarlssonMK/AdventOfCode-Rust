@@ -111,7 +111,7 @@ impl Monkey {
             } else {
                 current_item %= r;
             }
-            if current_item % self.div_test == 0 {
+            if current_item.is_multiple_of(self.div_test) {
                 result.push((self.true_monkey, current_item));
             } else {
                 result.push((self.false_monkey, current_item));
