@@ -20,6 +20,7 @@ pub mod year2021;
 pub mod year2022;
 pub mod year2023;
 pub mod year2024;
+pub mod year2025;
 
 pub struct Config {
     pub year: String,
@@ -215,6 +216,10 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
             "23" => year2024::day23::solve(&aoc_input)?,
             "24" => year2024::day24::solve(&aoc_input)?,
             "25" => year2024::day25::solve(&aoc_input)?,
+            _ => return Err(DAY_ERROR_MSG.into()),
+        },
+        "2025" => match config.day.as_str() {
+            "01" => year2025::day01::solve(&aoc_input)?,
             _ => return Err(DAY_ERROR_MSG.into()),
         },
         _ => return Err("Year not implemented".into()),
