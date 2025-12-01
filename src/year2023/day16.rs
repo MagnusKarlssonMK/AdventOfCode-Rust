@@ -18,7 +18,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     ))
 }
 
-type NextPoint = Option<(Point, Vec<Point>)>;  // <Next point, new directions>
+type NextPoint = Option<(Point, Vec<Point>)>; // <Next point, new directions>
 
 struct InputData {
     nodes: HashMap<Point, HashMap<Point, NextPoint>>, // From point: {out_direction: next_point}

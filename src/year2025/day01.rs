@@ -1,4 +1,4 @@
-//! # 20xx day xx -
+//! # 2025 day 1 - Secret Entrance
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
@@ -10,28 +10,56 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct InputData {
-    data: Vec<String>,
+    rotations: Vec<i32>,
 }
 
 impl FromStr for InputData {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            data: s.lines().map(|line| line.to_string()).collect(),
+            rotations: s
+                .lines()
+                .map(|line| {
+                    let (direction, value) = line.split_at(1);
+                    let value: i32 = value.parse().unwrap();
+                    match direction {
+                        "L" => -value,
+                        "R" => value,
+                        _ => panic!(),
+                    }
+                })
+                .collect(),
         })
     }
 }
 
 impl InputData {
     fn solve_part1(&self) -> usize {
-        for line in &self.data {
-            println!("{}", line);
+        let mut zero_count = 0;
+        let mut dial: i32 = 50;
+        for v in &self.rotations {
+            dial = (dial + v).rem_euclid(100);
+            if dial == 0 {
+                zero_count += 1;
+            }
         }
-        1
+        zero_count
     }
 
     fn solve_part2(&self) -> usize {
-        2
+        let mut zero_count = 0;
+        let mut dial: i32 = 50;
+        for v in &self.rotations {
+            if *v >= 0 {
+                zero_count += ((dial + *v) / 100) as usize;
+            } else if dial == 0 {
+                zero_count += (v.abs() / 100) as usize;
+            } else {
+                zero_count += ((100 - dial + v.abs()) / 100) as usize;
+            }
+            dial = (dial + v).rem_euclid(100);
+        }
+        zero_count
     }
 }
 
@@ -39,17 +67,26 @@ impl InputData {
 mod tests {
     use super::*;
 
+    const TEST_DATA: &str = "L68
+L30
+R48
+L5
+R60
+L55
+L1
+L99
+R14
+L82";
+
     #[test]
     fn part1_example_1() {
-        let testdata = "1";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        assert_eq!(solution_data.solve_part1(), 1);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+        assert_eq!(solution_data.solve_part1(), 3);
     }
 
     #[test]
     fn part2_example_1() {
-        let testdata = "2";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), 2);
+        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+        assert_eq!(solution_data.solve_part2(), 6);
     }
 }
