@@ -1,5 +1,7 @@
+//! # Point utility
+//!
+//! Provides a struct and some useful functions for managing a 2D point in x-y plane.
 use std::error::Error;
-// Type for handling 2-d points
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 use std::str::FromStr;
@@ -27,21 +29,27 @@ pub struct Point {
 }
 
 impl Point {
+    /// Creates a new point.
     #[inline]
     pub const fn new(x: i32, y: i32) -> Self {
         Self { x, y }
     }
 
+    /// Rotates a point 90 degrees to the right. For example, x, y = (2, -3) becomes (3, -2).
+    /// It is assumed that positive x goes to the right, and positive y goes down.
     #[inline]
     pub fn rotate_left(&self) -> Self {
         Point::new(self.y, -self.x)
     }
 
+    /// Rotates a point 90 degrees to the right. For example, x, y = (2, -3) becomes (3, -2).
+    /// It is assumed that positive x goes to the right, and positive y goes down.
     #[inline]
     pub fn rotate_right(&self) -> Self {
         Point::new(-self.y, self.x)
     }
 
+    /// Calculates the manhattan distance between two points.
     #[inline]
     pub fn manhattan(&self, other: &Self) -> usize {
         (self.x - other.x).unsigned_abs() as usize + (self.y - other.y).unsigned_abs() as usize
