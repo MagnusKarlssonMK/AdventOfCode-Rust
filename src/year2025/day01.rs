@@ -1,4 +1,25 @@
 //! # 2025 day 1 - Secret Entrance
+//!
+//! ## Part 1
+//! * Store the input as a vector of signed integer values.
+//! * Then for all input values, use modulo operation to keep updating the dial value, but we need to
+//! use the rem_euclid function for correct result when the sum of the dial and the next value is negative.
+//! * Increment counter whenever the dial value is zero.
+//!
+//! ## Part 2
+//! For all input values,
+//! * If the input value is positive, increment the counter with (dial + input value) / 100, i.e.
+//! the number of times the dial will wrap around.
+//! * Else if the dial is currently zero, increment the counter with the abs(input value) / 100. We
+//! need to handle this case separately to avoid counting the current zero dial value twice.
+//! * Else, the input value is negative, so we need to "count backwards"; increment the counter
+//! with (100 - dial + abs(input value)) / 100.
+//! * Then update the dial with the same modulo operation as in part 1.
+//!
+//! A possible alternative solution for part 2 could be to keep track of the current direction instead of
+//! working with signed integers, and flip the dial around whenever the direction changes. That way, all
+//! changes to the dial will be in the positive direction, i.e. there would be no need to handle
+//! "left" (negative) values separately.
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
