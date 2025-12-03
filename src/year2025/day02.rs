@@ -3,7 +3,7 @@
 //! ## Part 1:
 //! For each range,
 //! 1) If the first number in the range is evenly divisible by 2, split it in two and take the first part (1234 -> 12).
-//! If not, start with the next number where it would increase the number of digits (e.g. 972 -> 1000).
+//!    If not, start with the next number where it would increase the number of digits (e.g. 972 -> 1000).
 //! 2) Create a new candidate id by combining the number from 1) with itself (12 -> 1212).
 //! 3) If that candidate id is bigger than the second value in the range, stop.
 //! 4) If that candidate id is bigger than the first value in the range, an invalid value has been found; add it to the total.
@@ -12,9 +12,9 @@
 //! ## Part 2:
 //! Pretty much same as part 1, except,
 //! * Instead of just splitting in 2 parts, loop over splits in different part sizes, from 2 up to the number of digits in
-//! the second value in the range.
+//!   the second value in the range.
 //! * The same number can be found with different part lengths, but should only be counted once. So the identified invalid
-//! numbers are stored in a set and then summarized at the end to get rid of duplicates.
+//!   numbers are stored in a set and then summarized at the end to get rid of duplicates.
 use std::{collections::HashSet, error::Error};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
