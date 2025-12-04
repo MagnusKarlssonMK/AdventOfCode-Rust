@@ -10,13 +10,13 @@
 //!
 //! Number of sides == number of corners. For each point found during the BFS,
 //! then for each corner:
-//! - If both orthogonal neighbors have the same value, then take a sneak peek on
+//! * If both orthogonal neighbors have the same value, then take a sneak peek on
 //!   the diagonal point; if it has a different value, add +1 to corners.
-//! - If both orthogonal neighbors have different value(s), add +1 to corners
+//! * If both orthogonal neighbors have different value(s), add +1 to corners
 //!   (either the diagonal also has a different value -> it's a corner; or it's
 //!   the same value, which could mean either same or different group, and in
 //!   both cases it means we've found a corner.)
-//! - If only one of the orthogonal neighbors have the same value, we know
+//! * If only one of the orthogonal neighbors have the same value, we know
 //!   it's not a corner.
 use crate::aoc_util::{grid::*, point::*};
 use std::{

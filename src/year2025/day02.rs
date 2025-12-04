@@ -1,6 +1,7 @@
-//! # 2025 day 02 - Gift Shop
+//! # 2025 day 2 - Gift Shop
 //!
-//! ## Part 1:
+//! ## Part 1
+//!
 //! For each range,
 //! 1) If the first number in the range is evenly divisible by 2, split it in two and take the first part (1234 -> 12).
 //!    If not, start with the next number where it would increase the number of digits (e.g. 972 -> 1000).
@@ -9,7 +10,8 @@
 //! 4) If that candidate id is bigger than the first value in the range, an invalid value has been found; add it to the total.
 //! 5) Increment the candidate id (12 -> 13) and go back to 2).
 //!
-//! ## Part 2:
+//! ## Part 2
+//!
 //! Pretty much same as part 1, except,
 //! * Instead of just splitting in 2 parts, loop over splits in different part sizes, from 2 up to the number of digits in
 //!   the second value in the range.

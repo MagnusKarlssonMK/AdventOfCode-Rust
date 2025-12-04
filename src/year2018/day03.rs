@@ -1,4 +1,4 @@
-//! # 2018 day 02 - No Matter How You Slice It
+//! # 2018 day 3 - No Matter How You Slice It
 use crate::aoc_util::point::Point;
 use std::{collections::HashMap, error::Error, str::FromStr};
 

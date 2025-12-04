@@ -1,12 +1,14 @@
 //! # 2025 day 1 - Secret Entrance
 //!
 //! ## Part 1
+//!
 //! * Store the input as a vector of signed integer values.
 //! * Then for all input values, use modulo operation to keep updating the dial value, but we need to
 //!   use the rem_euclid function for correct result when the sum of the dial and the next value is negative.
 //! * Increment counter whenever the dial value is zero.
 //!
 //! ## Part 2
+//!
 //! For all input values,
 //! * If the input value is positive, increment the counter with (dial + input value) / 100, i.e.
 //!   the number of times the dial will wrap around.

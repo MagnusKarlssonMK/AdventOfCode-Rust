@@ -1,12 +1,12 @@
 //! # 2024 day 14 - Restroom Redoubt
 //!
-//! ## Part 1:
+//! ## Part 1
 //!
 //! No need to run the simulation for 100 steps, just directly calculate the positions.
 //! Note that the % operator in rust gives remainder, not modulus. I.e. -3 % 10 = -3, which
 //! is not what we want, so we need to use the rem_euclid function instead.
 //!
-//! ## Part 2:
+//! ## Part 2
 //!
 //! Run the simulation until all robots are in unique positions with no overlap.
 use crate::aoc_util::point::*;

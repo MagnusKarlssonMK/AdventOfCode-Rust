@@ -1,11 +1,13 @@
 //! # 2015 day 8 - Matchsticks
 //!
-//! Scan each line for special characters and;
+//! Scan each line for special characters.
 //!
 //! ## Part 1
+//!
 //! Count number of positions that does not represent an actual character.
 //!
 //! ## Part 2
+//!
 //! Count the characters that needs to be escaped.
 use std::error::Error;
 

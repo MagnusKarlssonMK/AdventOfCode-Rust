@@ -1,12 +1,14 @@
 //! # 2025 day 4 - Printing Department
 //!
 //! ## Part 1
+//!
 //! * Build a queue of the points containing paper ('@'), to minimize the number of points that
 //!   need to have their neighbors scanned.
 //! * Iterate over those points and check all 8 neighbors. If the number of neighbors containing
 //!   paper is less than 4, increment the total result.
 //!
 //! ## Part 2
+//!
 //! Despite initially looking like a game-of-life problem, it's actually not, since no nodes ever
 //! grow back to contain paper. So there is actually no need to iterate in rounds as in the
 //! example in the problem description. Instead, we can remove identified points immediately,

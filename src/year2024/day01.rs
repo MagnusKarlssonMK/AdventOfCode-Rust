@@ -1,10 +1,12 @@
 //! # 2024 day 1 - Historian Hysteria
 //!
 //! ## Part 1
+//!
 //! Store the two lists in sorted vectors, then simply zip them together
 //! and calculate the differences between each pair.
 //!
 //! ## Part 2
+//!
 //! Make use of the already sorted lists, and iterate over the left side.
 //! Keep track of the index of the last element used on the right side
 //! to minimize the amount of looping on the right side.

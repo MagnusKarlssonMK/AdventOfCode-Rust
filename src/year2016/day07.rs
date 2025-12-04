@@ -1,4 +1,4 @@
-//! # 2016 day 7 -
+//! # 2016 day 7 -Internet Protocol Version 7
 use std::{collections::HashSet, error::Error};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {

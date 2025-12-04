@@ -1,3 +1,6 @@
+//! # Intcode
+//!
+//! Contains the implementation of the Intcode emulator.
 use std::collections::VecDeque;
 
 const ADD_MEMORY_SIZE: usize = 2_000;

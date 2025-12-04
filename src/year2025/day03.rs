@@ -1,6 +1,7 @@
-//! # 2025 day 03 - Lobby
+//! # 2025 day 3 - Lobby
 //!
 //! ## Part 1
+//!
 //! * Scan each row ("bank") excluding the last character (to make room for the second digit).
 //!   Iterate character by character, from left to right, to find the value and position of the
 //!   max number. Stop at the first 9 that is found, if any.
@@ -9,6 +10,7 @@
 //! * Combine the two digits to get the jolt value.
 //!
 //! ## Part 2
+//!
 //! Same as part 1, except repeat the search for digits 12 times instead of just 2.
 use std::error::Error;
 
