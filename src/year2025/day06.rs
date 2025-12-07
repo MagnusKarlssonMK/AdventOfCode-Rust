@@ -1,12 +1,14 @@
 //! # 2025 day 6 - Trash Compactor
 //!
 //! A parsing exercise.
-//! The difference between part 1 and part 2 is how to parse the numbers; horizontally or
-//! vertically. It would probably make a lot more sense to simply transpose the input for
-//! parsing it vertically, than the absolute mess I ended up with here.
+//! Group the input in column groups, separated by empty column so each group gets one
+//! operation ('+' or '*') connected to it.
+//!
+//! The difference between part 1 and part 2 is how to then parse the numbers; horizontally or
+//! vertically. Parsing horizontally is done with trivial whitespace splitting. The vertical
+//! numbers are derived by first transposing the input and then treating the empty lines as
+//! separators for the column groups.
 use std::{error::Error, str::FromStr};
-
-use crate::aoc_util::{grid::Grid, point::Point};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data = InputData::from_str(input).unwrap();
@@ -68,6 +70,7 @@ impl FromStr for InputData {
             .split_whitespace()
             .map(|s| Operation::from_str(s).unwrap())
             .collect();
+
         let value_lines: Vec<Vec<usize>> = nbrs
             .lines()
             .map(|line| {
@@ -79,7 +82,8 @@ impl FromStr for InputData {
         let mut columns = vec![
             Column {
                 numbers: vec![0; value_lines.len()],
-                number_cols: vec![0; value_lines.len()],
+                //number_cols: vec![0; value_lines.len()], // Probably not the correct length...?
+                number_cols: Vec::new(),
                 operation: Operation::Add,
             };
             value_lines[0].len()
@@ -94,35 +98,25 @@ impl FromStr for InputData {
         for (i, o) in operations.iter().enumerate() {
             columns[i].operation = *o;
         }
-        let mut op_idxs: Vec<_> = op
-            .chars()
-            .enumerate()
-            .filter(|(_, c)| *c != ' ')
-            .map(|(i, _)| i)
-            .collect();
 
-        // Find the vertical numbers
-        let nbr_grid = Grid::parse(nbrs);
-        op_idxs.push(nbr_grid.x_max + 1);
-        let col_ranges: Vec<(usize, usize)> =
-            op_idxs.windows(2).map(|w| (w[0], w[1] - 1)).collect();
-        for (i, (col_start, col_stop)) in col_ranges.iter().enumerate() {
-            let mut nbrs: Vec<usize> = Vec::new();
-            for x in *col_start..*col_stop {
-                let mut c_vec = Vec::new();
-                for y in 0..value_lines.len() {
-                    let c = nbr_grid
-                        .get_element(&Point::new(x as i32, y as i32))
-                        .unwrap();
-                    if c != ' ' {
-                        c_vec.push(c);
-                    }
-                }
-                let nbr: String = c_vec.iter().collect();
-                nbrs.push(nbr.parse().unwrap());
+        // Find the vertical numbers by first transposing the input lines
+        let lines: Vec<Vec<char>> = nbrs.lines().map(|line| line.chars().collect()).collect();
+        let mut lines_transposed = vec![vec![' '; lines.len()]; lines[0].len()];
+        for row in 0..lines.len() {
+            for col in 0..lines[0].len() {
+                lines_transposed[col][row] = lines[row][col];
             }
-            columns[i].number_cols = nbrs;
         }
+
+        let mut col_idx = 0;
+        for line in lines_transposed.iter() {
+            if let Ok(val) = line.iter().collect::<String>().trim().parse::<usize>() {
+                columns[col_idx].number_cols.push(val);
+            } else {
+                col_idx += 1;
+            }
+        }
+
         Ok(Self { columns })
     }
 }
@@ -142,7 +136,7 @@ mod tests {
     use super::*;
 
     // Note: need to format the input this way, since rust formatter otherwise shaves off whitespaces
-    // at the end of lines, which are essential for parsing line length and mapping to a grid.
+    // at the end of lines, which are essential for parsing lines correctly.
     const TEST_DATA: &str = "123 328  51 64 \n 45 64  387 23 \n  6 98  215 314\n*   +   *   +  ";
 
     #[test]
