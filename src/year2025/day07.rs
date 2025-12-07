@@ -1,16 +1,16 @@
 //! # 2025 day 7 - Laboratories
 //!
-//! ## Part 1
+//! Solve both parts simultaneously:
 //!
-//! Move vertically from top to bottom in the grid, and for every row, find the new x-positions
-//! containing a beam after checking for a split, and store them in a hashset to avoid duplication.
-//! While doing this, count how many times a split is performed.
-//!
-//! ## Part 2
-//!
-//! Similar to part 1, but instead of storing x-positions in a hashset, store a vector of counters
-//! for an entire row, counting how many times a beam has entered that position. The answer is then
-//! given by the sum of those counters.
+//! * Start with a vector of counters corresponding to each column, mapped to the first row where
+//!   every value is zero except the starting point which is one.
+//! * Move vertically from top to bottom in the grid, and for every row, create a new counter vector
+//!   which for every column either increments the value in the same column with the value from the
+//!   previous row if there is no splitter, or the columns to the left and right if it is a splitter.
+//!   After the last column in the row, the new counter vector is moved to the main one. While doing
+//!   this, also count how many times a split is performed.
+//! * After processing the last row, the answer for part 1 is the counter for number of splits performed,
+//!   and the answer to part 2 is the sum of the counter vector.
 use std::{error::Error, str::FromStr};
 
 use crate::aoc_util::{grid::Grid, point::Point};
