@@ -48,7 +48,7 @@ const PAPER: char = '@';
 const NOT_PAPER: char = '.';
 
 impl InputData {
-    fn solve_part1(&self) -> usize {
+    fn solve_part1(&self) -> u32 {
         let mut total = 0;
         let paper: Vec<_> = self
             .paper_map
@@ -75,7 +75,7 @@ impl InputData {
         total
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> u32 {
         let mut total = 0;
         let mut paper_map = self.paper_map.clone();
         let paper: Vec<_> = self

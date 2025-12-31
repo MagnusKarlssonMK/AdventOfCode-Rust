@@ -31,21 +31,21 @@ struct InputData<'a> {
     ranges: Vec<(&'a str, &'a str)>,
 }
 
-fn get_invalid(v1: &str, v2: &str) -> usize {
-    let start_id: usize = v1.parse().unwrap();
-    let stop_id: usize = v2.parse().unwrap();
+fn get_invalid(v1: &str, v2: &str) -> u64 {
+    let start_id: u64 = v1.parse().unwrap();
+    let stop_id: u64 = v2.parse().unwrap();
     let nbrof_parts = 2;
 
     let mut invalid = 0;
-    let mut next_part: usize = if v1.len().is_multiple_of(nbrof_parts) {
+    let mut next_part: u64 = if v1.len().is_multiple_of(nbrof_parts) {
         v1[..v1.len() / nbrof_parts].parse().unwrap()
     } else {
-        10_usize.pow((v1.len() / nbrof_parts) as u32)
+        10_u64.pow((v1.len() / nbrof_parts) as u32)
     };
 
     loop {
         let nbrof_part_digits = 1 + next_part.checked_ilog10().unwrap_or(0);
-        let candidate_id = next_part + next_part * 10_usize.pow(nbrof_part_digits);
+        let candidate_id = next_part + next_part * 10_u64.pow(nbrof_part_digits);
         if candidate_id > stop_id {
             break;
         }
@@ -58,23 +58,23 @@ fn get_invalid(v1: &str, v2: &str) -> usize {
     invalid
 }
 
-fn get_multiple_invalid(v1: &str, v2: &str) -> usize {
-    let start_id: usize = v1.parse().unwrap();
-    let stop_id: usize = v2.parse().unwrap();
+fn get_multiple_invalid(v1: &str, v2: &str) -> u64 {
+    let start_id: u64 = v1.parse().unwrap();
+    let stop_id: u64 = v2.parse().unwrap();
     let mut nbrof_parts = 2;
     let mut invalid = HashSet::new();
 
     while nbrof_parts <= v2.len() {
-        let mut next_part: usize = if v1.len().is_multiple_of(nbrof_parts) {
+        let mut next_part: u64 = if v1.len().is_multiple_of(nbrof_parts) {
             v1[..v1.len() / nbrof_parts].parse().unwrap()
         } else {
-            10_usize.pow((v1.len() / nbrof_parts) as u32)
+            10_u64.pow((v1.len() / nbrof_parts) as u32)
         };
 
         loop {
             let nbrof_part_digits = 1 + next_part.checked_ilog10().unwrap_or(0);
             let candidate_id = (0..nbrof_parts)
-                .map(|p| next_part * 10_usize.pow(p as u32 * nbrof_part_digits))
+                .map(|p| next_part * 10_u64.pow(p as u32 * nbrof_part_digits))
                 .sum();
             if candidate_id > stop_id {
                 break;
@@ -100,11 +100,11 @@ impl<'a> TryFrom<&'a str> for InputData<'a> {
 }
 
 impl InputData<'_> {
-    fn solve_part1(&self) -> usize {
+    fn solve_part1(&self) -> u64 {
         self.ranges.iter().map(|(r1, r2)| get_invalid(r1, r2)).sum()
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> u64 {
         self.ranges
             .iter()
             .map(|(r1, r2)| get_multiple_invalid(r1, r2))

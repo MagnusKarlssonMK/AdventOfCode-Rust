@@ -14,15 +14,15 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct Point3D {
-    x: usize,
-    y: usize,
-    z: usize,
+    x: u64,
+    y: u64,
+    z: u64,
 }
 
 impl FromStr for Point3D {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let nbrs: Vec<usize> = s.split(',').map(|n| n.parse().unwrap()).collect();
+        let nbrs: Vec<_> = s.split(',').map(|n| n.parse().unwrap()).collect();
         Ok(Self {
             x: nbrs[0],
             y: nbrs[1],
@@ -32,7 +32,7 @@ impl FromStr for Point3D {
 }
 
 impl Point3D {
-    fn get_distance(&self, other: &Point3D) -> usize {
+    fn get_distance(&self, other: &Point3D) -> u64 {
         // Note: we only need a sortable distance, the actual value isn't important, so we can skip the sqrt
         self.x.abs_diff(other.x).pow(2)
             + self.y.abs_diff(other.y).pow(2)
@@ -42,7 +42,7 @@ impl Point3D {
 
 struct JunctionBox {
     parent: usize,
-    count: usize,
+    count: u64,
 }
 
 fn find(junctions: &mut [JunctionBox], mut x: usize) -> usize {
@@ -53,7 +53,7 @@ fn find(junctions: &mut [JunctionBox], mut x: usize) -> usize {
     x
 }
 
-fn union(junctions: &mut [JunctionBox], mut a: usize, mut b: usize) -> usize {
+fn union(junctions: &mut [JunctionBox], mut a: usize, mut b: usize) -> u64 {
     a = find(junctions, a);
     b = find(junctions, b);
 
@@ -98,7 +98,7 @@ impl FromStr for InputData {
 }
 
 impl InputData {
-    fn solve_part1(&self, max_connections: usize) -> usize {
+    fn solve_part1(&self, max_connections: usize) -> u64 {
         let mut junctions: Vec<_> = (0..self.junction_boxes.len())
             .map(|i| JunctionBox {
                 parent: i,
@@ -114,7 +114,7 @@ impl InputData {
         junctions[0].count * junctions[1].count * junctions[2].count
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> u64 {
         let mut nodes: Vec<_> = (0..self.junction_boxes.len())
             .map(|i| JunctionBox {
                 parent: i,
@@ -123,7 +123,7 @@ impl InputData {
             .collect();
 
         for (i, j) in &self.connections {
-            if union(&mut nodes, *i, *j) == self.junction_boxes.len() {
+            if union(&mut nodes, *i, *j) == self.junction_boxes.len() as u64 {
                 return self.junction_boxes[*i].x * self.junction_boxes[*j].x;
             }
         }

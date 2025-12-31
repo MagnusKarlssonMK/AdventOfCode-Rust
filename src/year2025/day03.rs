@@ -36,7 +36,7 @@ impl<'a> TryFrom<&'a str> for InputData<'a> {
 }
 
 impl InputData<'_> {
-    fn get_jolt(&self, nbrof_digits: usize) -> usize {
+    fn get_jolt(&self, nbrof_digits: usize) -> u64 {
         let mut total = 0;
         for bank in self.banks.iter() {
             let mut new_number = 0;
@@ -45,7 +45,7 @@ impl InputData<'_> {
                 let mut next_digit = 0;
                 let i = start_idx;
                 for x in i..bank.len() - digit_idx {
-                    let new_digit: u32 = bank.get(x..x + 1).unwrap().parse().unwrap();
+                    let new_digit: u64 = bank.get(x..x + 1).unwrap().parse().unwrap();
                     if next_digit < new_digit {
                         next_digit = new_digit;
                         start_idx = x + 1;
@@ -54,18 +54,18 @@ impl InputData<'_> {
                         }
                     }
                 }
-                new_number += next_digit as usize * 10_usize.pow(digit_idx as u32);
+                new_number += next_digit * 10_u64.pow(digit_idx as u32);
             }
             total += new_number;
         }
         total
     }
 
-    fn solve_part1(&self) -> usize {
+    fn solve_part1(&self) -> u64 {
         self.get_jolt(2)
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> u64 {
         self.get_jolt(12)
     }
 }

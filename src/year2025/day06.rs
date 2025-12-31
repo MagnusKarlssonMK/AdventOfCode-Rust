@@ -37,20 +37,20 @@ impl FromStr for Operation {
 
 #[derive(Clone)]
 struct Column {
-    numbers: Vec<usize>,
-    number_cols: Vec<usize>,
+    numbers: Vec<u64>,
+    number_cols: Vec<u64>,
     operation: Operation,
 }
 
 impl Column {
-    fn simple_eval(&self) -> usize {
+    fn simple_eval(&self) -> u64 {
         match self.operation {
             Operation::Add => self.numbers.iter().sum(),
             Operation::Mul => self.numbers.iter().product(),
         }
     }
 
-    fn cephalopod_eval(&self) -> usize {
+    fn cephalopod_eval(&self) -> u64 {
         match self.operation {
             Operation::Add => self.number_cols.iter().sum(),
             Operation::Mul => self.number_cols.iter().product(),
@@ -71,7 +71,7 @@ impl FromStr for InputData {
             .map(|s| Operation::from_str(s).unwrap())
             .collect();
 
-        let value_lines: Vec<Vec<usize>> = nbrs
+        let value_lines: Vec<Vec<u64>> = nbrs
             .lines()
             .map(|line| {
                 line.split_whitespace()
@@ -82,7 +82,6 @@ impl FromStr for InputData {
         let mut columns = vec![
             Column {
                 numbers: vec![0; value_lines.len()],
-                //number_cols: vec![0; value_lines.len()], // Probably not the correct length...?
                 number_cols: Vec::new(),
                 operation: Operation::Add,
             };
@@ -110,7 +109,7 @@ impl FromStr for InputData {
 
         let mut col_idx = 0;
         for line in lines_transposed.iter() {
-            if let Ok(val) = line.iter().collect::<String>().trim().parse::<usize>() {
+            if let Ok(val) = line.iter().collect::<String>().trim().parse::<u64>() {
                 columns[col_idx].number_cols.push(val);
             } else {
                 col_idx += 1;
@@ -122,11 +121,11 @@ impl FromStr for InputData {
 }
 
 impl InputData {
-    fn solve_part1(&self) -> usize {
+    fn solve_part1(&self) -> u64 {
         self.columns.iter().map(|c| c.simple_eval()).sum()
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> u64 {
         self.columns.iter().map(|c| c.cephalopod_eval()).sum()
     }
 }

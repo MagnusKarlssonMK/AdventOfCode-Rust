@@ -43,18 +43,18 @@ impl Lock {
         Self { dial: 50 }
     }
 
-    fn rotate_and_count(&mut self, value: i32) -> usize {
+    fn rotate_and_count(&mut self, value: i32) -> u32 {
         self.dial = (self.dial + value).rem_euclid(LOCK_SIZE);
         if self.dial == 0 { 1 } else { 0 }
     }
 
-    fn rotate_and_count_any(&mut self, value: i32) -> usize {
+    fn rotate_and_count_any(&mut self, value: i32) -> u32 {
         let count = if value >= 0 {
-            ((self.dial + value) / LOCK_SIZE) as usize
+            ((self.dial + value) / LOCK_SIZE) as u32
         } else if self.dial == 0 {
-            (value.abs() / LOCK_SIZE) as usize
+            (value.abs() / LOCK_SIZE) as u32
         } else {
-            ((LOCK_SIZE - self.dial + value.abs()) / LOCK_SIZE) as usize
+            ((LOCK_SIZE - self.dial + value.abs()) / LOCK_SIZE) as u32
         };
         self.dial = (self.dial + value).rem_euclid(LOCK_SIZE);
         count
@@ -86,7 +86,7 @@ impl FromStr for InputData {
 }
 
 impl InputData {
-    fn solve_part1(&self) -> usize {
+    fn solve_part1(&self) -> u32 {
         let mut lock = Lock::new();
         self.sequence
             .iter()
@@ -94,7 +94,7 @@ impl InputData {
             .sum()
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> u32 {
         let mut lock = Lock::new();
         self.sequence
             .iter()

@@ -37,9 +37,9 @@ impl FromStr for InputData {
 }
 
 impl InputData {
-    fn solve(&self) -> (usize, usize) {
+    fn solve(&self) -> (u64, u64) {
         let mut split_count = 0;
-        let mut x_counts: Vec<usize> = (0..self.manifold.x_max)
+        let mut x_counts: Vec<u64> = (0..self.manifold.x_max)
             .map(|x| {
                 if self.manifold.elements[x] == START {
                     1
@@ -48,10 +48,10 @@ impl InputData {
                 }
             })
             .collect();
-        for y in 1..self.manifold.y_max as i32 {
+        for y in 1..self.manifold.y_max {
             let mut new_x_counts = vec![0; self.manifold.x_max];
             for x in (0..self.manifold.x_max).filter(|i| x_counts[*i] > 0) {
-                if let Some(c) = self.manifold.get_element(&Point::new(x as i32, y)) {
+                if let Some(c) = self.manifold.get_element(&Point::new(x as i32, y as i32)) {
                     if c == SPLITTER {
                         split_count += 1;
                         new_x_counts[x - 1] += x_counts[x];

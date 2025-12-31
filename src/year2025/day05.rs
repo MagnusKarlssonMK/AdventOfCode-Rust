@@ -28,15 +28,15 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct InputData {
-    fresh_id_ranges: Vec<(usize, usize)>,
-    available_ids: Vec<usize>,
+    fresh_id_ranges: Vec<(u64, u64)>,
+    available_ids: Vec<u64>,
 }
 
 impl FromStr for InputData {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (r, a) = s.split_once("\n\n").unwrap();
-        let ranges: Vec<(usize, usize)> = r
+        let ranges: Vec<(u64, u64)> = r
             .lines()
             .map(|line| {
                 let (x, y) = line.split_once('-').unwrap();
@@ -51,7 +51,7 @@ impl FromStr for InputData {
 }
 
 impl InputData {
-    fn solve_part1(&self) -> usize {
+    fn solve_part1(&self) -> u64 {
         let mut total = 0;
         for a in &self.available_ids {
             for r in &self.fresh_id_ranges {
@@ -64,7 +64,7 @@ impl InputData {
         total
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> u64 {
         let mut processed = VecDeque::new();
         let mut queue = VecDeque::from(self.fresh_id_ranges.clone());
         while let Some((r0, r1)) = queue.pop_front() {
