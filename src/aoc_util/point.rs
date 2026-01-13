@@ -22,7 +22,7 @@ pub const NEIGHBORS_ALL: [Point; 8] = [
     RIGHT, DIAG_R_D, DOWN, DIAG_L_D, LEFT, DIAG_L_U, UP, DIAG_R_U,
 ];
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Point {
     pub x: i32,
     pub y: i32,

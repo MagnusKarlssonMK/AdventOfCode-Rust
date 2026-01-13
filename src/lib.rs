@@ -227,6 +227,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
             "06" => year2025::day06::solve(&aoc_input)?,
             "07" => year2025::day07::solve(&aoc_input)?,
             "08" => year2025::day08::solve(&aoc_input)?,
+            "09" => year2025::day09::solve(&aoc_input)?,
             "10" => year2025::day10::solve(&aoc_input)?,
             "11" => year2025::day11::solve(&aoc_input)?,
             "12" => year2025::day12::solve(&aoc_input)?,
