@@ -110,7 +110,7 @@ impl InputData {
             union(&mut junctions, *i, *j);
         }
 
-        junctions.sort_unstable_by(|a, b| b.count.cmp(&a.count));
+        junctions.sort_unstable_by_key(|a| std::cmp::Reverse(a.count));
         junctions[0].count * junctions[1].count * junctions[2].count
     }
 

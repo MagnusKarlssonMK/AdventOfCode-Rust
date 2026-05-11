@@ -108,7 +108,7 @@ impl InputData {
             })
             .collect();
         // Sort the vec by number of possible values, to minimize the number of possible paths when traversing
-        possible.sort_unstable_by(|a, b| a.1.len().cmp(&b.1.len()));
+        possible.sort_unstable_by_key(|a| a.1.len());
         // Ugly! - start with a vector of some invalid value to avoid getting false matches on 'contains' check later in the search
         let mut path = vec![nbrcols + 1; nbrcols];
         let mut queue = VecDeque::from([(path.clone(), 0)]);
