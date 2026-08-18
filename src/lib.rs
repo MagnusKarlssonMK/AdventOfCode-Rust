@@ -51,7 +51,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let filename = cwd
         .join("AdventOfCode-Input")
         .join(&config.year)
-        .join(format!("day{:02}.txt", &config.day));
+        .join(format!("day{:02}.txt", config.day));
     let aoc_input = fs::read_to_string(filename)?
         .trim_end_matches('\n')
         .to_string();
