@@ -1,4 +1,4 @@
-//! # 20xx day 16 - The Floor Will Be Lava
+//! # 2023 day 16 - The Floor Will Be Lava
 //!
 //! Creates a map of connections between all splitters/mirrors to avoid having to walk step by step every time.
 //! Slightly messy code, can probably be made prettier.
