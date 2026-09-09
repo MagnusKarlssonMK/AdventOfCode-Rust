@@ -37,7 +37,7 @@ impl InputData<'_> {
         let sparse = generate_hash(&lengths, buffer_len, 64);
         let mut dense = String::new();
 
-        for block in sparse.chunks_exact(16) {
+        for block in sparse.as_chunks::<16>().0 {
             let n = block.iter().fold(0, |a, i| a ^ i);
             let _ = write!(&mut dense, "{n:02x}");
         }

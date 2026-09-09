@@ -25,8 +25,10 @@ impl FromStr for InputData {
 impl InputData {
     fn solve_part1(&self) -> usize {
         self.sides
-            .chunks_exact(3)
-            .filter(|s| validate_triangle(s))
+            .as_chunks::<3>()
+            .0
+            .iter()
+            .filter(|s| validate_triangle(*s))
             .count()
     }
 
@@ -46,8 +48,10 @@ impl InputData {
             )
             .collect();
         column_wise
-            .chunks_exact(3)
-            .filter(|s| validate_triangle(s))
+            .as_chunks::<3>()
+            .0
+            .iter()
+            .filter(|s| validate_triangle(*s))
             .count()
     }
 }
