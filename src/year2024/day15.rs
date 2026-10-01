@@ -33,7 +33,7 @@ impl Grid {
     #[inline]
     fn make_wide(&self) -> Self {
         let x_max = 2 * self.x_max;
-        let y_max = 2 * self.y_max;
+        let y_max = self.y_max;
         let mut elements = Vec::with_capacity(2 * x_max * y_max);
         self.elements.iter().for_each(|c| match c {
             '@' => {
