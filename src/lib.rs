@@ -1,6 +1,6 @@
-use std::env;
 use std::error::Error;
 use std::fs;
+use std::path::Path;
 use std::time::Instant;
 
 pub mod aoc_util {
@@ -11,17 +11,57 @@ pub mod aoc_util {
     pub mod thread;
 }
 
-pub mod year2015;
-pub mod year2016;
-pub mod year2017;
-pub mod year2018;
-pub mod year2019;
-pub mod year2020;
-pub mod year2021;
-pub mod year2022;
-pub mod year2023;
-pub mod year2024;
-pub mod year2025;
+macro_rules! solvers {
+    ( $( $ymod:ident => [ $( $dmod:ident ),* $(,)? ] ),* $(,)? ) => {
+        $( pub mod $ymod; )*
+
+        /// Dispatches to the solver for the given `year_key` (`"yearYYYY"`)
+        /// and `day_key` (`"dayDD"`, zero-padded).
+        fn dispatch(
+            year_key: &str,
+            day_key: &str,
+            input: &str,
+        ) -> Result<(String, String), Box<dyn Error>> {
+            match year_key {
+                $(
+                    stringify!($ymod) => match day_key {
+                        $( stringify!($dmod) => $ymod::$dmod::solve(input), )*
+                        _ => Err("Day not implemented".into()),
+                    },
+                )*
+                _ => Err("Year not implemented".into()),
+            }
+        }
+
+        /// Returns `Ok(())` if a solver exists for the given keys, or a
+        /// descriptive error otherwise.
+        fn is_implemented(year_key: &str, day_key: &str) -> Result<(), Box<dyn Error>> {
+            match year_key {
+                $(
+                    stringify!($ymod) => match day_key {
+                        $( stringify!($dmod) => Ok(()), )*
+                        _ => Err("Day not implemented".into()),
+                    },
+                )*
+                _ => Err("Year not implemented".into()),
+            }
+        }
+    };
+}
+
+solvers! {
+    year2015 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day19],
+    year2016 => [day01, day02, day03, day04, day06, day07, day08, day09],
+    year2017 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day12, day13, day19],
+    year2018 => [day01, day02, day03],
+    year2019 => [day01, day02, day03, day04, day05, day06],
+    year2020 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day12, day13, day14, day15, day16, day17, day18],
+    year2021 => [day01, day02, day03, day04, day05, day06, day07],
+    year2022 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day12, day13, day14, day15],
+    year2023 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day12, day13, day14, day15, day16, day17, day18, day19, day20, day21],
+    year2024 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day12, day13, day14, day15, day16, day17, day18, day19, day20, day21, day22, day23, day24, day25],
+    year2025 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day12],
+}
 
 pub struct Config {
     pub year: String,
@@ -47,196 +87,26 @@ impl Config {
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    // Read input file
-    let cwd = env::current_dir().unwrap();
-    let filename = cwd
+    let day_num: u8 = config
+        .day
+        .parse()
+        .map_err(|_| format!("Invalid day: {}", config.day))?;
+    let year_key = format!("year{}", config.year);
+    let day_key = format!("day{day_num:02}");
+
+    is_implemented(&year_key, &day_key)?;
+
+    let filename = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("AdventOfCode-Input")
         .join(&config.year)
-        .join(format!("day{:02}.txt", config.day));
+        .join(format!("{day_key}.txt"));
     let aoc_input = fs::read_to_string(filename)?
         .trim_end_matches('\n')
         .to_string();
 
-    const DAY_ERROR_MSG: &str = "Day not implemented";
     // Run solver
     let timer = Instant::now();
-    let (p1, p2) = match config.year.as_str() {
-        "2015" => match config.day.as_str() {
-            "01" => year2015::day01::solve(&aoc_input)?,
-            "02" => year2015::day02::solve(&aoc_input)?,
-            "03" => year2015::day03::solve(&aoc_input)?,
-            "04" => year2015::day04::solve(&aoc_input)?,
-            "05" => year2015::day05::solve(&aoc_input)?,
-            "06" => year2015::day06::solve(&aoc_input)?,
-            "07" => year2015::day07::solve(&aoc_input)?,
-            "08" => year2015::day08::solve(&aoc_input)?,
-            "09" => year2015::day09::solve(&aoc_input)?,
-            "10" => year2015::day10::solve(&aoc_input)?,
-            "11" => year2015::day11::solve(&aoc_input)?,
-            "19" => year2015::day19::solve(&aoc_input)?,
-            _ => return Err(DAY_ERROR_MSG.into()),
-        },
-        "2016" => match config.day.as_str() {
-            "01" => year2016::day01::solve(&aoc_input)?,
-            "02" => year2016::day02::solve(&aoc_input)?,
-            "03" => year2016::day03::solve(&aoc_input)?,
-            "04" => year2016::day04::solve(&aoc_input)?,
-            "06" => year2016::day06::solve(&aoc_input)?,
-            "07" => year2016::day07::solve(&aoc_input)?,
-            "08" => year2016::day08::solve(&aoc_input)?,
-            "09" => year2016::day09::solve(&aoc_input)?,
-            _ => return Err(DAY_ERROR_MSG.into()),
-        },
-        "2017" => match config.day.as_str() {
-            "01" => year2017::day01::solve(&aoc_input)?,
-            "02" => year2017::day02::solve(&aoc_input)?,
-            "03" => year2017::day03::solve(&aoc_input)?,
-            "04" => year2017::day04::solve(&aoc_input)?,
-            "05" => year2017::day05::solve(&aoc_input)?,
-            "06" => year2017::day06::solve(&aoc_input)?,
-            "07" => year2017::day07::solve(&aoc_input)?,
-            "08" => year2017::day08::solve(&aoc_input)?,
-            "09" => year2017::day09::solve(&aoc_input)?,
-            "10" => year2017::day10::solve(&aoc_input)?,
-            "11" => year2017::day11::solve(&aoc_input)?,
-            "12" => year2017::day12::solve(&aoc_input)?,
-            "13" => year2017::day13::solve(&aoc_input)?,
-            "19" => year2017::day19::solve(&aoc_input)?,
-            _ => return Err(DAY_ERROR_MSG.into()),
-        },
-        "2018" => match config.day.as_str() {
-            "01" => year2018::day01::solve(&aoc_input)?,
-            "02" => year2018::day02::solve(&aoc_input)?,
-            "03" => year2018::day03::solve(&aoc_input)?,
-            _ => return Err(DAY_ERROR_MSG.into()),
-        },
-        "2019" => match config.day.as_str() {
-            "01" => year2019::day01::solve(&aoc_input)?,
-            "02" => year2019::day02::solve(&aoc_input)?,
-            "03" => year2019::day03::solve(&aoc_input)?,
-            "04" => year2019::day04::solve(&aoc_input)?,
-            "05" => year2019::day05::solve(&aoc_input)?,
-            "06" => year2019::day06::solve(&aoc_input)?,
-            _ => return Err(DAY_ERROR_MSG.into()),
-        },
-        "2020" => match config.day.as_str() {
-            "01" => year2020::day01::solve(&aoc_input)?,
-            "02" => year2020::day02::solve(&aoc_input)?,
-            "03" => year2020::day03::solve(&aoc_input)?,
-            "04" => year2020::day04::solve(&aoc_input)?,
-            "05" => year2020::day05::solve(&aoc_input)?,
-            "06" => year2020::day06::solve(&aoc_input)?,
-            "07" => year2020::day07::solve(&aoc_input)?,
-            "08" => year2020::day08::solve(&aoc_input)?,
-            "09" => year2020::day09::solve(&aoc_input)?,
-            "10" => year2020::day10::solve(&aoc_input)?,
-            "11" => year2020::day11::solve(&aoc_input)?,
-            "12" => year2020::day12::solve(&aoc_input)?,
-            "13" => year2020::day13::solve(&aoc_input)?,
-            "14" => year2020::day14::solve(&aoc_input)?,
-            "15" => year2020::day15::solve(&aoc_input)?,
-            "16" => year2020::day16::solve(&aoc_input)?,
-            "17" => year2020::day17::solve(&aoc_input)?,
-            "18" => year2020::day18::solve(&aoc_input)?,
-            _ => return Err(DAY_ERROR_MSG.into()),
-        },
-        "2021" => match config.day.as_str() {
-            "01" => year2021::day01::solve(&aoc_input)?,
-            "02" => year2021::day02::solve(&aoc_input)?,
-            "03" => year2021::day03::solve(&aoc_input)?,
-            "04" => year2021::day04::solve(&aoc_input)?,
-            "05" => year2021::day05::solve(&aoc_input)?,
-            "06" => year2021::day06::solve(&aoc_input)?,
-            "07" => year2021::day07::solve(&aoc_input)?,
-            _ => return Err(DAY_ERROR_MSG.into()),
-        },
-        "2022" => match config.day.as_str() {
-            "01" => year2022::day01::solve(&aoc_input)?,
-            "02" => year2022::day02::solve(&aoc_input)?,
-            "03" => year2022::day03::solve(&aoc_input)?,
-            "04" => year2022::day04::solve(&aoc_input)?,
-            "05" => year2022::day05::solve(&aoc_input)?,
-            "06" => year2022::day06::solve(&aoc_input)?,
-            "07" => year2022::day07::solve(&aoc_input)?,
-            "08" => year2022::day08::solve(&aoc_input)?,
-            "09" => year2022::day09::solve(&aoc_input)?,
-            "10" => year2022::day10::solve(&aoc_input)?,
-            "11" => year2022::day11::solve(&aoc_input)?,
-            "12" => year2022::day12::solve(&aoc_input)?,
-            "13" => year2022::day13::solve(&aoc_input)?,
-            "14" => year2022::day14::solve(&aoc_input)?,
-            "15" => year2022::day15::solve(&aoc_input)?,
-            _ => return Err(DAY_ERROR_MSG.into()),
-        },
-        "2023" => match config.day.as_str() {
-            "01" => year2023::day01::solve(&aoc_input)?,
-            "02" => year2023::day02::solve(&aoc_input)?,
-            "03" => year2023::day03::solve(&aoc_input)?,
-            "04" => year2023::day04::solve(&aoc_input)?,
-            "05" => year2023::day05::solve(&aoc_input)?,
-            "06" => year2023::day06::solve(&aoc_input)?,
-            "07" => year2023::day07::solve(&aoc_input)?,
-            "08" => year2023::day08::solve(&aoc_input)?,
-            "09" => year2023::day09::solve(&aoc_input)?,
-            "10" => year2023::day10::solve(&aoc_input)?,
-            "11" => year2023::day11::solve(&aoc_input)?,
-            "12" => year2023::day12::solve(&aoc_input)?,
-            "13" => year2023::day13::solve(&aoc_input)?,
-            "14" => year2023::day14::solve(&aoc_input)?,
-            "15" => year2023::day15::solve(&aoc_input)?,
-            "16" => year2023::day16::solve(&aoc_input)?,
-            "17" => year2023::day17::solve(&aoc_input)?,
-            "18" => year2023::day18::solve(&aoc_input)?,
-            "19" => year2023::day19::solve(&aoc_input)?,
-            "20" => year2023::day20::solve(&aoc_input)?,
-            "21" => year2023::day21::solve(&aoc_input)?,
-            _ => return Err(DAY_ERROR_MSG.into()),
-        },
-        "2024" => match config.day.as_str() {
-            "01" => year2024::day01::solve(&aoc_input)?,
-            "02" => year2024::day02::solve(&aoc_input)?,
-            "03" => year2024::day03::solve(&aoc_input)?,
-            "04" => year2024::day04::solve(&aoc_input)?,
-            "05" => year2024::day05::solve(&aoc_input)?,
-            "06" => year2024::day06::solve(&aoc_input)?,
-            "07" => year2024::day07::solve(&aoc_input)?,
-            "08" => year2024::day08::solve(&aoc_input)?,
-            "09" => year2024::day09::solve(&aoc_input)?,
-            "10" => year2024::day10::solve(&aoc_input)?,
-            "11" => year2024::day11::solve(&aoc_input)?,
-            "12" => year2024::day12::solve(&aoc_input)?,
-            "13" => year2024::day13::solve(&aoc_input)?,
-            "14" => year2024::day14::solve(&aoc_input)?,
-            "15" => year2024::day15::solve(&aoc_input)?,
-            "16" => year2024::day16::solve(&aoc_input)?,
-            "17" => year2024::day17::solve(&aoc_input)?,
-            "18" => year2024::day18::solve(&aoc_input)?,
-            "19" => year2024::day19::solve(&aoc_input)?,
-            "20" => year2024::day20::solve(&aoc_input)?,
-            "21" => year2024::day21::solve(&aoc_input)?,
-            "22" => year2024::day22::solve(&aoc_input)?,
-            "23" => year2024::day23::solve(&aoc_input)?,
-            "24" => year2024::day24::solve(&aoc_input)?,
-            "25" => year2024::day25::solve(&aoc_input)?,
-            _ => return Err(DAY_ERROR_MSG.into()),
-        },
-        "2025" => match config.day.as_str() {
-            "01" => year2025::day01::solve(&aoc_input)?,
-            "02" => year2025::day02::solve(&aoc_input)?,
-            "03" => year2025::day03::solve(&aoc_input)?,
-            "04" => year2025::day04::solve(&aoc_input)?,
-            "05" => year2025::day05::solve(&aoc_input)?,
-            "06" => year2025::day06::solve(&aoc_input)?,
-            "07" => year2025::day07::solve(&aoc_input)?,
-            "08" => year2025::day08::solve(&aoc_input)?,
-            "09" => year2025::day09::solve(&aoc_input)?,
-            "10" => year2025::day10::solve(&aoc_input)?,
-            "11" => year2025::day11::solve(&aoc_input)?,
-            "12" => year2025::day12::solve(&aoc_input)?,
-            _ => return Err(DAY_ERROR_MSG.into()),
-        },
-        _ => return Err("Year not implemented".into()),
-    };
+    let (p1, p2) = dispatch(&year_key, &day_key, &aoc_input)?;
     let t = timer.elapsed().as_micros();
     println!("Part 1: {p1}\nPart 2: {p2}\nCompleted in: {t} μs");
 
