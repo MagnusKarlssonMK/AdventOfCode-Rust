@@ -17,7 +17,7 @@ macro_rules! solvers {
 
         /// Dispatches to the solver for the given `year_key` (`"yearYYYY"`)
         /// and `day_key` (`"dayDD"`, zero-padded).
-        fn dispatch(
+        pub fn dispatch(
             year_key: &str,
             day_key: &str,
             input: &str,
