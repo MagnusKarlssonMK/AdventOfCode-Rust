@@ -1,8 +1,9 @@
 //! # 2018 day 2 - Inventory Management System
+use crate::aoc_util::error::*;
 use std::{collections::HashMap, error::Error};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::try_from(input).unwrap();
+    let solution_data = InputData::try_from(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -14,7 +15,7 @@ struct InputData<'a> {
 }
 
 impl<'a> TryFrom<&'a str> for InputData<'a> {
-    type Error = ();
+    type Error = AocError;
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
         Ok(Self {
             ids: s.lines().collect(),

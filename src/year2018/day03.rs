@@ -1,9 +1,9 @@
 //! # 2018 day 3 - No Matter How You Slice It
-use crate::aoc_util::point::Point;
+use crate::aoc_util::{error::*, point::Point};
 use std::{collections::HashMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data = InputData::from_str(input)?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -16,18 +16,21 @@ struct Claim {
 }
 
 impl FromStr for Claim {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut parts = s
             .strip_prefix('#')
-            .unwrap()
+            .ctx("claim '#' prefix")?
             .split(&['@', ',', ':', 'x'])
-            .map(|n| n.trim().parse::<usize>().unwrap());
+            .map(|n| n.trim().parse::<usize>().map_err(AocError::from));
         Ok(Self {
-            id: parts.next().unwrap(),
-            corner: Point::new(parts.next().unwrap() as i32, parts.next().unwrap() as i32),
-            x_len: parts.next().unwrap(),
-            y_len: parts.next().unwrap(),
+            id: parts.next().ctx("claim id")??,
+            corner: Point::new(
+                parts.next().ctx("corner x")?? as i32,
+                parts.next().ctx("corner y")?? as i32,
+            ),
+            x_len: parts.next().ctx("x length")??,
+            y_len: parts.next().ctx("y length")??,
         })
     }
 }
@@ -37,13 +40,10 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            claims: s
-                .lines()
-                .map(|line| Claim::from_str(line).unwrap())
-                .collect(),
+            claims: s.lines().map(Claim::from_str).collect::<Result<_, _>>()?,
         })
     }
 }

@@ -1,8 +1,9 @@
 //! # 2018 day 1 - Chronal Calibration
+use crate::aoc_util::error::*;
 use std::{collections::HashSet, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data = InputData::from_str(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -14,10 +15,13 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            changes: s.lines().map(|line| line.parse().unwrap()).collect(),
+            changes: s
+                .lines()
+                .map(|line| line.parse().map_err(AocError::from))
+                .collect::<Result<_, _>>()?,
         })
     }
 }

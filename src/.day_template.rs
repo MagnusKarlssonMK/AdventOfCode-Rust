@@ -1,8 +1,9 @@
-//! # 20xx day xx - 
+//! # 20xx day xx -
+use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data = InputData::from_str(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -10,13 +11,15 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct InputData {
-    data: Vec<String>
+    data: Vec<String>,
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self { data: s.lines().map(|line| line.to_string()).collect() })
+        Ok(Self {
+            data: s.lines().map(|line| line.to_string()).collect(),
+        })
     }
 }
 
