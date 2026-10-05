@@ -64,41 +64,39 @@ solvers! {
 }
 
 pub struct Config {
-    pub year: String,
-    pub day: String,
+    pub year: u16,
+    pub day: u8,
 }
 
 impl Config {
-    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
-        args.next();
+    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, String> {
+        args.next(); // program name
 
-        let year = match args.next() {
-            Some(arg) => arg,
-            None => return Err("Didn't get year."),
-        };
+        let year = args
+            .next()
+            .ok_or("missing year")?
+            .parse()
+            .map_err(|_| "year must be a number".to_string())?;
 
-        let day = match args.next() {
-            Some(arg) => arg,
-            None => return Err("Didn't get day."),
-        };
+        let day = args
+            .next()
+            .ok_or("missing day")?
+            .parse()
+            .map_err(|_| "day must be a number".to_string())?;
 
         Ok(Config { year, day })
     }
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    let day_num: u8 = config
-        .day
-        .parse()
-        .map_err(|_| format!("Invalid day: {}", config.day))?;
     let year_key = format!("year{}", config.year);
-    let day_key = format!("day{day_num:02}");
+    let day_key = format!("day{:02}", config.day);
 
     is_implemented(&year_key, &day_key)?;
 
     let filename = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("AdventOfCode-Input")
-        .join(&config.year)
+        .join(config.year.to_string())
         .join(format!("{day_key}.txt"));
     let aoc_input = fs::read_to_string(filename)?
         .trim_end_matches('\n')

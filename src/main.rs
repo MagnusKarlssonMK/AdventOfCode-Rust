@@ -4,7 +4,8 @@ use std::process;
 
 fn main() {
     let config = Config::build(env::args()).unwrap_or_else(|err| {
-        eprintln!("Argument error: {err}");
+        eprintln!("Error: {err}");
+        eprintln!("Usage: {} <year> <day>", env!("CARGO_PKG_NAME"));
         process::exit(1);
     });
 
