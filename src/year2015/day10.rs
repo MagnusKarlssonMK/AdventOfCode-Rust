@@ -1,10 +1,11 @@
 //! # 2015 day 10 - Elves Look, Elves Say
 //!
 //! Straight transfer from my python solution => brute force
+use crate::aoc_util::error::AocError;
 use std::error::Error;
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::try_from(input).unwrap();
+    let solution_data = InputData::try_from(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -16,7 +17,7 @@ struct InputData<'a> {
 }
 
 impl<'a> TryFrom<&'a str> for InputData<'a> {
-    type Error = ();
+    type Error = AocError;
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
         Ok(Self { start_numbers: s })
     }
@@ -62,37 +63,56 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part1_example_1() {
-        let testdata = "1";
-        let solution_data = InputData::try_from(testdata).unwrap();
+    fn part1_official_1() {
+        let solution_data = InputData::try_from("1").unwrap();
         assert_eq!(solution_data.get_generated_length(1), 2);
     }
 
     #[test]
-    fn part1_example_2() {
-        let testdata = "11";
-        let solution_data = InputData::try_from(testdata).unwrap();
+    fn part1_official_2() {
+        let solution_data = InputData::try_from("11").unwrap();
         assert_eq!(solution_data.get_generated_length(1), 2);
     }
 
     #[test]
-    fn part1_example_3() {
-        let testdata = "21";
-        let solution_data = InputData::try_from(testdata).unwrap();
+    fn part1_official_3() {
+        let solution_data = InputData::try_from("21").unwrap();
         assert_eq!(solution_data.get_generated_length(1), 4);
     }
 
     #[test]
-    fn part1_example_4() {
-        let testdata = "1211";
-        let solution_data = InputData::try_from(testdata).unwrap();
+    fn part1_official_4() {
+        let solution_data = InputData::try_from("1211").unwrap();
         assert_eq!(solution_data.get_generated_length(1), 6);
     }
 
     #[test]
-    fn part1_example_5() {
-        let testdata = "111221";
-        let solution_data = InputData::try_from(testdata).unwrap();
+    fn part1_official_5() {
+        let solution_data = InputData::try_from("111221").unwrap();
         assert_eq!(solution_data.get_generated_length(1), 6);
+    }
+
+    #[test]
+    fn part1_custom_1() {
+        let solution_data = InputData::try_from("22").unwrap();
+        assert_eq!(solution_data.solve_part1(), 2);
+    }
+
+    #[test]
+    fn part1_custom_2() {
+        let solution_data = InputData::try_from("1").unwrap();
+        assert_eq!(solution_data.solve_part1(), 82350);
+    }
+
+    #[test]
+    fn part2_custom_1() {
+        let solution_data = InputData::try_from("22").unwrap();
+        assert_eq!(solution_data.solve_part2(), 2);
+    }
+
+    #[test]
+    fn part2_custom_2() {
+        let solution_data = InputData::try_from("1").unwrap();
+        assert_eq!(solution_data.solve_part2(), 1166642);
     }
 }

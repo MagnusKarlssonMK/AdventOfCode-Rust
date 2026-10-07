@@ -1,4 +1,5 @@
 //! # 2015 day 6 - Probably a Fire Hazard
+use crate::aoc_util::error::AocError;
 use std::{
     cmp::{max, min},
     error::Error,
@@ -6,7 +7,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data = InputData::from_str(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -21,13 +22,13 @@ enum Operation {
 }
 
 impl FromStr for Operation {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.chars().nth(6) {
             Some('n') => Ok(Self::TurnOn),
             Some('f') => Ok(Self::TurnOff),
             Some(' ') => Ok(Self::Toggle),
-            _ => panic!("Can't map operation"),
+            _ => Err(AocError::Invalid(s.to_string())),
         }
     }
 }
@@ -39,13 +40,17 @@ struct Area {
 }
 
 impl FromStr for Area {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let nbrs: Vec<usize> = s.split([' ', ',']).filter_map(|s| s.parse().ok()).collect();
-        Ok(Self {
-            x_range: (min(nbrs[0], nbrs[2]), max(nbrs[0], nbrs[2])),
-            y_range: (min(nbrs[1], nbrs[3]), max(nbrs[1], nbrs[3])),
-        })
+        if nbrs.len() != 4 {
+            Err(AocError::Invalid(s.to_string()))
+        } else {
+            Ok(Self {
+                x_range: (min(nbrs[0], nbrs[2]), max(nbrs[0], nbrs[2])),
+                y_range: (min(nbrs[1], nbrs[3]), max(nbrs[1], nbrs[3])),
+            })
+        }
     }
 }
 
@@ -55,26 +60,31 @@ struct Instruction {
     area: Area,
 }
 
-impl Instruction {
-    fn from(line: &str) -> Self {
-        Self {
-            op: Operation::from_str(line).unwrap(),
-            area: Area::from_str(line).unwrap(),
-        }
+impl FromStr for Instruction {
+    type Err = AocError;
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            op: Operation::from_str(line)?,
+            area: Area::from_str(line)?,
+        })
     }
 }
 
 const GRIDSIZE: usize = 1000;
 
+#[derive(Debug)]
 struct InputData {
     santa_instructions: Vec<Instruction>,
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            santa_instructions: s.lines().map(Instruction::from).collect(),
+            santa_instructions: s
+                .lines()
+                .map(Instruction::from_str)
+                .collect::<Result<Vec<_>, _>>()?,
         })
     }
 }
@@ -131,39 +141,104 @@ impl InputData {
 
 #[cfg(test)]
 mod tests {
+    const TEST_OFFICIAL_1: &str = "turn on 0,0 through 999,999";
+    const TEST_OFFICIAL_2: &str = "toggle 0,0 through 999,0";
+    const TEST_OFFICIAL_3: &str = "turn on 0,0 through 999,999\nturn off 499,499 through 500,500";
+    const TEST_OFFICIAL_4: &str = "turn on 0,0 through 0,0";
+    const TEST_OFFICIAL_5: &str = "toggle 0,0 through 999,999";
+    const TEST_CUSTOM_1: &str = "toggle 0,0 through 999,999\nturn on 0,0 through 999,999";
+    const TEST_CUSTOM_2: &str = "turn off 0,0 through 999,999";
+    const TEST_CUSTOM_3: &str = "toggle 0,0 through 999,999\ntoggle 0,0 through 999,999";
+    const TEST_CUSTOM_4: &str =
+        "turn on 0,0 through 999,999\nturn on 0,0 through 999,999\nturn off 0,0 through 999,999";
+    const TEST_CUSTOM_5: &str = "turn on 0,5 through 999,5";
+
     use super::*;
     #[test]
-    fn part1_example_1() {
-        let testdata = "turn on 0,0 through 999,999";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_1() {
+        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
         assert_eq!(solution_data.solve_part1(), 1000 * 1000);
     }
 
     #[test]
-    fn part1_example_2() {
-        let testdata = "toggle 0,0 through 999,0";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_2() {
+        let solution_data = InputData::from_str(TEST_OFFICIAL_2).unwrap();
         assert_eq!(solution_data.solve_part1(), 1000);
     }
 
     #[test]
-    fn part1_example_3() {
-        let testdata = "turn on 0,0 through 999,999\nturn off 499,499 through 500,500";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_3() {
+        let solution_data = InputData::from_str(TEST_OFFICIAL_3).unwrap();
         assert_eq!(solution_data.solve_part1(), 1000 * 1000 - 4);
     }
 
     #[test]
-    fn part2_example_1() {
-        let testdata = "turn on 0,0 through 0,0";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_custom_1() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        assert_eq!(solution_data.solve_part1(), 1000000);
+    }
+
+    #[test]
+    fn part1_custom_3() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_3).unwrap();
+        assert_eq!(solution_data.solve_part1(), 0);
+    }
+
+    #[test]
+    fn part1_custom_5() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_5).unwrap();
+        assert_eq!(solution_data.solve_part1(), 1000);
+    }
+
+    #[test]
+    fn part2_official_4() {
+        let solution_data = InputData::from_str(TEST_OFFICIAL_4).unwrap();
         assert_eq!(solution_data.solve_part2(), 1);
     }
 
     #[test]
-    fn part2_example_2() {
-        let testdata = "toggle 0,0 through 999,999";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_5() {
+        let solution_data = InputData::from_str(TEST_OFFICIAL_5).unwrap();
         assert_eq!(solution_data.solve_part2(), 2000000);
+    }
+
+    #[test]
+    fn part2_custom_1() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        assert_eq!(solution_data.solve_part2(), 3000000);
+    }
+
+    #[test]
+    fn part2_custom_2() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_2).unwrap();
+        assert_eq!(solution_data.solve_part2(), 0);
+    }
+
+    #[test]
+    fn part2_custom_3() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_3).unwrap();
+        assert_eq!(solution_data.solve_part2(), 4000000);
+    }
+
+    #[test]
+    fn part2_custom_4() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_4).unwrap();
+        assert_eq!(solution_data.solve_part2(), 1000000);
+    }
+
+    #[test]
+    fn parser_unknown_operation() {
+        let s1 = "turn middle 0,0 through 999,999";
+        let err1 = InputData::from_str(s1).unwrap_err();
+        assert_eq!(err1, AocError::Invalid(s1.to_string()));
+        let err2 = InputData::from_str("turn").unwrap_err();
+        assert_eq!(err2, AocError::Invalid("turn".to_string()));
+    }
+
+    #[test]
+    fn parser_invalid_coordinates() {
+        let s1 = "turn middle 0,0 through 999999";
+        let err1 = InputData::from_str(s1).unwrap_err();
+        assert_eq!(err1, AocError::Invalid(s1.to_string()));
     }
 }

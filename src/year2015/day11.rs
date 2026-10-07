@@ -6,10 +6,11 @@
 //! There could be optimizations made to increment in larger interval chunks by evaluating
 //! the current password more intelligently. But the current solution is still decently fast
 //! on modern hardware.
+use crate::aoc_util::error::AocError;
 use std::{collections::HashSet, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data = InputData::from_str(input)?;
     let (p1, p2) = solution_data.solve();
     Ok((p1, p2))
 }
@@ -18,15 +19,18 @@ const OFFSET_VAL: u8 = b'a';
 const RANGE_VAL: u8 = b'z' - OFFSET_VAL;
 const FORBIDDEN_VALS: [u8; 3] = [b'i' - OFFSET_VAL, b'l' - OFFSET_VAL, b'o' - OFFSET_VAL];
 
+#[derive(Debug)]
 struct InputData {
     current_password: Vec<u8>,
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.chars().any(|c| !c.is_ascii_lowercase()) {
-            Err(())
+            Err(AocError::Invalid("invalid char".to_string()))
+        } else if s.len() < 5 {
+            Err(AocError::Invalid("too short".to_string()))
         } else {
             Ok(Self {
                 current_password: s.chars().map(|c| c as u8 - OFFSET_VAL).collect(),
@@ -102,49 +106,61 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn invalid_input() {
-        let testdata = "abcDefgh";
-        assert!(InputData::from_str(testdata).is_err());
-
-        let testdata = "abc{efgh";
-        assert!(InputData::from_str(testdata).is_err());
-    }
+    const TEST_OFFICIAL_1: &str = "abcdefgh";
+    const TEST_OFFICIAL_2: &str = "ghijklmn";
+    const TEST_CUSTOM_1: &str = "zzzzz";
+    const TEST_CUSTOM_2: &str = "aabcck";
+    const TEST_CUSTOM_3: &str = "zzzzzzzy";
 
     #[test]
-    fn validate_example_1() {
-        let testdata = "hijklmmn";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        assert!(!is_password_valid(&solution_data.current_password));
-    }
-
-    #[test]
-    fn validate_example_2() {
-        let testdata = "abbceffg";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        assert!(!is_password_valid(&solution_data.current_password));
-    }
-
-    #[test]
-    fn validate_example_3() {
-        let testdata = "abbcegjk";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        assert!(!is_password_valid(&solution_data.current_password));
-    }
-
-    #[test]
-    fn part1_example_1() {
-        let testdata = "abcdefgh";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        let (p1, _) = solution_data.solve();
+    fn part1_2_official_1() {
+        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let (p1, p2) = solution_data.solve();
         assert_eq!(p1, "abcdffaa");
+        assert_eq!(p2, "abcdffbb");
     }
 
     #[test]
-    fn part1_example_2() {
-        let testdata = "ghijklmn";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        let (p1, _) = solution_data.solve();
+    fn part1_2_official_2() {
+        let solution_data = InputData::from_str(TEST_OFFICIAL_2).unwrap();
+        let (p1, p2) = solution_data.solve();
         assert_eq!(p1, "ghjaabcc");
+        assert_eq!(p2, "ghjbbcdd");
+    }
+
+    #[test]
+    fn part1_2_custom_1() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let (p1, p2) = solution_data.solve();
+        assert_eq!(p1, "aabcc");
+        assert_eq!(p2, "bbcdd");
+    }
+
+    #[test]
+    fn part1_2_custom_3() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_2).unwrap();
+        let (p1, p2) = solution_data.solve();
+        assert_eq!(p1, "aabcck");
+        assert_eq!(p2, "aabccm");
+    }
+
+    #[test]
+    fn part1_2_custom_4() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_3).unwrap();
+        let (p1, p2) = solution_data.solve();
+        assert_eq!(p1, "aaaaabcc");
+        assert_eq!(p2, "aaaabbcd");
+    }
+
+    #[test]
+    fn parse_invalid_input() {
+        let err = InputData::from_str("abcDefgh").unwrap_err();
+        assert_eq!(err, AocError::Invalid("invalid char".to_string()));
+
+        let err = InputData::from_str("abc{efgh").unwrap_err();
+        assert_eq!(err, AocError::Invalid("invalid char".to_string()));
+
+        let err = InputData::from_str("abce").unwrap_err();
+        assert_eq!(err, AocError::Invalid("too short".to_string()));
     }
 }

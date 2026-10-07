@@ -2,24 +2,23 @@
 //!
 //! Stores the input in a dictionary and then calculates the result by recursion
 //! including a cache.
-//! Can possibly be improved by removing duplicated code for extracting the node
-//! values in get_values(). Maybe convert the strings to usize values to use as
-//! keys instead to avoid having to deal with strings?
+use crate::aoc_util::error::{AocError, OptionExt};
 use std::{collections::HashMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
-    let (p1, p2) = solution_data.solve();
+    let solution_data = InputData::from_str(input)?;
+    let (p1, p2) = solution_data.solve()?;
     Ok((p1.to_string(), p2.to_string()))
 }
 
+#[derive(Debug)]
 enum Node {
     Wire(String),
     Number(u16),
 }
 
 impl FromStr for Node {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Ok(v) = s.parse::<u16>() {
             Ok(Self::Number(v))
@@ -29,135 +28,88 @@ impl FromStr for Node {
     }
 }
 
+#[derive(Debug)]
 enum Gate {
     Plain(Node),
     Not(Node),
     And(Node, Node),
     Or(Node, Node),
-    Lshift(Node, u8),
-    Rshift(Node, u8),
+    Lshift(Node, Node),
+    Rshift(Node, Node),
 }
 
 impl FromStr for Gate {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut tokens = s.split_whitespace();
-        let first = tokens.next().unwrap();
+        let first = tokens.next().ctx("gate")?;
         if let Some(second) = tokens.next() {
             if let Some(third) = tokens.next() {
                 match second {
-                    "AND" => Ok(Self::And(
-                        Node::from_str(first).unwrap(),
-                        Node::from_str(third).unwrap(),
-                    )),
-                    "OR" => Ok(Self::Or(
-                        Node::from_str(first).unwrap(),
-                        Node::from_str(third).unwrap(),
-                    )),
-                    "LSHIFT" => Ok(Self::Lshift(
-                        Node::from_str(first).unwrap(),
-                        third.parse().unwrap(),
-                    )),
-                    "RSHIFT" => Ok(Self::Rshift(
-                        Node::from_str(first).unwrap(),
-                        third.parse().unwrap(),
-                    )),
-                    _ => unreachable!(),
+                    "AND" => Ok(Self::And(Node::from_str(first)?, Node::from_str(third)?)),
+                    "OR" => Ok(Self::Or(Node::from_str(first)?, Node::from_str(third)?)),
+                    "LSHIFT" => Ok(Self::Lshift(Node::from_str(first)?, Node::from_str(third)?)),
+                    "RSHIFT" => Ok(Self::Rshift(Node::from_str(first)?, Node::from_str(third)?)),
+                    _ => Err(AocError::Invalid(s.to_string())),
                 }
             } else {
-                Ok(Self::Not(Node::from_str(second).unwrap()))
+                Ok(Self::Not(Node::from_str(second)?))
             }
         } else {
-            Ok(Self::Plain(Node::from_str(first).unwrap()))
+            Ok(Self::Plain(Node::from_str(first)?))
         }
     }
 }
 
+#[derive(Debug)]
 struct InputData {
     circuit: HashMap<String, Gate>,
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
             circuit: s
                 .lines()
                 .map(|line| {
-                    let (left, right) = line.split_once(" -> ").unwrap();
-                    (right.to_string(), Gate::from_str(left).unwrap())
+                    let (left, right) = line.split_once(" -> ").ctx("-> separator")?;
+                    Ok((right.to_string(), Gate::from_str(left)?))
                 })
-                .collect(),
+                .collect::<Result<HashMap<_, _>, AocError>>()?,
         })
     }
 }
 
 impl InputData {
-    fn get_value(&self, v: &str, wires: &mut HashMap<String, u16>) -> u16 {
+    fn get_value(&self, v: &str, wires: &mut HashMap<String, u16>) -> Result<u16, AocError> {
         if let Some(w) = wires.get(v) {
-            *w
+            Ok(*w)
         } else {
-            let result = match self.circuit.get(v).unwrap() {
-                Gate::Plain(a) => match a {
-                    Node::Number(n) => *n,
-                    Node::Wire(w) => self.get_value(w, wires),
-                },
-                Gate::And(a, b) => {
-                    let left = match a {
-                        Node::Number(n) => *n,
-                        Node::Wire(w) => self.get_value(w, wires),
-                    };
-                    let right = match b {
-                        Node::Number(n) => *n,
-                        Node::Wire(w) => self.get_value(w, wires),
-                    };
-                    left & right
-                }
-                Gate::Or(a, b) => {
-                    let left = match a {
-                        Node::Number(n) => *n,
-                        Node::Wire(w) => self.get_value(w, wires),
-                    };
-                    let right = match b {
-                        Node::Number(n) => *n,
-                        Node::Wire(w) => self.get_value(w, wires),
-                    };
-                    left | right
-                }
-                Gate::Not(a) => {
-                    let left = match a {
-                        Node::Number(n) => *n,
-                        Node::Wire(w) => self.get_value(w, wires),
-                    };
-                    !left
-                }
-                Gate::Lshift(a, b) => {
-                    let left = match a {
-                        Node::Number(n) => *n,
-                        Node::Wire(w) => self.get_value(w, wires),
-                    };
-                    left << b
-                }
-                Gate::Rshift(a, b) => {
-                    let left = match a {
-                        Node::Number(n) => *n,
-                        Node::Wire(w) => self.get_value(w, wires),
-                    };
-                    left >> b
-                }
+            let resolve = |node: &Node, wires: &mut HashMap<String, u16>| match node {
+                Node::Number(n) => Ok(*n),
+                Node::Wire(w) => self.get_value(w, wires),
+            };
+            let result = match self.circuit.get(v).ctx("undefined wire")? {
+                Gate::Plain(a) => resolve(a, wires)?,
+                Gate::And(a, b) => resolve(a, wires)? & resolve(b, wires)?,
+                Gate::Or(a, b) => resolve(a, wires)? | resolve(b, wires)?,
+                Gate::Not(a) => !resolve(a, wires)?,
+                Gate::Lshift(a, b) => resolve(a, wires)? << resolve(b, wires)?,
+                Gate::Rshift(a, b) => resolve(a, wires)? >> resolve(b, wires)?,
             };
             wires.insert(v.to_string(), result);
-            result
+            Ok(result)
         }
     }
 
-    fn solve(&self) -> (usize, usize) {
+    fn solve(&self) -> Result<(usize, usize), AocError> {
         let mut wires = HashMap::new();
-        let p1 = self.get_value("a", &mut wires);
+        let p1 = self.get_value("a", &mut wires)?;
         wires.clear();
         wires.insert("b".to_string(), p1);
-        let p2 = self.get_value("a", &mut wires);
-        (p1 as usize, p2 as usize)
+        let p2 = self.get_value("a", &mut wires)?;
+        Ok((p1 as usize, p2 as usize))
     }
 }
 
@@ -165,20 +117,64 @@ impl InputData {
 mod tests {
     use super::*;
 
-    // Note: changed d->a in the example input to get it to match the actual target
-    const TEST_DATA: &str = "123 -> x
-456 -> y
-x AND y -> a
-x OR y -> e
-x LSHIFT 2 -> f
-y RSHIFT 2 -> g
-NOT x -> h
-NOT y -> i";
+    const TEST_CUSTOM_1: &str = "15 -> x
+22 -> y
+1 -> b
+x AND y -> c
+c OR b -> d
+d RSHIFT 1 -> e
+e LSHIFT 1 -> f
+NOT f -> a";
+
+    const TEST_CUSTOM_2: &str = "300 -> x
+x LSHIFT 8 -> a";
+
+    const TEST_CUSTOM_3: &str = "1 -> b
+3 -> d
+7 -> x
+1 AND x -> c
+d LSHIFT b -> a";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
-        let (p1, _) = solution_data.solve();
-        assert_eq!(p1, 72);
+    fn part1_2_custom_1() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let (p1, p2) = solution_data.solve().unwrap();
+        assert_eq!(p1, 65529);
+        assert_eq!(p2, 1)
+    }
+
+    #[test]
+    fn part1_2_custom_2() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_2).unwrap();
+        let (p1, p2) = solution_data.solve().unwrap();
+        assert_eq!(p1, 11264);
+        assert_eq!(p2, 11264)
+    }
+
+    #[test]
+    fn part1_2_custom_3() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_3).unwrap();
+        let (p1, p2) = solution_data.solve().unwrap();
+        assert_eq!(p1, 6);
+        assert_eq!(p2, 192)
+    }
+
+    #[test]
+    fn parse_invalid_operator() {
+        let err = InputData::from_str("x FOO y -> z").unwrap_err();
+        assert_eq!(err, AocError::Invalid("x FOO y".to_string()))
+    }
+
+    #[test]
+    fn parse_invalid_separator() {
+        let err = InputData::from_str("x RSHIFT y - z").unwrap_err();
+        assert_eq!(err, AocError::Missing("-> separator"))
+    }
+
+    #[test]
+    fn undefined_wire_ref() {
+        let solution_data = InputData::from_str("b -> a").unwrap();
+        let err = solution_data.solve().unwrap_err();
+        assert_eq!(err, AocError::Missing("undefined wire"));
     }
 }

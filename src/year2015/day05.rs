@@ -1,8 +1,9 @@
 //! # 2015 day 5 - Doesn't He Have Intern-Elves For This?
+use crate::aoc_util::error::AocError;
 use std::error::Error;
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::try_from(input).unwrap();
+    let solution_data = InputData::try_from(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -14,7 +15,7 @@ struct InputData<'a> {
 }
 
 impl<'a> TryFrom<&'a str> for InputData<'a> {
-    type Error = ();
+    type Error = AocError;
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
         Ok(Self {
             santa_strings: s.lines().collect(),
@@ -82,66 +83,48 @@ impl InputData<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const TEST_OFFICIAL_1: &str = "ugknbfddgicrmopn
+aaa
+jchzalrnumimnmhp
+haegwjzuvuyypxyu
+dvszwmarrgswjxmb";
+
+    const TEST_OFFICIAL_2: &str = "qjhvhtzxzqqjkmpb
+xxyxx
+uurcxstgmygtbstg
+ieodomkazucvgmuy";
+
+    const TEST_CUSTOM_1: &str = "aaab
+aeecd
+aaeipq
+aeiouxxyy";
+
+    const TEST_CUSTOM_2: &str = "abab
+bcbc
+abcdab";
+
     #[test]
-    fn part1_example_1() {
-        let testdata = "ugknbfddgicrmopn";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part1(), 1);
+    fn part1_official_1() {
+        let solution_data = InputData::try_from(TEST_OFFICIAL_1).unwrap();
+        assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
-    fn part1_example_2() {
-        let testdata = "aaa";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part1(), 1);
-    }
-
-    #[test]
-    fn part1_example_3() {
-        let testdata = "jchzalrnumimnmhp";
-        let solution_data = InputData::try_from(testdata).unwrap();
+    fn part1_custom_1() {
+        let solution_data = InputData::try_from(TEST_CUSTOM_1).unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
-    fn part1_example_4() {
-        let testdata = "haegwjzuvuyypxyu";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part1(), 0);
+    fn part2_official_2() {
+        let solution_data = InputData::try_from(TEST_OFFICIAL_2).unwrap();
+        assert_eq!(solution_data.solve_part2(), 2);
     }
 
     #[test]
-    fn part1_example_5() {
-        let testdata = "dvszwmarrgswjxmb";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part1(), 0);
-    }
-
-    #[test]
-    fn part2_example_1() {
-        let testdata = "qjhvhtzxzqqjkmpb";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), 1);
-    }
-
-    #[test]
-    fn part2_example_2() {
-        let testdata = "xxyxx";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), 1);
-    }
-
-    #[test]
-    fn part2_example_3() {
-        let testdata = "uurcxstgmygtbstg";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), 0);
-    }
-
-    #[test]
-    fn part2_example_4() {
-        let testdata = "ieodomkazucvgmuy";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), 0);
+    fn part2_custom_2() {
+        let solution_data = InputData::try_from(TEST_CUSTOM_2).unwrap();
+        assert_eq!(solution_data.solve_part2(), 2);
     }
 }

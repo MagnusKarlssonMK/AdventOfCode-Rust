@@ -1,8 +1,9 @@
 //! # 2015 day 1 - Not Quite Lisp
+use crate::aoc_util::error::AocError;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data = InputData::from_str(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -14,7 +15,7 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
             directions: s
@@ -36,11 +37,11 @@ impl InputData {
 
     fn solve_part2(&self) -> isize {
         let mut floor = 0;
-        let mut steps = 0;
-        for v in &self.directions {
+        let mut steps = -1;
+        for (i, v) in self.directions.iter().enumerate() {
             floor += v;
-            steps += 1;
             if floor < 0 {
+                steps = i as isize + 1;
                 break;
             }
         }
@@ -126,5 +127,19 @@ mod tests {
         let testdata = "()())";
         let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 5);
+    }
+
+    #[test]
+    fn part2_custom_1() {
+        let testdata = "(())()()((((()(()())(((((())))())))())())";
+        let solution_data = InputData::from_str(testdata).unwrap();
+        assert_eq!(solution_data.solve_part2(), -1);
+    }
+
+    #[test]
+    fn part2_custom_2() {
+        let testdata = "))(";
+        let solution_data = InputData::from_str(testdata).unwrap();
+        assert_eq!(solution_data.solve_part2(), 1);
     }
 }
