@@ -92,7 +92,7 @@ Behavior:
   directory are tested.
 - Days that have both input files present, but the solution is not yet implemented (the solver fails
   with `Day not implemented` or `Year not implemented`) are not counted as failures.
+- A solver returning `Err` for reasons other than 'not implemented' is reported as a failure.
 - If the input file direcory is missing entirely, the test reports it and passes (nothing to check).
 - All mismatches are collected and reported together at the end, with a per-part `got` vs `expected`
   diff, rather than failing on the first.
-- A solver returning `Err` is reported as a failure.
