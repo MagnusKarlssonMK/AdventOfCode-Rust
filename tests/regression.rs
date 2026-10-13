@@ -102,9 +102,13 @@ fn stored_answers_match() {
             match dispatch(&year_key, day_key, &input) {
                 Ok((p1, p2)) => {
                     checked += 1;
-                    if p1 != exp1 || p2 != exp2 {
+                    // A trailing newline on each part is ignored, on both the
+                    // stored expected answer and the solver output.
+                    let got1 = p1.trim_end_matches('\n');
+                    let got2 = p2.trim_end_matches('\n');
+                    if got1 != exp1 || got2 != exp2 {
                         failures.push(format!(
-                            "{year} {day_key}:\n  part 1: got {p1:?}, expected {exp1:?}\n  part 2: got {p2:?}, expected {exp2:?}"
+                            "{year} {day_key}:\n  part 1: got {got1:?}, expected {exp1:?}\n  part 2: got {got2:?}, expected {exp2:?}"
                         ));
                     }
                 }
