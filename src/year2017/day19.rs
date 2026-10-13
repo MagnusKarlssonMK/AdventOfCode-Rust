@@ -15,8 +15,22 @@ struct InputData {
 impl FromStr for InputData {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        // Pad every line to the width of the widest line. Files copied around
+        // may have had trailing spaces stripped, which would otherwise make
+        // `Grid::parse` use the first line's width and truncate the grid.
+        let lines: Vec<&str> = s.lines().collect();
+        let width = lines.iter().map(|line| line.len()).max().unwrap_or(0);
+        let padded = lines
+            .iter()
+            .map(|line| {
+                let mut padded = line.to_string();
+                padded.push_str(&" ".repeat(width - line.len()));
+                padded
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
         Ok(Self {
-            grid: Grid::parse(s),
+            grid: Grid::parse(&padded),
         })
     }
 }
