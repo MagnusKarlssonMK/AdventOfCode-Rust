@@ -82,7 +82,7 @@ mod tests {
     #[test]
     fn part1_example_1() {
         let testdata = "HASH";
-        assert_eq!(hash_algorithm(&testdata), 52);
+        assert_eq!(hash_algorithm(testdata), 52);
     }
 
     #[test]
