@@ -1,12 +1,14 @@
 //! # 2016 day 4 - Security Through Obscurity
+use crate::aoc_util::error::{AocError, OptionExt};
 use std::{collections::HashMap, error::Error};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::try_from(input).unwrap();
+    let solution_data = InputData::try_from(input)?;
     let (p1, p2) = solution_data.solve();
-    Ok((p1.to_string(), p2.to_string()))
+    Ok((p1.to_string(), p2?.to_string()))
 }
 
+#[derive(Debug)]
 struct Room<'a> {
     name: Vec<&'a str>,
     sector_id: usize,
@@ -14,25 +16,20 @@ struct Room<'a> {
 }
 
 impl<'a> TryFrom<&'a str> for Room<'a> {
-    type Error = ();
+    type Error = AocError;
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
-        let mut name = Vec::new();
-        let mut sector_id = 0;
-        let mut checksum = "";
-        for part in value.split('-') {
-            if part.ends_with(']') {
-                let (left, right) = part.split_once('[').unwrap();
-                sector_id = left.parse().unwrap();
-                checksum = right.trim_end_matches(']');
-            } else {
-                name.push(part);
-            }
+        let (name, id_checksum) = value.rsplit_once('-').ctx("sector-id and checksum")?;
+        let (sector_id, checksum) = id_checksum.split_once('[').ctx("[")?;
+        let checksum = checksum.strip_suffix(']').ctx("]")?;
+        if name.is_empty() {
+            Err(AocError::Missing("name"))
+        } else {
+            Ok(Self {
+                name: name.split('-').collect(),
+                sector_id: sector_id.parse()?,
+                checksum,
+            })
         }
-        Ok(Self {
-            name,
-            sector_id,
-            checksum,
-        })
     }
 }
 
@@ -87,32 +84,33 @@ impl Room<'_> {
     }
 }
 
+#[derive(Debug)]
 struct InputData<'a> {
     rooms: Vec<Room<'a>>,
 }
 
 impl<'a> TryFrom<&'a str> for InputData<'a> {
-    type Error = ();
+    type Error = AocError;
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         Ok(Self {
             rooms: value
                 .lines()
-                .map(|line| Room::try_from(line).unwrap())
-                .collect(),
+                .map(Room::try_from)
+                .collect::<Result<Vec<_>, _>>()?,
         })
     }
 }
 
 impl InputData<'_> {
-    fn solve(&self) -> (usize, usize) {
+    fn solve(&self) -> (usize, Result<usize, AocError>) {
         let mut p1 = 0;
-        let mut p2 = 0;
+        let mut p2 = Err(AocError::NoSolution);
         const TARGET: [&str; 3] = ["northpole", "object", "storage"];
         for room in &self.rooms {
             if let Some(s_id) = room.validate() {
                 p1 += s_id;
                 if room.decode_check(&TARGET) {
-                    p2 = s_id;
+                    p2 = Ok(s_id);
                 }
             }
         }
@@ -124,14 +122,79 @@ impl InputData<'_> {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = "aaaaa-bbb-z-y-x-123[abxyz]
+    const TEST_OFFICIAL_1: &str = "aaaaa-bbb-z-y-x-123[abxyz]
 a-b-c-d-e-f-g-h-987[abcde]
 not-a-real-room-404[oarel]
 totally-real-room-200[decoy]";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        let (p1, _) = solution_data.solve();
+
+    const TEST_CUSTOM_1: &str = "aaaaa-bbb-z-y-x-123[abxyz]
+a-b-c-d-e-f-g-h-987[abcde]
+not-a-real-room-404[oarel]
+totally-real-room-200[decoy]
+lmprfnmjc-mzhcar-qrmpyec-548[mcrpa]";
+
+    const TEST_CUSTOM_2: &str = "lmprfnmjc-mzhcar-qrmpyec-548[decoy]";
+
+    const TEST_CUSTOM_3: &str = "abc-def-ghij-1[abcde]";
+
+    #[test]
+    fn part1_2_official_1() {
+        let solution_data = InputData::try_from(TEST_OFFICIAL_1).unwrap();
+        let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 1514);
+        assert_eq!(p2.unwrap_err(), AocError::NoSolution);
+    }
+
+    #[test]
+    fn part2_custom_1() {
+        let solution_data = InputData::try_from(TEST_CUSTOM_1).unwrap();
+        let (_, p2) = solution_data.solve();
+        assert_eq!(p2.unwrap(), 548);
+    }
+
+    #[test]
+    fn part2_custom_2() {
+        // Same name and sector as the room in part2_custom_1, but the checksum fails, so it may not answer.
+        let solution_data = InputData::try_from(TEST_CUSTOM_2).unwrap();
+        let (_, p2) = solution_data.solve();
+        assert_eq!(p2.unwrap_err(), AocError::NoSolution);
+    }
+
+    #[test]
+    fn part2_custom_3() {
+        // Valid checksum, but the decoded name is not the target room
+        let solution_data = InputData::try_from(TEST_CUSTOM_3).unwrap();
+        let (_, p2) = solution_data.solve();
+        assert_eq!(p2.unwrap_err(), AocError::NoSolution);
+    }
+
+    #[test]
+    fn parser_missing_left_bracket() {
+        let err = InputData::try_from("abc-def-ghij-1abcde]").unwrap_err();
+        assert_eq!(err, AocError::Missing("["));
+    }
+
+    #[test]
+    fn parser_missing_right_bracket() {
+        let err = InputData::try_from("abc-def-ghij-1[abcde").unwrap_err();
+        assert_eq!(err, AocError::Missing("]"));
+    }
+
+    #[test]
+    fn parser_missing_sectorid_checksum() {
+        let err = InputData::try_from("abcdefghij1[abcde]").unwrap_err();
+        assert_eq!(err, AocError::Missing("sector-id and checksum"));
+    }
+
+    #[test]
+    fn parser_missing_name() {
+        let err = InputData::try_from("-1[abcde]").unwrap_err();
+        assert_eq!(err, AocError::Missing("name"));
+    }
+
+    #[test]
+    fn parser_non_integer() {
+        let err = InputData::try_from("abc-def-ghij-1r[abcde]").unwrap_err();
+        assert!(matches!(err, AocError::ParseInt(_)));
     }
 }
