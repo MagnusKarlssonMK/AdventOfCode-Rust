@@ -31,6 +31,21 @@ impl FromStr for Instruction {
     }
 }
 
+impl Instruction {
+    fn apply(&self, direction: &mut Point) -> u32 {
+        match self {
+            Instruction::RotateLeft(steps) => {
+                *direction = direction.rotate_left();
+                *steps
+            }
+            Instruction::RotateRight(steps) => {
+                *direction = direction.rotate_right();
+                *steps
+            }
+        }
+    }
+}
+
 #[derive(Debug)]
 struct InputData {
     instructions: Vec<Instruction>,
@@ -53,16 +68,7 @@ impl InputData {
         let mut pos = ORIGIN;
         let mut direction = UP;
         for instr in &self.instructions {
-            let steps = match instr {
-                Instruction::RotateLeft(v) => {
-                    direction = direction.rotate_left();
-                    *v
-                }
-                Instruction::RotateRight(v) => {
-                    direction = direction.rotate_right();
-                    *v
-                }
-            };
+            let steps = instr.apply(&mut direction);
             pos += direction * steps as i32;
         }
         pos.manhattan(&ORIGIN)
@@ -74,16 +80,7 @@ impl InputData {
         let mut seen: HashSet<Point> = HashSet::new();
         seen.insert(pos);
         for instr in &self.instructions {
-            let steps = match instr {
-                Instruction::RotateLeft(v) => {
-                    direction = direction.rotate_left();
-                    *v
-                }
-                Instruction::RotateRight(v) => {
-                    direction = direction.rotate_right();
-                    *v
-                }
-            };
+            let steps = instr.apply(&mut direction);
             for _ in 0..steps {
                 pos += direction;
                 if seen.contains(&pos) {
