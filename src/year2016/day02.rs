@@ -31,7 +31,7 @@ impl FromStr for InputData {
         Ok(Self {
             instructions: s
                 .lines()
-                .map(|line| line.chars().map(|c| Point::to_dir(c)).collect())
+                .map(|line| line.chars().map(Point::to_dir).collect())
                 .collect::<Result<Vec<Vec<_>>, _>>()?,
         })
     }
