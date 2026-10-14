@@ -121,6 +121,5 @@ mod tests {
     fn parser_not_integer() {
         let err = InputData::from_str("1x2x4\n5xGx7").unwrap_err();
         assert!(matches!(err, AocError::ParseInt(_)));
-        //assert!(solve("1x2x4\n5xGx7").is_err());
     }
 }

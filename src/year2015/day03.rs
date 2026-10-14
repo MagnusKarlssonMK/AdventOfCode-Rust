@@ -10,6 +10,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     ))
 }
 
+#[derive(Debug)]
 struct InputData {
     steps: Vec<Point>,
 }
@@ -21,13 +22,13 @@ impl FromStr for InputData {
             steps: s
                 .chars()
                 .map(|c| match c {
-                    '>' => RIGHT,
-                    '<' => LEFT,
-                    '^' => UP,
-                    'v' => DOWN,
-                    _ => ORIGIN,
+                    '>' => Ok(RIGHT),
+                    '<' => Ok(LEFT),
+                    '^' => Ok(UP),
+                    'v' => Ok(DOWN),
+                    _ => Err(AocError::Invalid(c.to_string())),
                 })
-                .collect(),
+                .collect::<Result<Vec<_>, _>>()?,
         })
     }
 }
@@ -116,5 +117,11 @@ mod tests {
     fn part2_custom_1() {
         let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
         assert_eq!(solution_data.solve_part2(), 3);
+    }
+
+    #[test]
+    fn parser_invalid_char() {
+        let err = InputData::from_str("v<K>").unwrap_err();
+        assert_eq!(err, AocError::Invalid("K".to_string()));
     }
 }
