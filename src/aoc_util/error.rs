@@ -10,6 +10,8 @@ pub enum AocError {
     ParseInt(ParseIntError),
     /// The input is semantically incorrect
     Invalid(String),
+    /// No solution was found with the given input
+    NoSolution,
 }
 
 impl fmt::Display for AocError {
@@ -18,6 +20,7 @@ impl fmt::Display for AocError {
             AocError::Missing(what) => write!(f, "missing input: {what}"),
             AocError::ParseInt(e) => write!(f, "invalid number: {e}"),
             AocError::Invalid(what) => write!(f, "invalid input: {what}"),
+            AocError::NoSolution => write!(f, "no solution found"),
         }
     }
 }
@@ -76,5 +79,6 @@ mod tests {
             AocError::Invalid("color \"x\"".to_string()).to_string(),
             "invalid input: color \"x\""
         );
+        assert_eq!(AocError::NoSolution.to_string(), "no solution found");
     }
 }

@@ -1,46 +1,49 @@
 //! # 2016 day 1 - No Time for a Taxicab
-use crate::aoc_util::point::*;
+use crate::aoc_util::{error::AocError, point::*};
 use std::{collections::HashSet, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data = InputData::from_str(input).unwrap();
     Ok((
         solution_data.solve_part1().to_string(),
-        solution_data.solve_part2().to_string(),
+        solution_data.solve_part2()?.to_string(),
     ))
 }
 
-enum Rotation {
-    Left,
-    Right,
+#[derive(Debug)]
+enum Instruction {
+    RotateLeft(u32),
+    RotateRight(u32),
 }
 
-impl FromStr for Rotation {
-    type Err = ();
+impl FromStr for Instruction {
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.len() < 2 {
+            return Err(AocError::Invalid(s.to_string()));
+        }
+        let steps = s[1..].parse::<u32>()?;
         match s.chars().nth(0) {
-            Some('L') => Ok(Self::Left),
-            Some('R') => Ok(Self::Right),
-            _ => Err(()),
+            Some('L') => Ok(Self::RotateLeft(steps)),
+            Some('R') => Ok(Self::RotateRight(steps)),
+            _ => Err(AocError::Invalid(s.to_string())),
         }
     }
 }
 
+#[derive(Debug)]
 struct InputData {
-    instructions: Vec<(Rotation, i32)>,
+    instructions: Vec<Instruction>,
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
             instructions: s
                 .split(", ")
-                .map(|word| {
-                    let (left, right) = word.split_at(1);
-                    (Rotation::from_str(left).unwrap(), right.parse().unwrap())
-                })
-                .collect(),
+                .map(Instruction::from_str)
+                .collect::<Result<Vec<_>, _>>()?,
         })
     }
 }
@@ -49,35 +52,47 @@ impl InputData {
     fn solve_part1(&self) -> usize {
         let mut pos = ORIGIN;
         let mut direction = UP;
-        for (r, i) in &self.instructions {
-            direction = match r {
-                Rotation::Left => direction.rotate_left(),
-                Rotation::Right => direction.rotate_right(),
+        for instr in &self.instructions {
+            let steps = match instr {
+                Instruction::RotateLeft(v) => {
+                    direction = direction.rotate_left();
+                    *v
+                }
+                Instruction::RotateRight(v) => {
+                    direction = direction.rotate_right();
+                    *v
+                }
             };
-            pos += direction * *i;
+            pos += direction * steps as i32;
         }
         pos.manhattan(&ORIGIN)
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> Result<usize, AocError> {
         let mut pos = ORIGIN;
         let mut direction = UP;
         let mut seen: HashSet<Point> = HashSet::new();
         seen.insert(pos);
-        for (r, i) in &self.instructions {
-            direction = match r {
-                Rotation::Left => direction.rotate_left(),
-                Rotation::Right => direction.rotate_right(),
+        for instr in &self.instructions {
+            let steps = match instr {
+                Instruction::RotateLeft(v) => {
+                    direction = direction.rotate_left();
+                    *v
+                }
+                Instruction::RotateRight(v) => {
+                    direction = direction.rotate_right();
+                    *v
+                }
             };
-            for _ in 0..*i {
+            for _ in 0..steps {
                 pos += direction;
                 if seen.contains(&pos) {
-                    return pos.manhattan(&ORIGIN);
+                    return Ok(pos.manhattan(&ORIGIN));
                 }
                 seen.insert(pos);
             }
         }
-        0
+        Err(AocError::NoSolution)
     }
 }
 
@@ -85,30 +100,80 @@ impl InputData {
 mod tests {
     use super::*;
     #[test]
-    fn part1_example_1() {
+    fn part1_official_1() {
         let testdata = "R2, L3";
         let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 5);
     }
 
     #[test]
-    fn part1_example_2() {
+    fn part1_official_2() {
         let testdata = "R2, R2, R2";
         let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
-    fn part1_example_3() {
+    fn part1_official_3() {
         let testdata = "R5, L5, R5, R3";
         let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 12);
     }
 
     #[test]
-    fn part2_example_1() {
+    fn part2_official_1() {
         let testdata = "R8, R4, R4, R8";
         let solution_data = InputData::from_str(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), 4);
+        assert_eq!(solution_data.solve_part2(), Ok(4));
+    }
+
+    #[test]
+    fn part2_custom_1() {
+        let testdata = "R1, L1, L1, L1, R3";
+        let solution_data = InputData::from_str(testdata).unwrap();
+        assert_eq!(solution_data.solve_part2(), Ok(0));
+    }
+
+    #[test]
+    fn part2_custom_2() {
+        let testdata = "L1, L1, R1, R1, R1";
+        let solution_data = InputData::from_str(testdata).unwrap();
+        assert_eq!(solution_data.solve_part2(), Ok(1));
+    }
+
+    #[test]
+    fn parser_invalid_int() {
+        let testdata = "R32, LT4, L8";
+        let err = InputData::from_str(testdata).unwrap_err();
+        assert!(matches!(err, AocError::ParseInt(_)));
+    }
+
+    #[test]
+    fn parser_too_short() {
+        let testdata = "R32, L, L8";
+        let err = InputData::from_str(testdata).unwrap_err();
+        assert_eq!(err, AocError::Invalid("L".to_string()));
+    }
+
+    #[test]
+    fn parser_invalid_direction() {
+        let testdata = "R32, K4, L8";
+        let err = InputData::from_str(testdata).unwrap_err();
+        assert_eq!(err, AocError::Invalid("K4".to_string()));
+    }
+
+    #[test]
+    fn parser_negative_int() {
+        let testdata = "R32, L-4, L8";
+        let err = InputData::from_str(testdata).unwrap_err();
+        assert!(matches!(err, AocError::ParseInt(_)));
+    }
+
+    #[test]
+    fn part2_no_solution() {
+        let testdata = "R2, L3";
+        let solution_data = InputData::from_str(testdata).unwrap();
+        let err = solution_data.solve_part2().unwrap_err();
+        assert_eq!(err, AocError::NoSolution);
     }
 }
