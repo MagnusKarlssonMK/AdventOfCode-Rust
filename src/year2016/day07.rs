@@ -1,8 +1,9 @@
 //! # 2016 day 7 -Internet Protocol Version 7
+use crate::aoc_util::error::AocError;
 use std::{collections::HashSet, error::Error};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::try_from(input).unwrap();
+    let solution_data = InputData::try_from(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -19,7 +20,7 @@ struct Ipv7addr<'a> {
 }
 
 impl<'a> TryFrom<&'a str> for Ipv7addr<'a> {
-    type Error = ();
+    type Error = AocError;
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
         Ok(Self {
             seqs: s
@@ -95,13 +96,13 @@ struct InputData<'a> {
 }
 
 impl<'a> TryFrom<&'a str> for InputData<'a> {
-    type Error = ();
+    type Error = AocError;
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
         Ok(Self {
             addresses: s
                 .lines()
-                .map(|line| Ipv7addr::try_from(line).unwrap())
-                .collect(),
+                .map(Ipv7addr::try_from)
+                .collect::<Result<Vec<_>, _>>()?,
         })
     }
 }
@@ -120,59 +121,43 @@ impl InputData<'_> {
 mod tests {
     use super::*;
 
+    const TEST_OFFICIAL_1: &str = "abba[mnop]qrst
+    abcd[bddb]xyyx
+    aaaa[qwer]tyui
+    ioxxoj[asdfgh]zxcvbn";
+
+    const TEST_OFFICIAL_2: &str = "aba[bab]xyz
+    xyx[xyx]xyx
+    aaa[kek]eke
+    zazbz[bzb]cdb";
+
+    const TEST_CUSTOM_1: &str = "abbc[q]r
+abca[q]r
+aaaa[q]r
+aaa[aaa]
+aba[bac]";
+
     #[test]
-    fn part1_example_1() {
-        let testdata = "abba[mnop]qrst";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part1(), 1);
+    fn part1_official_1() {
+        let solution_data = InputData::try_from(TEST_OFFICIAL_1).unwrap();
+        assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
-    fn part1_example_2() {
-        let testdata = "abcd[bddb]xyyx";
-        let solution_data = InputData::try_from(testdata).unwrap();
+    fn part1_custom_1() {
+        let solution_data = InputData::try_from(TEST_CUSTOM_1).unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
-    fn part1_example_3() {
-        let testdata = "aaaa[qwer]tyui";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part1(), 0);
+    fn part2_official_2() {
+        let solution_data = InputData::try_from(TEST_OFFICIAL_2).unwrap();
+        assert_eq!(solution_data.solve_part2(), 3);
     }
 
     #[test]
-    fn part1_example_4() {
-        let testdata = "ioxxoj[asdfgh]zxcvbn";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part1(), 1);
-    }
-
-    #[test]
-    fn part2_example_1() {
-        let testdata = "aba[bab]xyz";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), 1);
-    }
-
-    #[test]
-    fn part2_example_2() {
-        let testdata = "xyx[xyx]xyx";
-        let solution_data = InputData::try_from(testdata).unwrap();
+    fn part2_custom_1() {
+        let solution_data = InputData::try_from(TEST_CUSTOM_1).unwrap();
         assert_eq!(solution_data.solve_part2(), 0);
-    }
-
-    #[test]
-    fn part2_example_3() {
-        let testdata = "aaa[kek]eke";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), 1);
-    }
-
-    #[test]
-    fn part2_example_4() {
-        let testdata = "zazbz[bzb]cdb";
-        let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), 1);
     }
 }
