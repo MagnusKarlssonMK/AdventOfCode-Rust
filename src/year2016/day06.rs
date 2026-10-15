@@ -1,8 +1,13 @@
 //! # 2016 day 6 - Signals and Noise
+//!
+//! Note: The puzzle description does not specify how to handle a draw, i.e. two
+//! or more characters appears the same number of times in a column. So it is
+//! assumed that the input is constructed in a way that this does not occur.
+use crate::aoc_util::error::AocError;
 use std::error::Error;
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::try_from(input).unwrap();
+    let solution_data = InputData::try_from(input)?;
     Ok(solution_data.solve())
 }
 
@@ -11,7 +16,7 @@ struct InputData<'a> {
 }
 
 impl<'a> TryFrom<&'a str> for InputData<'a> {
-    type Error = ();
+    type Error = AocError;
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
         Ok(Self {
             codes: s.lines().collect(),
@@ -49,9 +54,7 @@ impl InputData<'_> {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = "eedadn
+    const TEST_OFFICIAL_1: &str = "eedadn
 drvtee
 eandsr
 raavrd
@@ -67,7 +70,10 @@ vntsnd
 vrdear
 dvrsen
 enarar";
-        let solution_data = InputData::try_from(testdata).unwrap();
+
+    #[test]
+    fn part1_2_official_1() {
+        let solution_data = InputData::try_from(TEST_OFFICIAL_1).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, "easter");
         assert_eq!(p2, "advent");
