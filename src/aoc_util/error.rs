@@ -36,14 +36,22 @@ impl From<ParseIntError> for AocError {
 /// Extension trait to turn an `Option` into a `Result<_, AocError>` for
 /// use with `?`, keeping conversions as terse as the old `unwrap()`.
 pub trait OptionExt<T> {
-    /// Map 'None' to [`AocError::Missing`] with a static description of
+    /// Map `None` to [`AocError::Missing`] with a static description of
     /// what was expected.
     fn ctx(self, what: &'static str) -> Result<T, AocError>;
+
+    /// Map `None` to [`AocError::Invalid`] that is present but doesn't
+    /// make sense. `what` may be built dynamically.
+    fn ctx_invalid(self, what: impl Into<String>) -> Result<T, AocError>;
 }
 
 impl<T> OptionExt<T> for Option<T> {
     fn ctx(self, what: &'static str) -> Result<T, AocError> {
         self.ok_or(AocError::Missing(what))
+    }
+
+    fn ctx_invalid(self, what: impl Into<String>) -> Result<T, AocError> {
+        self.ok_or_else(|| AocError::Invalid(what.into()))
     }
 }
 
@@ -61,6 +69,21 @@ mod tests {
     fn option_ctx_none_becomes_missing() {
         let v: Option<u32> = None;
         assert_eq!(v.ctx("value"), Err(AocError::Missing("value")));
+    }
+
+    #[test]
+    fn option_ctx_invalid_some_passes_through() {
+        let v: Option<u32> = Some(42);
+        assert_eq!(v.ctx_invalid("value"), Ok(42));
+    }
+
+    #[test]
+    fn option_ctx_invalid_none_becomes_invalid() {
+        let v: Option<u32> = None;
+        assert_eq!(
+            v.ctx_invalid("value"),
+            Err(AocError::Invalid("value".to_string()))
+        );
     }
 
     #[test]
