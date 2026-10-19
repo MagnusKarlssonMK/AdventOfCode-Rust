@@ -6,12 +6,7 @@
 //! hashes contains five of that same character in a row.
 use crate::aoc_util::error::AocError;
 use md5::{Digest, Md5};
-use std::{
-    collections::{HashMap, HashSet},
-    error::Error,
-    fmt::Write,
-    str::FromStr,
-};
+use std::{collections::HashMap, error::Error, fmt::Write, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data = InputData::from_str(input)?;
@@ -27,6 +22,10 @@ const LOOKAHEAD: usize = 1000;
 /// Extra md5 rounds applied to every digest in part 2.
 const STRETCH: usize = 2016;
 
+/// Lowercase hex digits, indexed by nibble value. Used to encode a digest
+/// without going through `std::fmt` (which dominates the stretch loop).
+const HEX_CHARS: &[u8; 16] = b"0123456789abcdef";
+
 struct InputData {
     salt: String,
 }
@@ -37,6 +36,14 @@ impl FromStr for InputData {
         Ok(Self {
             salt: s.trim().to_string(),
         })
+    }
+}
+
+/// Writes the lowercase hex of `digest` into `out` (two bytes per digest byte).
+fn write_hex(out: &mut [u8; 32], digest: &[u8]) {
+    for (i, &byte) in digest.iter().enumerate() {
+        out[2 * i] = HEX_CHARS[(byte >> 4) as usize];
+        out[2 * i + 1] = HEX_CHARS[(byte & 0x0f) as usize];
     }
 }
 
@@ -56,46 +63,39 @@ impl InputData {
         self.solve(STRETCH)
     }
 
-    /// Lowercase hex digest of `salt + index`, stretched by `stretch` extra
-    /// md5 rounds (each round hashes the previous round's hex string).
-    fn hash_hex(&self, index: usize, stretch: usize) -> String {
-        let mut buffer = format!("{}{index}", self.salt);
-        let mut digest = Md5::digest(buffer.as_bytes());
-        for _ in 0..stretch {
-            buffer.clear();
-            for byte in digest.iter() {
-                write!(buffer, "{byte:02x}").unwrap();
-            }
-            digest = Md5::digest(buffer.as_bytes());
-        }
-        let mut hex = String::with_capacity(32);
-        for byte in digest.iter() {
-            write!(hex, "{byte:02x}").unwrap();
-        }
-        hex
-    }
-
     /// Scans hashes in increasing index order, collecting the indices of the
     /// hashes that qualify as keys.
     fn solve(&self, stretch: usize) -> usize {
+        let mut input = String::with_capacity(self.salt.len() + 20);
+        let mut hex = [0u8; 32];
+        let mut hasher = Md5::new();
         let mut triples: HashMap<u8, Vec<usize>> = HashMap::new();
         let mut keys: Vec<usize> = Vec::with_capacity(KEYS_NEEDED);
         let mut index = 0usize;
 
         loop {
-            let hexdigest = self.hash_hex(index, stretch);
-            let bytes = hexdigest.as_bytes();
+            input.clear();
+            input.push_str(&self.salt);
+            write!(input, "{index}").unwrap();
+
+            hasher.update(input.as_bytes());
+            let mut digest = hasher.finalize_reset();
+
+            // Key stretching: each round re-hashes the previous round's hex.
+            for _ in 0..stretch {
+                write_hex(&mut hex, &digest);
+                hasher.update(hex);
+                digest = hasher.finalize_reset();
+            }
+            write_hex(&mut hex, &digest);
 
             // Match five-in-a-row against pending triples. This must happen
             // before recording this hash's own triple: a hash containing
             // `aaaaa` also contains `aaa`, and must not confirm itself.
-            let quintuple_chars: HashSet<u8> = bytes
-                .windows(5)
-                .filter(|w| w.iter().all(|&b| b == w[0]))
-                .map(|w| w[0])
-                .collect();
-            for c in quintuple_chars {
-                if let Some(indices) = triples.remove(&c) {
+            for w in hex.windows(5) {
+                if w.iter().all(|&b| b == w[0])
+                    && let Some(indices) = triples.remove(&w[0])
+                {
                     for i in indices {
                         if index - i <= LOOKAHEAD {
                             keys.push(i);
@@ -105,7 +105,7 @@ impl InputData {
             }
 
             // Record the first three-in-a-row as a future candidate.
-            if let Some(c) = first_run(bytes, 3) {
+            if let Some(c) = first_run(&hex, 3) {
                 triples.entry(c).or_default().push(index);
             }
 
