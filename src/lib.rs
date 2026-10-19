@@ -51,7 +51,7 @@ macro_rules! solvers {
 
 solvers! {
     year2015 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day19],
-    year2016 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11],
+    year2016 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day12, day23],
     year2017 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day12, day13, day19],
     year2018 => [day01, day02, day03],
     year2019 => [day01, day02, day03, day04, day05, day06],
