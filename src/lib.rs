@@ -98,9 +98,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         .join("AdventOfCode-Input")
         .join(config.year.to_string())
         .join(format!("{day_key}.txt"));
-    let aoc_input = fs::read_to_string(filename)?
-        .trim_end_matches('\n')
-        .to_string();
+    let aoc_input = fs::read_to_string(filename)?.trim_end().to_string();
 
     // Run solver
     let timer = Instant::now();
