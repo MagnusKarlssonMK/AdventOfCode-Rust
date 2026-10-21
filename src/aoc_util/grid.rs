@@ -16,19 +16,24 @@ pub struct Grid {
 impl Grid {
     #[inline]
     /// Creates a new `Grid` instance based on a string input.
-    /// The function assumes that the input is correct, i.e. non-empty string and the number
-    /// of characters in each line is consistent.
+    ///
+    /// Every line is padded with spaces to the width of the widest line, so the
+    /// grid is always rectangular. Input files whose trailing spaces have been
+    /// stripped would otherwise produce a ragged grid, where the element vector
+    /// ends up shorter than `x_max * y_max` and every row after the short one
+    /// is read from the wrong offset.
     pub fn parse(input: &str) -> Self {
-        let lines: Vec<_> = input
-            .lines()
-            .map(|line| line.chars().collect::<Vec<_>>())
-            .collect();
-        let x_max = lines[0].len();
+        let lines: Vec<Vec<char>> = input.lines().map(|line| line.chars().collect()).collect();
+        let x_max = lines.iter().map(|line| line.len()).max().unwrap_or(0);
         let y_max = lines.len();
+
         let mut elements = Vec::with_capacity(x_max * y_max);
-        lines
-            .iter()
-            .for_each(|line| line.iter().for_each(|c| elements.push(*c)));
+        for line in &lines {
+            elements.extend_from_slice(line);
+            // Pad the row out to the full width.
+            elements.resize(elements.len() + (x_max - line.len()), ' ');
+        }
+
         Self {
             x_max,
             y_max,
@@ -115,5 +120,42 @@ impl fmt::Display for Grid {
             out.push('\n');
         }
         write!(f, "{}", out.iter().collect::<String>())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_uniform_grid() {
+        let grid = Grid::parse("abc\ndef");
+        assert_eq!(grid.x_max, 3);
+        assert_eq!(grid.y_max, 2);
+        assert_eq!(grid.elements, vec!['a', 'b', 'c', 'd', 'e', 'f']);
+    }
+
+    #[test]
+    fn parse_pads_short_lines() {
+        // Lines are padded with spaces to the width of the widest line, so the
+        // grid stays rectangular even if trailing spaces were stripped.
+        let grid = Grid::parse("abcd\na\nbc");
+        assert_eq!(grid.x_max, 4);
+        assert_eq!(grid.y_max, 3);
+        assert_eq!(
+            grid.elements,
+            vec!['a', 'b', 'c', 'd', 'a', ' ', ' ', ' ', 'b', 'c', ' ', ' ']
+        );
+        assert_eq!(grid.get_element(&Point::new(0, 1)), Some('a'));
+        assert_eq!(grid.get_element(&Point::new(3, 1)), Some(' '));
+        assert_eq!(grid.get_element(&Point::new(1, 2)), Some('c'));
+    }
+
+    #[test]
+    fn parse_empty_input() {
+        let grid = Grid::parse("");
+        assert_eq!(grid.x_max, 0);
+        assert_eq!(grid.y_max, 0);
+        assert!(grid.elements.is_empty());
     }
 }
