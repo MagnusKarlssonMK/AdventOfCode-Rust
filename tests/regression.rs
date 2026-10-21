@@ -40,7 +40,7 @@ fn parse_answer(content: &str) -> (String, String) {
             p1.trim_end_matches('\n').to_string(),
             p2.trim_end_matches('\n').to_string(),
         ),
-        None => (content.trim_end_matches('\n').to_string(), String::new()),
+        None => (content.trim_end().to_string(), String::new()),
     }
 }
 
