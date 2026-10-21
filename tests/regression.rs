@@ -40,7 +40,7 @@ fn parse_answer(content: &str) -> (String, String) {
             p1.trim_end_matches('\n').to_string(),
             p2.trim_end_matches('\n').to_string(),
         ),
-        None => (content.trim_end().to_string(), String::new()),
+        None => (content.trim_end_matches('\n').to_string(), String::new()),
     }
 }
 
@@ -93,7 +93,7 @@ fn stored_answers_match() {
                 skipped_missing_input.push(format!("{year} {day_key}"));
                 continue;
             };
-            let input = input_raw.trim_end_matches('\n').to_string();
+            let input = input_raw.trim_end().to_string();
 
             let expected_raw =
                 fs::read_to_string(&answer_path).expect("answer file readable after listing");
