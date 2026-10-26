@@ -1,5 +1,5 @@
 //! # 2017 day 3 - Spiral Memory
-use crate::aoc_util::point;
+use crate::aoc_util::{error::AocError, point};
 use std::{
     collections::{HashMap, HashSet},
     error::Error,
@@ -7,7 +7,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data = InputData::from_str(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -19,10 +19,10 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            puzzle_input: s.parse().unwrap(),
+            puzzle_input: s.parse()?,
         })
     }
 }
@@ -31,7 +31,7 @@ impl InputData {
     fn solve_part1(&self) -> usize {
         let mut head = point::ORIGIN;
         let mut direction = point::DOWN;
-        let mut value: usize = 1;
+        let mut value = 1;
         let mut visited = HashSet::from([head]);
         while value < self.puzzle_input {
             let left_direction = direction.rotate_left();
@@ -76,37 +76,32 @@ impl InputData {
 mod tests {
     use super::*;
     #[test]
-    fn part1_example_1() {
-        let testdata = "1";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_1() {
+        let solution_data = InputData::from_str("1").unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
-    fn part1_example_2() {
-        let testdata = "12";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_2() {
+        let solution_data = InputData::from_str("12").unwrap();
         assert_eq!(solution_data.solve_part1(), 3);
     }
 
     #[test]
-    fn part1_example_3() {
-        let testdata = "23";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_3() {
+        let solution_data = InputData::from_str("23").unwrap();
         assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
-    fn part1_example_4() {
-        let testdata = "1024";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_4() {
+        let solution_data = InputData::from_str("1024").unwrap();
         assert_eq!(solution_data.solve_part1(), 31);
     }
 
     #[test]
-    fn part2_example_1() {
-        let testdata = "750";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_1() {
+        let solution_data = InputData::from_str("750").unwrap();
         assert_eq!(solution_data.solve_part2(), 806);
     }
 }
