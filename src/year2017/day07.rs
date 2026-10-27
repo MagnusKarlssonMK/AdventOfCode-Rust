@@ -1,8 +1,10 @@
 //! # 2017 day 7 - Recursive Circus
 use std::{collections::HashMap, error::Error, str::FromStr};
 
+use crate::aoc_util::error::AocError;
+
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data = InputData::from_str(input)?;
     Ok((
         solution_data.solve_part1(),
         solution_data.solve_part2().to_string(),
@@ -15,28 +17,31 @@ struct Program {
 }
 
 impl FromStr for Program {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let tokens: Vec<String> = s
-            .split_whitespace()
-            .map(|token| token.to_string())
-            .collect();
-        let mut leaflist: Vec<String> = Vec::new();
-        if tokens.len() > 2 {
-            for t in tokens.iter().skip(2) {
-                leaflist.push(t.trim_end_matches(',').to_string());
-            }
+        fn extract_weight(s: &str) -> Result<usize, AocError> {
+            Ok(s.strip_prefix('(')
+                .and_then(|w| w.strip_suffix(')'))
+                .ok_or_else(|| AocError::Invalid(s.to_string()))?
+                .parse::<usize>()?)
         }
-        Ok(Self {
-            weight: tokens[0]
-                .strip_prefix('(')
-                .unwrap()
-                .strip_suffix(')')
-                .unwrap()
-                .parse()
-                .unwrap(),
-            leafs: leaflist,
-        })
+        // s is either like "(66)" or "(72) -> ktlj, cntj, xhth"
+        if let Some((weight_part, children_part)) = s.split_once(" -> ") {
+            // Parse weight from weight_part
+            let weight = extract_weight(weight_part)?;
+            let leafs = children_part
+                .split(',')
+                .map(|c| c.trim().to_string())
+                .collect();
+            Ok(Program { weight, leafs })
+        } else {
+            // Just weight
+            let weight = extract_weight(s)?;
+            Ok(Program {
+                weight,
+                leafs: Vec::new(),
+            })
+        }
     }
 }
 
@@ -46,15 +51,16 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let name_and_prog_list: Vec<(String, Program)> = s
-            .lines()
-            .map(|line| {
-                let (name, rest) = line.split_once(' ').unwrap();
-                (name.to_string(), Program::from_str(rest).unwrap())
-            })
-            .collect();
+        let mut name_and_prog_list: Vec<(String, Program)> = Vec::new();
+        for line in s.lines() {
+            if let Some((name, rest)) = line.split_once(' ') {
+                name_and_prog_list.push((name.to_string(), rest.parse()?));
+            } else {
+                return Err(AocError::Invalid(line.to_string()));
+            }
+        }
         let mut parents: HashMap<String, String> = HashMap::new();
         for (p_name, prog) in name_and_prog_list.iter() {
             for leaf_name in prog.leafs.iter() {
@@ -69,7 +75,7 @@ impl FromStr for InputData {
         }
         Ok(Self {
             programs: HashMap::from_iter(name_and_prog_list),
-            root: root.unwrap(),
+            root: root.ok_or(AocError::Missing("no root"))?,
         })
     }
 }
@@ -117,9 +123,9 @@ impl InputData {
             for (weight, nodes) in leafweights.iter() {
                 if nodes.len() > 1 {
                     correct_weight = *weight;
-                } else {
+                } else if let Some(n) = nodes.first() {
                     bad_weight = *weight;
-                    bad_node = nodes.first().unwrap().to_string();
+                    bad_node = n.to_string();
                 }
             }
             return (
@@ -139,7 +145,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "pbga (66)
+    const TEST_OFFICIAL_1: &str = "pbga (66)
 xhth (57)
 ebii (61)
 havc (66)
@@ -153,15 +159,35 @@ ugml (68) -> gyxo, ebii, jptl
 gyxo (61)
 cntj (57)";
 
+    const TEST_CUSTOM_1: &str = "A (10) -> B, D, E
+B (20) -> C1, C2, C3
+C1 (5)
+C2 (5)
+C3 (7)
+D (35)
+E (35)";
+
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
         assert_eq!(solution_data.solve_part1(), String::from("tknk"));
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_custom_1() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        assert_eq!(solution_data.solve_part1(), String::from("A"));
+    }
+
+    #[test]
+    fn part2_official_1() {
+        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
         assert_eq!(solution_data.solve_part2(), 60);
+    }
+
+    #[test]
+    fn part2_custom_1() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        assert_eq!(solution_data.solve_part2(), 5);
     }
 }
