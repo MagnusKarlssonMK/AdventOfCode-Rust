@@ -1,35 +1,49 @@
 //! # 2017 day 11 - Hex Ed
+//!
+//! Stores the hexgrid using axial coordinate system, i.e. based on 3d system (q, r, s) but
+//! with the third dimension truncated, since the sum of all three must be zero, meaning
+//! that it can be calculated when necessary.
+//!
+//! Solves both parts in one go; part 1 is the distance from where we ended up at the end,
+//! and part 2 is the furthest away we were away during the steps.
 use std::{
     error::Error,
     ops::{Add, AddAssign},
+    str::FromStr,
 };
 
+use crate::aoc_util::error::AocError;
+
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::try_from(input).unwrap();
+    let solution_data = InputData::from_str(input)?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
 
+#[derive(Debug, Clone, Copy)]
 struct Hexpoint {
     q: isize,
     r: isize,
 }
 
+impl FromStr for Hexpoint {
+    type Err = AocError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "n" => Ok(Self { q: 0, r: -1 }),
+            "ne" => Ok(Self { q: 1, r: -1 }),
+            "se" => Ok(Self { q: 1, r: 0 }),
+            "s" => Ok(Self { q: 0, r: 1 }),
+            "sw" => Ok(Self { q: -1, r: 1 }),
+            "nw" => Ok(Self { q: -1, r: 0 }),
+            _ => Err(AocError::Invalid(s.to_string())),
+        }
+    }
+}
+
 impl Hexpoint {
     fn new(q: isize, r: isize) -> Self {
         Self { q, r }
-    }
-
-    fn direction_from_str(input: &str) -> Self {
-        match input {
-            "n" => Self { q: 0, r: -1 },
-            "ne" => Self { q: 1, r: -1 },
-            "se" => Self { q: 1, r: 0 },
-            "s" => Self { q: 0, r: 1 },
-            "sw" => Self { q: -1, r: 1 },
-            "nw" => Self { q: -1, r: 0 },
-            _ => unreachable!(),
-        }
     }
 
     fn get_distance(&self, other: &Self) -> usize {
@@ -56,25 +70,31 @@ impl AddAssign for Hexpoint {
     }
 }
 
-struct InputData<'a> {
-    moves: &'a str,
+#[derive(Debug)]
+struct InputData {
+    moves: Vec<Hexpoint>,
 }
 
-impl<'a> TryFrom<&'a str> for InputData<'a> {
-    type Error = ();
-    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
-        Ok(Self { moves: s })
+impl FromStr for InputData {
+    type Err = AocError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            moves: s
+                .split(',')
+                .map(|d| d.parse())
+                .collect::<Result<Vec<_>, _>>()?,
+        })
     }
 }
 
-impl InputData<'_> {
+impl InputData {
     fn solve(&self) -> (usize, usize) {
         let start_point = Hexpoint::new(0, 0);
         let mut current_location = Hexpoint::new(0, 0);
         let mut current_distance = 0;
         let mut max_distance = 0;
-        for m in self.moves.split(',') {
-            current_location += Hexpoint::direction_from_str(m);
+        for m in &self.moves {
+            current_location += *m;
             current_distance = current_location.get_distance(&start_point);
             max_distance = max_distance.max(current_distance);
         }
@@ -87,36 +107,32 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part1_example_1() {
-        let testdata = "ne,ne,ne";
-        let solution_data = InputData::try_from(testdata).unwrap();
+    fn part1_2_official_1() {
+        let solution_data = InputData::from_str("ne,ne,ne").unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 3);
         assert_eq!(p2, 3);
     }
 
     #[test]
-    fn part1_example_2() {
-        let testdata = "ne,ne,sw,sw";
-        let solution_data = InputData::try_from(testdata).unwrap();
+    fn part1_2_official_2() {
+        let solution_data = InputData::from_str("ne,ne,sw,sw").unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 0);
         assert_eq!(p2, 2);
     }
 
     #[test]
-    fn part1_example_3() {
-        let testdata = "ne,ne,s,s";
-        let solution_data = InputData::try_from(testdata).unwrap();
+    fn part1_2_official_3() {
+        let solution_data = InputData::from_str("ne,ne,s,s").unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 2);
         assert_eq!(p2, 2);
     }
 
     #[test]
-    fn part1_example_4() {
-        let testdata = "se,sw,se,sw,sw";
-        let solution_data = InputData::try_from(testdata).unwrap();
+    fn part1_2_official_4() {
+        let solution_data = InputData::from_str("se,sw,se,sw,sw").unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 3);
         assert_eq!(p2, 3);
