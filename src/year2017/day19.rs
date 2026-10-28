@@ -1,10 +1,14 @@
 //! # 2017 day 19 - A Series of Tubes
-use crate::aoc_util::{grid::*, point::*};
+use crate::aoc_util::{
+    error::{AocError, OptionExt},
+    grid::*,
+    point::*,
+};
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
-    let (p1, p2) = solution_data.solve();
+    let solution_data = InputData::from_str(input)?;
+    let (p1, p2) = solution_data.solve()?;
     Ok((p1, p2.to_string()))
 }
 
@@ -13,7 +17,7 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // `Grid::parse` pads every line to the width of the widest line, so
         // input files with stripped trailing spaces still give a rectangular
@@ -25,17 +29,16 @@ impl FromStr for InputData {
 }
 
 impl InputData {
-    fn solve(&self) -> (String, usize) {
-        let mut current = self.grid.find('|').unwrap();
+    fn solve(&self) -> Result<(String, usize), AocError> {
+        let mut current = self.grid.find('|').ctx("start")?;
         let mut direction = DOWN;
         let mut p1 = Vec::new();
         let mut p2 = 0;
         loop {
             p2 += 1;
             current += direction;
-            let v = self.grid.get_element(&current).unwrap();
-            match v {
-                '+' => {
+            match self.grid.get_element(&current) {
+                Some('+') => {
                     let left = current + direction.rotate_left();
                     if let Some(c) = self.grid.get_element(&left) {
                         if c != ' ' {
@@ -47,14 +50,17 @@ impl InputData {
                         direction = direction.rotate_right();
                     }
                 }
-                ' ' => break,
-                '-' | '|' => continue,
-                _ => {
+                Some(' ') => break,
+                Some('-') | Some('|') => continue,
+                Some(v) => {
                     p1.push(v);
+                }
+                None => {
+                    return Err(AocError::NoSolution);
                 }
             }
         }
-        (p1.iter().collect(), p2)
+        Ok((p1.iter().collect(), p2))
     }
 }
 
@@ -64,14 +70,14 @@ mod tests {
 
     #[test]
     fn part1_example_1() {
-        let testdata = "     |          
-     |  +--+    
-     A  |  C    
- F---|----E|--+ 
-     |  |  |  D 
+        let testdata = "     |
+     |  +--+
+     A  |  C
+ F---|----E|--+
+     |  |  |  D
      +B-+  +--+ ";
         let solution_data = InputData::from_str(testdata).unwrap();
-        let (p1, p2) = solution_data.solve();
+        let (p1, p2) = solution_data.solve().unwrap();
         assert_eq!(p1, "ABCDEF");
         assert_eq!(p2, 38);
     }
