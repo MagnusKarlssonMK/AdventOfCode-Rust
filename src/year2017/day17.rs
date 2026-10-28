@@ -1,10 +1,10 @@
 //! # 2017 day 17 - Spinlock
 //!
-//! # Part 1
+//! ## Part 1
 //!
 //! Just build the buffer while keeping track of the current position.
 //!
-//! # Part 2
+//! ## Part 2
 //!
 //! The value 0 never moves from index 0, so we only need to know which value ends up at index 1. A naive
 //! loop over all 50M insertions is slow, so whole stretches are skipped at a time:
