@@ -52,7 +52,7 @@ macro_rules! solvers {
 solvers! {
     year2015 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day19],
     year2016 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day12, day13, day14, day15, day16, day17, day18, day19, day20, day21, day22, day23, day24, day25],
-    year2017 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day12, day13, day14, day15, day16, day17, day18, day19],
+    year2017 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day12, day13, day14, day15, day16, day17, day18, day19, day20],
     year2018 => [day01, day02, day03],
     year2019 => [day01, day02, day03, day04, day05, day06],
     year2020 => [day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11, day12, day13, day14, day15, day16, day17, day18],
