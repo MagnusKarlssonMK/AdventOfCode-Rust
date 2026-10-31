@@ -156,7 +156,12 @@ impl Pattern {
 
         if parts.len() == 4 {
             // Four 3-sized blocks to be recombined into a 6-sized image
-            Ok(vec![Self::recombine(&parts)])
+            // We can recombine and then split it up again into 9 2-sized patterns before returning;
+            // these are equivalent with regard to number of 'on' cells in current state, and will
+            // turn into 9 independent 3-size patterns in the next enhancement step. I.e. they will
+            // already now be independent.
+            let size6 = Self::recombine(&parts);
+            Ok(size6.break_up())
         } else {
             // A single enhanced image, or nine independent images
             Ok(parts)
@@ -179,6 +184,12 @@ impl FromStr for InputData {
         let mut enhancement_rules = HashMap::new();
         for line in s.lines() {
             let (left, right) = line.split_once(" => ").ctx("=> separator")?;
+            if left.len() > 11 {
+                // We will only ever use enhancement mapping for patterns that have been broken down to 2- or
+                // 3-size elements (9 characters plus two /-separators), so we can throw away all rules for
+                // larger elements.
+                continue;
+            }
             let from_patterns = left.parse::<Pattern>()?.get_permutations();
             for p in &from_patterns {
                 enhancement_rules.insert(p.clone(), right.parse()?);
