@@ -1,4 +1,13 @@
 //! # 2018 day 1 - Chronal Calibration
+//!
+//! ## Part 1
+//!
+//! Simply take the sum of all input values.
+//!
+//! ## Part 2
+//!
+//! Keep updating the frequency value, storing seen values in a hashset and stopping
+//! once a repeated value is found.
 use crate::aoc_util::error::*;
 use std::{collections::HashSet, error::Error, str::FromStr};
 
@@ -10,6 +19,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     ))
 }
 
+#[derive(Debug)]
 struct InputData {
     changes: Vec<isize>,
 }
@@ -20,8 +30,8 @@ impl FromStr for InputData {
         Ok(Self {
             changes: s
                 .lines()
-                .map(|line| line.parse().map_err(AocError::from))
-                .collect::<Result<_, _>>()?,
+                .map(|line| line.parse())
+                .collect::<Result<Vec<_>, _>>()?,
         })
     }
 }
@@ -34,7 +44,7 @@ impl InputData {
     fn solve_part2(&self) -> isize {
         let mut i: usize = 0;
         let mut freq: isize = 0;
-        let mut seen: HashSet<isize> = HashSet::new();
+        let mut seen = HashSet::new();
         seen.insert(freq);
         loop {
             freq += self.changes[i];
@@ -53,65 +63,62 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part1_example_1() {
-        let testdata = "+1\n-2\n+3\n+1";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_1() {
+        let solution_data = InputData::from_str("+1\n-2\n+3\n+1").unwrap();
         assert_eq!(solution_data.solve_part1(), 3);
     }
 
     #[test]
-    fn part1_example_2() {
-        let testdata = "+1\n+1\n+1";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_2() {
+        let solution_data = InputData::from_str("+1\n+1\n+1").unwrap();
         assert_eq!(solution_data.solve_part1(), 3);
     }
 
     #[test]
-    fn part1_example_3() {
-        let testdata = "+1\n+1\n-2";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_3() {
+        let solution_data = InputData::from_str("+1\n+1\n-2").unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
-    fn part1_example_4() {
-        let testdata = "-1\n-2\n-3";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_4() {
+        let solution_data = InputData::from_str("-1\n-2\n-3").unwrap();
         assert_eq!(solution_data.solve_part1(), -6);
     }
 
     #[test]
-    fn part2_example_1() {
-        let testdata = "+1\n-2\n+3\n+1";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_1() {
+        let solution_data = InputData::from_str("+1\n-2\n+3\n+1").unwrap();
         assert_eq!(solution_data.solve_part2(), 2);
     }
 
     #[test]
-    fn part2_example_2() {
-        let testdata = "+1\n-1";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_2() {
+        let solution_data = InputData::from_str("+1\n-1").unwrap();
         assert_eq!(solution_data.solve_part2(), 0);
     }
 
     #[test]
-    fn part2_example_3() {
-        let testdata = "+3\n+3\n+4\n-2\n-4";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_3() {
+        let solution_data = InputData::from_str("+3\n+3\n+4\n-2\n-4").unwrap();
         assert_eq!(solution_data.solve_part2(), 10);
     }
 
     #[test]
-    fn part2_example_4() {
-        let testdata = "-6\n+3\n+8\n+5\n-6";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_4() {
+        let solution_data = InputData::from_str("-6\n+3\n+8\n+5\n-6").unwrap();
         assert_eq!(solution_data.solve_part2(), 5);
     }
 
     #[test]
-    fn part2_example_5() {
-        let testdata = "+7\n+7\n-2\n-7\n-4";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_5() {
+        let solution_data = InputData::from_str("+7\n+7\n-2\n-7\n-4").unwrap();
         assert_eq!(solution_data.solve_part2(), 14);
+    }
+
+    #[test]
+    fn parser_invalid_input() {
+        let err = InputData::from_str("+7\n-5f\n+2").unwrap_err();
+        assert!(matches!(err, AocError::ParseInt(_)));
     }
 }
