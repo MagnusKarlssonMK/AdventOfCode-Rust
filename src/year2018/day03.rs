@@ -1,10 +1,19 @@
 //! # 2018 day 3 - No Matter How You Slice It
+//!
+//! Simply stores the claimed squares as packed coordinates in a counter dict, and gets the answer
+//! to Part 1 by counting how many squares have been counted more than once. While doing that, mark
+//! up the claims that don't have overlap just to prune what we need to check for Part 2. Then go
+//! over those once more and find which one still doesn't have overlap after the entire dict has
+//! been built.
+//!
+//! Not the most efficient solution since it stores and iterates over every single coordinate. It could
+//! be possible to create a solution just based on corners, but it would be MUCH more complicated.
 use crate::aoc_util::{error::*, point::Point};
 use std::{collections::HashMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data = InputData::from_str(input)?;
-    let (p1, p2) = solution_data.solve();
+    let (p1, p2) = solution_data.solve()?;
     Ok((p1.to_string(), p2.to_string()))
 }
 
@@ -49,7 +58,7 @@ impl FromStr for InputData {
 }
 
 impl InputData {
-    fn solve(&self) -> (usize, usize) {
+    fn solve(&self) -> Result<(usize, usize), AocError> {
         let mut seen = HashMap::new();
         let mut possible = Vec::new();
         for (i, c) in self.claims.iter().enumerate() {
@@ -69,24 +78,26 @@ impl InputData {
             }
         }
         let p1 = seen.values().filter(|v| **v > 1).count();
-        let mut p2 = 0;
+        let mut p2 = None;
 
-        for c in possible.iter().map(|i| self.claims.get(*i).unwrap()) {
+        for c in possible.iter().map(|i| &self.claims[*i]) {
             let mut overlap = false;
             for p in (0..c.x_len).flat_map(|dx| {
                 (0..c.y_len).map(move |dy| Point::new(dx as i32, dy as i32) + c.corner)
             }) {
-                if *seen.get(&p).unwrap() > 1 {
+                if let Some(v) = seen.get(&p)
+                    && *v > 1
+                {
                     overlap = true;
                     break;
                 }
             }
             if !overlap {
-                p2 = c.id;
+                p2 = Some(c.id);
                 break;
             }
         }
-        (p1, p2)
+        Ok((p1, p2.ok_or(AocError::NoSolution)?))
     }
 }
 
@@ -94,15 +105,26 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA_1: &str = "#1 @ 1,3: 4x4
+    const TEST_OFFICIAL_1: &str = "#1 @ 1,3: 4x4
 #2 @ 3,1: 4x4
 #3 @ 5,5: 2x2";
 
+    /// All claims overlap, i.e. no solution for part 2
+    const TEST_CUSTOM_1: &str = "#1 @ 0,0: 2x2
+#2 @ 0,0: 1x1
+#3 @ 1,1: 1x1";
+
     #[test]
-    fn parts1_2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA_1).unwrap();
-        let (p1, p2) = solution_data.solve();
+    fn parts1_2_official_1() {
+        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let (p1, p2) = solution_data.solve().unwrap();
         assert_eq!(p1, 4);
         assert_eq!(p2, 3);
+    }
+
+    #[test]
+    fn parts1_2_custom_1() {
+        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        assert_eq!(solution_data.solve().unwrap_err(), AocError::NoSolution);
     }
 }
