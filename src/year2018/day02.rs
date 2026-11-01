@@ -1,4 +1,15 @@
 //! # 2018 day 2 - Inventory Management System
+//!
+//! ## Part 1
+//!
+//! Simply count the characters in each string with a Counter, and keep track of how many
+//! times a string has a character with exactly 2 / 3 repetitions.
+//!
+//! ## Part 2
+//!
+//! Go through the combinations of strings and generate a string of the matching characters;
+//! if its length is exactly 1 smaller, we found the match.
+
 use crate::aoc_util::error::*;
 use std::{collections::HashMap, error::Error};
 
@@ -6,7 +17,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data = InputData::try_from(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
-        solution_data.solve_part2().to_string(),
+        solution_data.solve_part2()?.to_string(),
     ))
 }
 
@@ -25,8 +36,8 @@ impl<'a> TryFrom<&'a str> for InputData<'a> {
 
 impl InputData<'_> {
     fn solve_part1(&self) -> usize {
-        let mut twos: usize = 0;
-        let mut threes: usize = 0;
+        let mut twos = 0;
+        let mut threes = 0;
         for id in &self.ids {
             let mut counts: HashMap<char, usize> = HashMap::new();
             let mut two: isize = 0;
@@ -57,7 +68,7 @@ impl InputData<'_> {
         twos * threes
     }
 
-    fn solve_part2(&self) -> String {
+    fn solve_part2(&self) -> Result<String, AocError> {
         for left in 0..self.ids.len() - 1 {
             for right in 1..self.ids.len() {
                 let common: String = self.ids[left]
@@ -66,11 +77,11 @@ impl InputData<'_> {
                     .filter_map(|(lc, rc)| if lc == rc { Some(lc) } else { None })
                     .collect();
                 if common.len() == self.ids[left].len() - 1 {
-                    return common;
+                    return Ok(common);
                 }
             }
         }
-        String::from("")
+        Err(AocError::NoSolution)
     }
 }
 
@@ -79,16 +90,26 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part1_example_1() {
+    fn part1_official_1() {
         let testdata = "abcdef\nbababc\nabbcde\nabcccd\naabcdd\nabcdee\nababab";
         let solution_data = InputData::try_from(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 12);
     }
 
     #[test]
-    fn part2_example_1() {
+    fn part2_official_1() {
         let testdata = "abcde\nfghij\nklmno\npqrst\nfguij\naxcye\nwvxyz";
         let solution_data = InputData::try_from(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), "fgij");
+        assert_eq!(solution_data.solve_part2().unwrap(), "fgij");
+    }
+
+    #[test]
+    fn part2_custom_no_solution() {
+        let testdata = "abcde\nfghij\nklmno";
+        let solution_data = InputData::try_from(testdata).unwrap();
+        assert_eq!(
+            solution_data.solve_part2().unwrap_err(),
+            AocError::NoSolution
+        );
     }
 }
