@@ -93,7 +93,6 @@ impl InputData {
     ) {
         // 1. Update your global/accumulated best score(s) at each step
         *best_strength_p1 = (*best_strength_p1).max(state.strength);
-        *best_length = (*best_length).max(state.length);
 
         // 2. Update Part 2 (Longest first, then strongest)
         if state.length > *best_length {
