@@ -71,9 +71,7 @@ impl FromStr for Point {
                 y: y.trim().parse()?,
             })
         } else {
-            Err(AocError::Invalid(
-                format!("Can't parse to point: {s}").into(),
-            ))
+            Err(AocError::Invalid(format!("Can't parse to point: {s}")))
         }
     }
 }
