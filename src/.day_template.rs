@@ -41,14 +41,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part1_example_1() {
+    fn part1_official_1() {
         let testdata = "1";
         let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part1(), 1);
     }
 
     #[test]
-    fn part2_example_1() {
+    fn part2_official_1() {
         let testdata = "2";
         let solution_data = InputData::from_str(testdata).unwrap();
         assert_eq!(solution_data.solve_part2(), 2);

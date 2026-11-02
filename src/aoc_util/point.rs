@@ -66,8 +66,8 @@ impl FromStr for Point {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Some((x, y)) = s.split_once([',', '-']) {
             Ok(Self {
-                x: x.parse()?,
-                y: y.parse()?,
+                x: x.trim().parse()?,
+                y: y.trim().parse()?,
             })
         } else {
             Err(format!("Can't parse to point: {s}").into())
