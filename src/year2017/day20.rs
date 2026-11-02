@@ -45,9 +45,9 @@ impl FromStr for Particle {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.split(['<', '>']).collect::<Vec<_>>().as_slice() {
             ["p=", p, ", v=", v, ", a=", a, _] => Ok(Particle {
-                point: p.parse().map_err(|_| AocError::Invalid(p.to_string()))?,
-                vel: v.parse().map_err(|_| AocError::Invalid(v.to_string()))?,
-                acc: a.parse().map_err(|_| AocError::Invalid(a.to_string()))?,
+                point: p.parse()?,
+                vel: v.parse()?,
+                acc: a.parse()?,
             }),
             _ => Err(AocError::Invalid(s.to_string())),
         }

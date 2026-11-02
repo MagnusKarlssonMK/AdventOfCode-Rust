@@ -1,7 +1,8 @@
 //! # Point utility
 //!
 //! Provides a struct and some useful functions for managing a 2D point in x-y plane.
-use std::error::Error;
+//!
+//! Similar functionality is provided for a 3D point in x-y-z plane.
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 use std::str::FromStr;
@@ -60,17 +61,19 @@ impl Point {
 }
 
 impl FromStr for Point {
-    type Err = Box<dyn Error>;
+    type Err = AocError;
 
     #[inline]
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self, AocError> {
         if let Some((x, y)) = s.split_once([',', '-']) {
             Ok(Self {
                 x: x.trim().parse()?,
                 y: y.trim().parse()?,
             })
         } else {
-            Err(format!("Can't parse to point: {s}").into())
+            Err(AocError::Invalid(
+                format!("Can't parse to point: {s}").into(),
+            ))
         }
     }
 }
