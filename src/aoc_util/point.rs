@@ -65,7 +65,7 @@ impl FromStr for Point {
 
     #[inline]
     fn from_str(s: &str) -> Result<Self, AocError> {
-        if let Some((x, y)) = s.split_once([',', '-']) {
+        if let Some((x, y)) = s.split_once(',') {
             Ok(Self {
                 x: x.trim().parse()?,
                 y: y.trim().parse()?,
