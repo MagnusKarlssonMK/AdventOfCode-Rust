@@ -40,17 +40,17 @@ impl InputData {
 mod tests {
     use super::*;
 
+    const TEST_OFFICIAL_1: &str = "test string";
+
     #[test]
     fn part1_official_1() {
-        let testdata = "1";
-        let solution_data = InputData::from_str(testdata).unwrap();
+        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
         assert_eq!(solution_data.solve_part1(), 1);
     }
 
     #[test]
     fn part2_official_1() {
-        let testdata = "2";
-        let solution_data = InputData::from_str(testdata).unwrap();
+        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
         assert_eq!(solution_data.solve_part2(), 2);
     }
 }
