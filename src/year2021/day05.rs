@@ -29,14 +29,14 @@ impl Point {
 }
 
 struct OceanFloor {
-    points: Grid,
+    points: Grid<char>,
     nbr_dangerous_points: usize,
 }
 
 impl OceanFloor {
     fn new(x: usize, y: usize) -> Self {
         Self {
-            points: Grid::new(x, y, '0'),
+            points: Grid::new(x, y, &'0'),
             nbr_dangerous_points: 0,
         }
     }

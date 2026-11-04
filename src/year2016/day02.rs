@@ -40,10 +40,10 @@ impl FromStr for InputData {
 impl InputData {
     /// Takes a given `keypad` layout and generates the bathroom code from the instructions.
     /// Panics if `keypad` doesn't contain a `5`.
-    fn get_bathroom_code(&self, keypad: &Grid) -> String {
+    fn get_bathroom_code(&self, keypad: &Grid<char>) -> String {
         let mut result = Vec::new();
         let mut button = '5';
-        let mut point = keypad.find(button).unwrap();
+        let mut point = keypad.find(&button).unwrap();
         for row in &self.instructions {
             for step in row {
                 let next = *step + point;

@@ -51,7 +51,7 @@ impl PartialOrd for State {
 }
 
 struct InputData {
-    grid: Grid,
+    grid: Grid<char>,
 }
 
 impl FromStr for InputData {

@@ -28,10 +28,8 @@ impl FromStr for Item {
         // Naive approach - assume that all input items are correct, i.e. first line all have the same char
         let mut signature: Vec<usize> = vec![0; lines.x_max];
         let k = lines.elements[0];
-        for (i, c) in lines.elements.iter().enumerate() {
-            if *c == k {
-                signature[i % lines.x_max] += 1;
-            }
+        for (p, _) in lines.enumerate_points().filter(|(_, c)| **c == k) {
+            signature[p.x as usize] += 1;
         }
         if k == '#' {
             Ok(Self::Lock(

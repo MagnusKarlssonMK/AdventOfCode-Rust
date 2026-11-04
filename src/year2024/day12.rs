@@ -32,7 +32,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct InputData {
-    garden_map: Grid,
+    garden_map: Grid<char>,
 }
 
 impl FromStr for InputData {

@@ -52,7 +52,7 @@ impl FromStr for Operation {
     }
 }
 
-impl Grid {
+impl Grid<char> {
     fn perform_operation(&mut self, op: &Operation) -> Result<(), AocError> {
         match op {
             Operation::Rect(x_len, y_len) => {
@@ -122,7 +122,7 @@ impl FromStr for InputData {
 
 impl InputData {
     fn solve(&self) -> Result<(usize, String), AocError> {
-        let mut screen = Grid::new(self.width, self.height, '.');
+        let mut screen = Grid::new(self.width, self.height, &'.');
         for op in &self.ops {
             screen.perform_operation(op)?;
         }

@@ -2,11 +2,11 @@
 //!
 //! TBD - Figure out some way to compress duplicated code for all directions
 //! with iterators.
-use crate::aoc_util::{grid::*, point::*};
+use crate::aoc_util::{error::*, grid::*, point::*};
 use std::{collections::HashSet, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data = InputData::from_str(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -14,15 +14,18 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct InputData {
-    grid: Grid,
+    grid: Grid<u8>,
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self {
-            grid: Grid::parse(s),
-        })
+        let grid = Grid::parse(s).try_map(|c| {
+            c.to_digit(10)
+                .map(|d| d as u8)
+                .ok_or(AocError::Invalid(c.to_string()))
+        })?;
+        Ok(Self { grid })
     }
 }
 
@@ -34,7 +37,7 @@ impl InputData {
             tallest = -1;
             for x in 0..self.grid.x_max {
                 let p = Point::new(x as i32, y as i32);
-                let v = self.grid.get_uint_element(&p).unwrap() as i8;
+                let v = self.grid.get_element(&p).unwrap() as i8;
                 if v > tallest {
                     visible_trees.insert(p);
                     if v == 9 {
@@ -46,7 +49,7 @@ impl InputData {
             tallest = -1;
             for x in (0..self.grid.x_max).rev() {
                 let p = Point::new(x as i32, y as i32);
-                let v = self.grid.get_uint_element(&p).unwrap() as i8;
+                let v = self.grid.get_element(&p).unwrap() as i8;
                 if v > tallest {
                     visible_trees.insert(p);
                     if v == 9 {
@@ -60,7 +63,7 @@ impl InputData {
             tallest = -1;
             for y in 0..self.grid.y_max {
                 let p = Point::new(x as i32, y as i32);
-                let v = self.grid.get_uint_element(&p).unwrap() as i8;
+                let v = self.grid.get_element(&p).unwrap() as i8;
                 if v > tallest {
                     visible_trees.insert(p);
                     if v == 9 {
@@ -72,7 +75,7 @@ impl InputData {
             tallest = -1;
             for y in (0..self.grid.y_max).rev() {
                 let p = Point::new(x as i32, y as i32);
-                let v = self.grid.get_uint_element(&p).unwrap() as i8;
+                let v = self.grid.get_element(&p).unwrap() as i8;
                 if v > tallest {
                     visible_trees.insert(p);
                     if v == 9 {
@@ -93,7 +96,7 @@ impl InputData {
             scorelist.fill(0);
             for x in 0..self.grid.x_max {
                 let p = Point::new(x as i32, y as i32);
-                let v = self.grid.get_uint_element(&p).unwrap() as usize;
+                let v = self.grid.get_element(&p).unwrap() as usize;
                 let idx = self.grid.get_index(&p);
                 gridscore[idx] *= scorelist[v];
                 for (i, s) in &mut scorelist.iter_mut().enumerate() {
@@ -108,7 +111,7 @@ impl InputData {
             scorelist.fill(0);
             for x in (0..self.grid.x_max).rev() {
                 let p = Point::new(x as i32, y as i32);
-                let v = self.grid.get_uint_element(&p).unwrap() as usize;
+                let v = self.grid.get_element(&p).unwrap() as usize;
                 let idx = self.grid.get_index(&p);
                 gridscore[idx] *= scorelist[v];
                 for (i, s) in &mut scorelist.iter_mut().enumerate() {
@@ -126,7 +129,7 @@ impl InputData {
             scorelist.fill(0);
             for y in 0..self.grid.y_max {
                 let p = Point::new(x as i32, y as i32);
-                let v = self.grid.get_uint_element(&p).unwrap() as usize;
+                let v = self.grid.get_element(&p).unwrap() as usize;
                 let idx = self.grid.get_index(&p);
                 gridscore[idx] *= scorelist[v];
                 for (i, s) in &mut scorelist.iter_mut().enumerate() {
@@ -141,7 +144,7 @@ impl InputData {
             scorelist.fill(0);
             for y in (0..self.grid.y_max).rev() {
                 let p = Point::new(x as i32, y as i32);
-                let v = self.grid.get_uint_element(&p).unwrap() as usize;
+                let v = self.grid.get_element(&p).unwrap() as usize;
                 let idx = self.grid.get_index(&p);
                 gridscore[idx] *= scorelist[v];
                 largest = largest.max(gridscore[idx]);

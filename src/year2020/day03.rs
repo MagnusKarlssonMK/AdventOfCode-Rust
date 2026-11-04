@@ -11,7 +11,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct InputData {
-    grid: Grid,
+    grid: Grid<char>,
 }
 
 impl FromStr for InputData {

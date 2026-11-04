@@ -13,7 +13,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct InputData {
-    grid: Grid,
+    grid: Grid<char>,
 }
 
 impl FromStr for InputData {
@@ -30,7 +30,7 @@ impl FromStr for InputData {
 
 impl InputData {
     fn solve(&self) -> Result<(String, usize), AocError> {
-        let mut current = self.grid.find('|').ctx("start")?;
+        let mut current = self.grid.find(&'|').ctx("start")?;
         let mut direction = DOWN;
         let mut p1 = Vec::new();
         let mut p2 = 0;

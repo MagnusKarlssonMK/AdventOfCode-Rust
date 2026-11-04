@@ -19,7 +19,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct InputData {
-    grid: Grid,
+    grid: Grid<char>,
     start: Point,
 }
 
@@ -27,7 +27,7 @@ impl FromStr for InputData {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let grid = Grid::parse(s);
-        let start = grid.find('S').unwrap();
+        let start = grid.find(&'S').unwrap();
         Ok(Self { grid, start })
     }
 }

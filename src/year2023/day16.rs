@@ -71,11 +71,9 @@ impl FromStr for InputData {
         let mut nodes = HashMap::new();
         // Find every point containing a bouncer or splitter, and create a map of their closest neighbor in each direction
         let mut points: Vec<Point> = grid
-            .elements
-            .iter()
-            .enumerate()
+            .enumerate_points()
             .filter(|(_, e)| **e != '.')
-            .map(|(i, _)| grid.get_point(i))
+            .map(|(p, _)| p)
             .collect();
         // Also insert all starting points one step outside the grid in each direction
         for x in 0..grid.x_max as i32 {

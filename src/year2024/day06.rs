@@ -25,7 +25,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct InputData {
-    grid: Grid,
+    grid: Grid<char>,
 }
 
 impl FromStr for InputData {
@@ -33,10 +33,8 @@ impl FromStr for InputData {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let grid = Grid::parse(s);
         let mut obstacles = HashSet::new();
-        for (i, c) in grid.elements.iter().enumerate() {
-            if *c == '#' {
-                obstacles.insert(grid.get_point(i));
-            }
+        for (p, _) in grid.enumerate_points().filter(|(_, c)| **c == '#') {
+            obstacles.insert(p);
         }
         Ok(Self { grid })
     }
@@ -44,7 +42,7 @@ impl FromStr for InputData {
 
 impl InputData {
     fn solve(&self) -> (usize, usize) {
-        let guard_start_pos = self.grid.find('^').unwrap();
+        let guard_start_pos = self.grid.find(&'^').unwrap();
 
         // Simulate part 1 and record the base path
         let mut base_path: Vec<_> = Vec::new();

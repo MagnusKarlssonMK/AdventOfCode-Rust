@@ -55,7 +55,7 @@ impl InputData {
     }
 
     fn shortest_path(&self, bytes: usize) -> Option<usize> {
-        let mut grid = Grid::new(self.max_x, self.max_y, '.');
+        let mut grid = Grid::new(self.max_x, self.max_y, &'.');
         (0..bytes).for_each(|i| grid.set_point(&self.bytes[i], '#'));
         let mut seen = HashSet::new();
         let exit = Point::new(self.max_x as i32 - 1, self.max_y as i32 - 1);

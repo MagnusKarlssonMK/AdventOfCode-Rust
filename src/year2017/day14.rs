@@ -33,7 +33,7 @@ struct InputData {
 impl FromStr for InputData {
     type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut grid = Grid::new(GRID_SIZE, GRID_SIZE, '0');
+        let mut grid = Grid::new(GRID_SIZE, GRID_SIZE, &'0');
         for y in 0..GRID_SIZE as i32 {
             let seed = s.to_string() + "-" + &y.to_string();
             let mut knot = u128::from_str_radix(&get_knot_hash(&seed, 256), 16)?;
@@ -45,17 +45,14 @@ impl FromStr for InputData {
             }
         }
         let mut graph = HashMap::new();
-        for (i, c) in grid.elements.iter().enumerate() {
-            if *c == '1' {
-                let p = grid.get_point(i);
-                graph.insert(p, HashSet::new()); // Insert with an empty list first; a node might not have any neighbors at all
-                for n in NEIGHBORS_STRAIGHT
-                    .iter()
-                    .map(|d| *d + p)
-                    .filter(|n| grid.get_element(n) == Some('1'))
-                {
-                    graph.entry(p).or_default().insert(n);
-                }
+        for (p, _) in grid.enumerate_points().filter(|(_, c)| **c == '1') {
+            graph.insert(p, HashSet::new()); // Insert with an empty list first; a node might not have any neighbors at all
+            for n in NEIGHBORS_STRAIGHT
+                .iter()
+                .map(|d| *d + p)
+                .filter(|n| grid.get_element(n) == Some('1'))
+            {
+                graph.entry(p).or_default().insert(n);
             }
         }
         Ok(Self { graph })

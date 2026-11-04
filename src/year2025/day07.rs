@@ -25,7 +25,7 @@ const START: char = 'S';
 const SPLITTER: char = '^';
 
 struct InputData {
-    manifold: Grid,
+    manifold: Grid<char>,
 }
 
 impl FromStr for InputData {

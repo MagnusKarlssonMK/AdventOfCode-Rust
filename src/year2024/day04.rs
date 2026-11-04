@@ -22,7 +22,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct InputData {
-    grid: Grid,
+    grid: Grid<char>,
 }
 
 impl FromStr for InputData {
@@ -36,21 +36,18 @@ impl FromStr for InputData {
 impl InputData {
     fn solve_part1(&self) -> usize {
         let mut total = 0;
-        for (i, c) in self.grid.elements.iter().enumerate() {
-            let current = self.grid.get_point(i);
-            if *c == 'X' {
-                for dir in &NEIGHBORS_ALL {
-                    let word: String = [
-                        'X',
-                        self.grid.get_element(&(current + *dir)).unwrap_or('.'),
-                        self.grid.get_element(&(current + *dir * 2)).unwrap_or('.'),
-                        self.grid.get_element(&(current + *dir * 3)).unwrap_or('.'),
-                    ]
-                    .iter()
-                    .collect();
-                    if word == "XMAS" {
-                        total += 1;
-                    }
+        for (current, _) in self.grid.enumerate_points().filter(|(_, c)| **c == 'X') {
+            for dir in &NEIGHBORS_ALL {
+                let word: String = [
+                    'X',
+                    self.grid.get_element(&(current + *dir)).unwrap_or('.'),
+                    self.grid.get_element(&(current + *dir * 2)).unwrap_or('.'),
+                    self.grid.get_element(&(current + *dir * 3)).unwrap_or('.'),
+                ]
+                .iter()
+                .collect();
+                if word == "XMAS" {
+                    total += 1;
                 }
             }
         }
@@ -59,29 +56,26 @@ impl InputData {
 
     fn solve_part2(&self) -> usize {
         let mut total = 0;
-        for (i, c) in self.grid.elements.iter().enumerate() {
-            let current = self.grid.get_point(i);
-            if *c == 'A' {
-                let dir = Point::new(1, 1);
-                let word1: String = [
-                    self.grid.get_element(&(current - dir)).unwrap_or('.'),
+        for (current, _) in self.grid.enumerate_points().filter(|(_, c)| **c == 'A') {
+            let dir = Point::new(1, 1);
+            let word1: String = [
+                self.grid.get_element(&(current - dir)).unwrap_or('.'),
+                'A',
+                self.grid.get_element(&(current + dir)).unwrap_or('.'),
+            ]
+            .iter()
+            .collect();
+            if word1 == "MAS" || word1 == "SAM" {
+                let dir2 = Point::new(1, -1);
+                let word2: String = [
+                    self.grid.get_element(&(current - dir2)).unwrap_or('.'),
                     'A',
-                    self.grid.get_element(&(current + dir)).unwrap_or('.'),
+                    self.grid.get_element(&(current + dir2)).unwrap_or('.'),
                 ]
                 .iter()
                 .collect();
-                if word1 == "MAS" || word1 == "SAM" {
-                    let dir2 = Point::new(1, -1);
-                    let word2: String = [
-                        self.grid.get_element(&(current - dir2)).unwrap_or('.'),
-                        'A',
-                        self.grid.get_element(&(current + dir2)).unwrap_or('.'),
-                    ]
-                    .iter()
-                    .collect();
-                    if word2 == "MAS" || word2 == "SAM" {
-                        total += 1;
-                    }
+                if word2 == "MAS" || word2 == "SAM" {
+                    total += 1;
                 }
             }
         }

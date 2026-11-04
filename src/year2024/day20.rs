@@ -35,8 +35,8 @@ impl FromStr for InputData {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let grid = Grid::parse(s);
-        let start = grid.find('S').unwrap();
-        let end = grid.find('E').unwrap();
+        let start = grid.find(&'S').unwrap();
+        let end = grid.find(&'E').unwrap();
         let mut grid_path = vec![start];
         while *grid_path.last().unwrap() != end {
             for neighbor in NEIGHBORS_STRAIGHT

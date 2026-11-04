@@ -29,7 +29,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     ))
 }
 
-impl Grid {
+impl Grid<char> {
     #[inline]
     fn make_wide(&self) -> Self {
         let x_max = 2 * self.x_max;
@@ -131,7 +131,7 @@ impl Point {
 }
 
 struct InputData {
-    grid: Grid,
+    grid: Grid<char>,
     robot: Point,
     moves: Vec<Point>,
 }
@@ -141,7 +141,7 @@ impl FromStr for InputData {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (boxstr, movestr) = s.split_once("\n\n").unwrap();
         let grid = Grid::parse(boxstr);
-        let robot = grid.find('@').unwrap();
+        let robot = grid.find(&'@').unwrap();
         Ok(Self {
             grid,
             robot,

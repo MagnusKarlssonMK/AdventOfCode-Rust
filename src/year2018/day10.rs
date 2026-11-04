@@ -73,7 +73,7 @@ fn render_grid(p: &[Position]) -> Option<String> {
     let mut grid = Grid::new(
         1 + bmax.x.abs_diff(bmin.x) as usize,
         1 + bmax.y.abs_diff(bmin.y) as usize,
-        '.',
+        &'.',
     );
     for light in p.iter().map(|pos| pos.point - bmin) {
         grid.set_point(&light, '#');

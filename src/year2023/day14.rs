@@ -11,7 +11,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     ))
 }
 
-impl Grid {
+impl Grid<char> {
     fn tilt_north(&mut self) {
         for x in 0..self.x_max as i32 {
             let mut floor = 0;
@@ -120,7 +120,7 @@ impl Grid {
 }
 
 struct InputData {
-    dish: Grid,
+    dish: Grid<char>,
 }
 
 impl FromStr for InputData {

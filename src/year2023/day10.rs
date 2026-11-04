@@ -49,7 +49,7 @@ fn get_connection_directions(c: &char, outgoing: bool) -> Vec<Point> {
 }
 
 struct InputData {
-    grid: Grid,
+    grid: Grid<char>,
 }
 
 impl FromStr for InputData {
@@ -62,7 +62,7 @@ impl FromStr for InputData {
 
 impl InputData {
     fn solve(&self) -> (usize, usize) {
-        let start_pos = self.grid.find('S').unwrap();
+        let start_pos = self.grid.find(&'S').unwrap();
         let mut current_dir = point::UP;
         for d in &point::NEIGHBORS_STRAIGHT {
             if let Some(c) = self.grid.get_element(&(start_pos + *d))

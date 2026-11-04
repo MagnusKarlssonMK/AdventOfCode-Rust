@@ -47,11 +47,9 @@ impl FromStr for InputData {
         let grid = Grid::parse(s);
         let start = grid.get_point(grid.elements.len() / 2);
         let infected: Vec<_> = grid
-            .elements
-            .iter()
-            .enumerate()
+            .enumerate_points()
             .filter(|(_, c)| **c == '#')
-            .map(|(i, _)| grid.get_point(i))
+            .map(|(p, _)| p)
             .collect();
         Ok(Self { start, infected })
     }

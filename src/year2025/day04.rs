@@ -32,7 +32,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct InputData {
-    paper_map: Grid,
+    paper_map: Grid<char>,
 }
 
 impl FromStr for InputData {
@@ -52,11 +52,9 @@ impl InputData {
         let mut total = 0;
         let paper: Vec<_> = self
             .paper_map
-            .elements
-            .iter()
-            .enumerate()
+            .enumerate_points()
             .filter(|(_, c)| **c == PAPER)
-            .map(|(i, _)| self.paper_map.get_point(i))
+            .map(|(p, _)| p)
             .collect();
         let mut queue = VecDeque::from(paper);
         while let Some(p) = queue.pop_front() {
@@ -80,11 +78,9 @@ impl InputData {
         let mut paper_map = self.paper_map.clone();
         let paper: Vec<_> = self
             .paper_map
-            .elements
-            .iter()
-            .enumerate()
+            .enumerate_points()
             .filter(|(_, c)| **c == PAPER)
-            .map(|(i, _)| self.paper_map.get_point(i))
+            .map(|(p, _)| p)
             .collect();
         let mut queue = VecDeque::from(paper);
         while let Some(p) = queue.pop_front() {

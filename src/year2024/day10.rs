@@ -7,7 +7,7 @@
 //! to part 2 is given by the number of times the number 9 is found, and the
 //! answer to part 1 by throwing all the points found for each trailhead into
 //! a hashset and then calculating its length.
-use crate::aoc_util::{grid::*, point::*};
+use crate::aoc_util::{error::*, grid::*, point::*};
 use std::{
     collections::{HashSet, VecDeque},
     error::Error,
@@ -15,26 +15,28 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data = InputData::from_str(input)?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData {
-    map: Grid,
+    map: Grid<u8>,
     trailheads: Vec<Point>,
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let map = Grid::parse(s);
+        let map = Grid::parse(s).try_map(|c| {
+            c.to_digit(10)
+                .map(|d| d as u8)
+                .ok_or(AocError::Invalid(c.to_string()))
+        })?;
         let trailheads = map
-            .elements
-            .iter()
-            .enumerate()
-            .filter(|(_, v)| **v == '0')
-            .map(|(i, _)| Point::new((i % map.x_max) as i32, (i / map.y_max) as i32))
+            .enumerate_points()
+            .filter(|(_, v)| **v == 0)
+            .map(|(p, _)| p)
             .collect();
         Ok(Self { map, trailheads })
     }
@@ -49,13 +51,13 @@ impl InputData {
             let mut queue: VecDeque<Point> = VecDeque::new();
             queue.push_back(*head);
             while let Some(current) = queue.pop_front() {
-                if self.map.get_uint_element(&current).unwrap() == 9 {
+                if self.map.get_element(&current).unwrap() == 9 {
                     peaks.insert(current);
                     totalrating += 1;
                 } else {
                     for neighbor in NEIGHBORS_STRAIGHT.map(|dir| dir + current) {
-                        if let Some(neighbor_val) = self.map.get_uint_element(&neighbor)
-                            && neighbor_val == self.map.get_uint_element(&current).unwrap() + 1
+                        if let Some(neighbor_val) = self.map.get_element(&neighbor)
+                            && neighbor_val == self.map.get_element(&current).unwrap() + 1
                         {
                             queue.push_back(neighbor);
                         }

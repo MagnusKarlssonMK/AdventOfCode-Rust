@@ -43,7 +43,7 @@ impl PartialOrd for State {
 }
 
 struct InputData {
-    maze: Grid,
+    maze: Grid<char>,
     start: Point,
     exit: Point,
 }
@@ -52,8 +52,8 @@ impl FromStr for InputData {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let maze = Grid::parse(s);
-        let start = maze.find('S').unwrap();
-        let exit = maze.find('E').unwrap();
+        let start = maze.find(&'S').unwrap();
+        let exit = maze.find(&'E').unwrap();
         Ok(Self { maze, start, exit })
     }
 }
