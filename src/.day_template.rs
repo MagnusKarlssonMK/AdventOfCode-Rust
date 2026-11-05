@@ -3,7 +3,7 @@ use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -44,13 +44,13 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 1);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 2);
     }
 }
