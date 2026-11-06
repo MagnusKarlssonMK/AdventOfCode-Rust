@@ -1,9 +1,9 @@
 //! # 2020 day 3 - Toboggan Trajectory
-use crate::aoc_util::{grid::*, point::*};
+use crate::aoc_util::{error::AocError, grid::*, point::*};
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -15,7 +15,7 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
             grid: Grid::parse(s),
@@ -53,7 +53,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "..##.......
+    const TEST_OFFICIAL_1: &str = "..##.......
 #...#...#..
 .#....#..#.
 ..#.#...#.#
@@ -66,14 +66,14 @@ mod tests {
 .#..#...#.#";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 7);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 336);
     }
 }
