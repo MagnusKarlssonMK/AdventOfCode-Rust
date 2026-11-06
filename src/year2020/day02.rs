@@ -1,8 +1,9 @@
 //! # 2020 day 2 - Password Philosophy
+use crate::aoc_util::error::{AocError, OptionExt};
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -17,15 +18,20 @@ struct Password {
 }
 
 impl FromStr for Password {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut words = s.split_whitespace();
-        let (r1, r2) = words.next().unwrap().split_once('-').unwrap();
-        Ok(Self {
-            nbr_range: (r1.parse().unwrap(), r2.parse().unwrap()),
-            letter: words.next().unwrap().trim_matches(':').parse().unwrap(),
-            password: words.next().unwrap().parse().unwrap(),
-        })
+        match s.split(' ').collect::<Vec<_>>().as_slice() {
+            [nbr_range, letter, password] => {
+                let (r1, r2) = nbr_range.split_once('-').ctx("dash separator")?;
+                let letter = letter.chars().next().ctx("letter")?;
+                Ok(Self {
+                    nbr_range: (r1.parse()?, r2.parse()?),
+                    letter,
+                    password: password.to_string(),
+                })
+            }
+            _ => Err(AocError::Invalid(s.to_string())),
+        }
     }
 }
 
@@ -36,14 +42,9 @@ impl Password {
     }
 
     fn is_valid_new_policy(&self) -> bool {
-        if self.password.len() < self.nbr_range.0 {
-            false
-        } else {
-            let first = self.letter == self.password.chars().nth(self.nbr_range.0 - 1).unwrap();
-            let second = self.password.len() >= self.nbr_range.1
-                && self.letter == self.password.chars().nth(self.nbr_range.1 - 1).unwrap();
-            first ^ second
-        }
+        let first = self.password.chars().nth(self.nbr_range.0 - 1) == Some(self.letter);
+        let second = self.password.chars().nth(self.nbr_range.1 - 1) == Some(self.letter);
+        first ^ second
     }
 }
 
@@ -52,13 +53,13 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
             passwords: s
                 .lines()
-                .map(|line| Password::from_str(line).unwrap())
-                .collect(),
+                .map(|line| line.parse())
+                .collect::<Result<_, _>>()?,
         })
     }
 }
@@ -83,19 +84,29 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "1-3 a: abcde
+    const TEST_OFFICIAL_1: &str = "1-3 a: abcde
 1-3 b: cdefg
 2-9 c: ccccccccc";
 
+    /// Passwords shorter than the requested positions must not count out-of-range positions.
+    const TEST_CUSTOM_1: &str = "1-5 a: ab
+3-4 a: ab";
+
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part2(), 1);
+    }
+
+    #[test]
+    fn part2_custom_1() {
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 1);
     }
 }
