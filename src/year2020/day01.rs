@@ -1,11 +1,15 @@
 //! # 2020 day 1 - Report Repair
+//!
+//! Brute forcing all combinations until we find the match. This is quite inefficient, but the
+//! input is small enough that it still pays off in performance.
+use crate::aoc_util::error::AocError;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
-        solution_data.solve_part1().to_string(),
-        solution_data.solve_part2().to_string(),
+        solution_data.solve_part1()?.to_string(),
+        solution_data.solve_part2()?.to_string(),
     ))
 }
 
@@ -16,28 +20,31 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            reports: s.lines().map(|line| line.parse().unwrap()).collect(),
+            reports: s
+                .lines()
+                .map(|line| line.parse())
+                .collect::<Result<_, _>>()?,
         })
     }
 }
 
 impl InputData {
-    fn solve_part1(&self) -> usize {
+    fn solve_part1(&self) -> Result<usize, AocError> {
         let nbr_reports = self.reports.len();
         for i in 0..nbr_reports - 1 {
             for j in i + 1..nbr_reports {
                 if self.reports[i] + self.reports[j] == TARGET {
-                    return self.reports[i] * self.reports[j];
+                    return Ok(self.reports[i] * self.reports[j]);
                 }
             }
         }
-        0
+        Err(AocError::NoSolution)
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> Result<usize, AocError> {
         let nbr_reports = self.reports.len();
         for i in 0..nbr_reports - 2 {
             for j in i + 1..nbr_reports - 1 {
@@ -45,13 +52,13 @@ impl InputData {
                 if pairsum < TARGET {
                     for k in j + 1..nbr_reports {
                         if pairsum + self.reports[k] == TARGET {
-                            return self.reports[i] * self.reports[j] * self.reports[k];
+                            return Ok(self.reports[i] * self.reports[j] * self.reports[k]);
                         }
                     }
                 }
             }
         }
-        0
+        Err(AocError::NoSolution)
     }
 }
 
@@ -59,17 +66,46 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "1721\n979\n366\n299\n675\n1456";
+    const TEST_OFFICIAL_1: &str = "1721\n979\n366\n299\n675\n1456";
+
+    /// Input with no match for either part
+    const TEST_CUSTOM_1: &str = "1900\n81\n82";
+
+    /// Input with a match for part 1 but none for part 2
+    const TEST_CUSTOM_2: &str = "1990\n30\n40";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
-        assert_eq!(solution_data.solve_part1(), 514579);
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part1().unwrap(), 514579);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
-        assert_eq!(solution_data.solve_part2(), 241861950);
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part2().unwrap(), 241861950);
+    }
+
+    #[test]
+    fn part1_2_custom_1() {
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
+        assert_eq!(
+            solution_data.solve_part1().unwrap_err(),
+            AocError::NoSolution
+        );
+        assert_eq!(
+            solution_data.solve_part2().unwrap_err(),
+            AocError::NoSolution
+        );
+    }
+
+    #[test]
+    fn part1_2_custom_2() {
+        let solution_data: InputData = TEST_CUSTOM_2.parse().unwrap();
+        assert_eq!(solution_data.solve_part1().unwrap(), 1990 * 30);
+        assert_eq!(
+            solution_data.solve_part2().unwrap_err(),
+            AocError::NoSolution
+        );
     }
 }
