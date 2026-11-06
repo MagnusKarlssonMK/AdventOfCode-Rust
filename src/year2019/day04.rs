@@ -1,8 +1,10 @@
 //! # 2019 day 4 - Secure Container
 use std::{error::Error, str::FromStr};
 
+use crate::aoc_util::error::{AocError, OptionExt};
+
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -15,12 +17,12 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (low, high) = s.split_once('-').unwrap();
+        let (low, high) = s.split_once('-').ctx("separator")?;
         Ok(Self {
-            range_lower: low.parse().unwrap(),
-            range_upper: high.parse().unwrap(),
+            range_lower: low.parse()?,
+            range_upper: high.parse()?,
         })
     }
 }
@@ -71,5 +73,24 @@ impl InputData {
         } else {
             runs.iter().any(|run| *run >= 2)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_CUSTOM_1: &str = "100000-200000";
+
+    #[test]
+    fn part1_custom_1() {
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part1(), 1231);
+    }
+
+    #[test]
+    fn part2_custom_1() {
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part2(), 898);
     }
 }
