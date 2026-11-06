@@ -1,8 +1,14 @@
 //! # 2020 day 6 - Custom Customs
-use std::{collections::HashSet, error::Error, str::FromStr};
+//!
+//! Represents the answer from each passenger as a 26-bit bitmap; one bit for each present
+//! character in their answer. Then the answer for part 1 is simply to count the number of ones in
+//! the bitwise-or of all answers in the group, and then take the sum of all groups. Similarly for
+//! part 2, with the only difference that bitwise-and is used instead.
+use crate::aoc_util::error::AocError;
+use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -10,34 +16,37 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 }
 
 struct Group {
-    answers: Vec<String>,
+    answers: Vec<u32>,
 }
 
 impl FromStr for Group {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        fn parse_passenger(s: &str) -> Result<u32, AocError> {
+            s.chars().try_fold(0, |acc, c| {
+                if c.is_ascii_lowercase() {
+                    Ok(acc | (1 << (c as u8 - b'a') as u32))
+                } else {
+                    Err(AocError::Invalid(s.to_string()))
+                }
+            })
+        }
         Ok(Self {
-            answers: s.lines().map(str::to_string).collect(),
+            answers: s.lines().map(parse_passenger).collect::<Result<_, _>>()?,
         })
     }
 }
 
 impl Group {
-    fn get_yes_count_anyone(&self) -> usize {
-        let mut yes: HashSet<char> = HashSet::from_iter(self.answers[0].chars());
-        for a in self.answers.iter() {
-            yes.extend(a.chars());
-        }
-        yes.len()
+    fn get_yes_count_anyone(&self) -> u32 {
+        self.answers.iter().fold(0, |acc, &x| acc | x).count_ones()
     }
 
-    fn get_yes_count_everyone(&self) -> usize {
-        let mut yes = self.answers[0].chars().collect::<HashSet<_>>();
-        for a in self.answers.iter() {
-            let no = a.chars().collect::<HashSet<_>>();
-            yes = no.intersection(&yes).copied().collect();
-        }
-        yes.len()
+    fn get_yes_count_everyone(&self) -> u32 {
+        self.answers
+            .iter()
+            .fold(u32::MAX, |acc, &x| acc & x)
+            .count_ones()
     }
 }
 
@@ -46,23 +55,23 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
             forms: s
                 .split("\n\n")
-                .map(|g| Group::from_str(g).unwrap())
-                .collect(),
+                .map(|g| g.parse())
+                .collect::<Result<_, _>>()?,
         })
     }
 }
 
 impl InputData {
-    fn solve_part1(&self) -> usize {
+    fn solve_part1(&self) -> u32 {
         self.forms.iter().map(|f| f.get_yes_count_anyone()).sum()
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> u32 {
         self.forms.iter().map(|f| f.get_yes_count_everyone()).sum()
     }
 }
@@ -71,28 +80,41 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA_1: &str = "abcx\nabcy\nabcz";
-    const TEST_DATA_2: &str = "abc\n
-a\nb\nc\n
-ab\nac\n
-a\na\na\na\n
+    const TEST_OFFICIAL_1: &str = "abcx
+abcy
+abcz";
+
+    const TEST_OFFICIAL_2: &str = "abc
+
+a
+b
+c
+
+ab
+ac
+
+a
+a
+a
+a
+
 b";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA_1).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 6);
     }
 
     #[test]
-    fn part1_example_2() {
-        let solution_data = InputData::from_str(TEST_DATA_2).unwrap();
+    fn part1_official_2() {
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 11);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA_2).unwrap();
+    fn part2_official_2() {
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 6);
     }
 }
