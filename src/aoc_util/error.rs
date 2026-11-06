@@ -12,6 +12,8 @@ pub enum AocError {
     Invalid(String),
     /// No solution was found with the given input
     NoSolution,
+    /// No solver exists for the requested year/day
+    NotImplemented(&'static str),
 }
 
 impl fmt::Display for AocError {
@@ -21,6 +23,7 @@ impl fmt::Display for AocError {
             AocError::ParseInt(e) => write!(f, "invalid number: {e}"),
             AocError::Invalid(what) => write!(f, "invalid input: {what}"),
             AocError::NoSolution => write!(f, "no solution found"),
+            AocError::NotImplemented(what) => write!(f, "not implemented: {what}"),
         }
     }
 }
@@ -103,5 +106,9 @@ mod tests {
             "invalid input: color \"x\""
         );
         assert_eq!(AocError::NoSolution.to_string(), "no solution found");
+        assert_eq!(
+            AocError::NotImplemented("day").to_string(),
+            "not implemented: day"
+        );
     }
 }

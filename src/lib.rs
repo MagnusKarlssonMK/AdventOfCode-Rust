@@ -1,3 +1,4 @@
+use aoc_util::error::AocError;
 use std::error::Error;
 use std::fs;
 use std::path::Path;
@@ -26,10 +27,10 @@ macro_rules! solvers {
                 $(
                     stringify!($ymod) => match day_key {
                         $( stringify!($dmod) => $ymod::$dmod::solve(input), )*
-                        _ => Err("Day not implemented".into()),
+                        _ => Err(AocError::NotImplemented("day").into()),
                     },
                 )*
-                _ => Err("Year not implemented".into()),
+                _ => Err(AocError::NotImplemented("year").into()),
             }
         }
 
@@ -40,10 +41,10 @@ macro_rules! solvers {
                 $(
                     stringify!($ymod) => match day_key {
                         $( stringify!($dmod) => Ok(()), )*
-                        _ => Err("Day not implemented".into()),
+                        _ => Err(AocError::NotImplemented("day").into()),
                     },
                 )*
-                _ => Err("Year not implemented".into()),
+                _ => Err(AocError::NotImplemented("year").into()),
             }
         }
     };

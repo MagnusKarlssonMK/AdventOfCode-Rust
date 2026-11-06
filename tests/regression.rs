@@ -32,6 +32,7 @@
 use std::fs;
 use std::path::Path;
 
+use advent_of_code_rust::aoc_util::error::AocError;
 use advent_of_code_rust::dispatch;
 
 fn parse_answer(content: &str) -> (String, String) {
@@ -113,7 +114,11 @@ fn stored_answers_match() {
                     }
                 }
                 Err(e) => {
-                    if !e.to_string().contains("not implemented") {
+                    // Reminder: can be simplified once the dispatch macro is updated to use AocError directly as error type
+                    let not_implemented = e
+                        .downcast_ref::<AocError>()
+                        .is_some_and(|e| matches!(e, AocError::NotImplemented(_)));
+                    if !not_implemented {
                         failures.push(format!("{year} {day_key}: solver returned error {e}"));
                     }
                 }
