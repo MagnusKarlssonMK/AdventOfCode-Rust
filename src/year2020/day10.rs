@@ -1,8 +1,12 @@
 //! # 2020 day 10 - Adapter Array
+//!
+//! Note: solution assumes that the gap between an ordered list of the input adapters is in the 1-3
+//! jolts range, so an error in the input will not be detected.
+use crate::aoc_util::error::AocError;
 use std::{collections::HashMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -14,12 +18,15 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut adapters: Vec<usize> = s.lines().map(|line| line.parse().unwrap()).collect();
+        let mut adapters: Vec<usize> = s
+            .lines()
+            .map(|line| line.parse())
+            .collect::<Result<_, _>>()?;
         adapters.push(0);
         adapters.sort_unstable();
-        let largest = adapters.last().unwrap();
+        let largest = adapters.last().expect("adapters can't be empty");
         adapters.push(*largest + 3);
         Ok(Self { adapters })
     }
@@ -34,7 +41,7 @@ impl InputData {
                 .and_modify(|e| *e += 1)
                 .or_insert(1);
         });
-        diffs.get(&1).unwrap() * diffs.get(&3).unwrap()
+        diffs.get(&1).copied().unwrap_or(0) * diffs.get(&3).copied().unwrap_or(0)
     }
 
     fn solve_part2(&self) -> usize {
@@ -55,7 +62,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA_1: &str = "16
+    const TEST_OFFICIAL_1: &str = "16
 10
 15
 5
@@ -67,7 +74,7 @@ mod tests {
 12
 4";
 
-    const TEST_DATA_2: &str = "28
+    const TEST_OFFICIAL_2: &str = "28
 33
 18
 42
@@ -100,26 +107,26 @@ mod tests {
 3";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA_1).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 7 * 5);
     }
 
     #[test]
-    fn part1_example_2() {
-        let solution_data = InputData::from_str(TEST_DATA_2).unwrap();
+    fn part1_official_2() {
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 22 * 10);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA_1).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 8);
     }
 
     #[test]
-    fn part2_example_2() {
-        let solution_data = InputData::from_str(TEST_DATA_2).unwrap();
+    fn part2_official_2() {
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 19208);
     }
 }
