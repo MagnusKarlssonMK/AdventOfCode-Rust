@@ -1,11 +1,24 @@
 //! # Math related utility functions
+use std::ops::Rem;
+
+/// Types that support a greatest-common-divisor computation.
+pub trait Gcd: Copy + PartialEq + From<u8> + Rem<Output = Self> {
+    fn gcd(self, other: Self) -> Self {
+        let zero = Self::from(0);
+        let (mut a, mut b) = (self, other);
+        while b != zero {
+            (a, b) = (b, a % b);
+        }
+        a
+    }
+}
+
+impl Gcd for usize {}
+impl Gcd for u128 {}
 
 /// Calculates the Greatest Common Divisor for two integers.
-pub fn gcd(mut a: usize, mut b: usize) -> usize {
-    while b != 0 {
-        (a, b) = (b, a % b);
-    }
-    a
+pub fn gcd<T: Gcd>(a: T, b: T) -> T {
+    Gcd::gcd(a, b)
 }
 
 /// Calculates the Least Common Multiple for two integers.
