@@ -7,11 +7,11 @@
 //! The scan loops have been combined as much as possible both to shrink the
 //! code and to minimize the number of loops, at the cost of making it a
 //! bit harder to understand the logic from reading the code.
-use crate::aoc_util::{grid::*, point::*};
+use crate::aoc_util::{error::AocError, grid::*, point::*};
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -23,11 +23,15 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self {
-            grid: Grid::parse(s),
-        })
+        let grid = Grid::parse(s);
+        if grid.x_max == 0 || grid.y_max == 0 {
+            // To prevent underflow later during the search
+            Err(AocError::Invalid("zero dimension".to_string()))
+        } else {
+            Ok(Self { grid })
+        }
     }
 }
 
@@ -113,7 +117,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "L.LL.LL.LL
+    const TEST_OFFICIAL_1: &str = "L.LL.LL.LL
 LLLLLLL.LL
 L.L.L..L..
 LLLL.LL.LL
@@ -125,14 +129,14 @@ L.LLLLLL.L
 L.LLLLL.LL";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 37);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 26);
     }
 }
