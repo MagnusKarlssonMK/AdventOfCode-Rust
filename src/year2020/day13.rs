@@ -4,7 +4,7 @@
 //! Chinese remainder theorem solution for part 2.
 use crate::aoc_util::{
     error::{AocError, OptionExt},
-    math::*,
+    math::chinese_remainder,
 };
 use std::{error::Error, str::FromStr};
 
@@ -58,20 +58,16 @@ impl InputData {
     }
 
     fn solve_part2(&self) -> Result<u128, AocError> {
-        let (mut coefficient, first_idx) = *self.buslist.first().ok_or(AocError::NoSolution)?;
-        let mut time = (coefficient - first_idx % coefficient) % coefficient;
-        for (busid, idx) in &self.buslist[1..] {
-            let remainder = (busid - idx % busid) % busid;
-            while time % busid != remainder {
-                let diff = (remainder + busid - time % busid) % busid;
-                if diff % (coefficient % busid).gcd(*busid) != 0 {
-                    return Err(AocError::NoSolution);
-                }
-                time += coefficient;
-            }
-            coefficient *= busid;
+        let mut moduli = Vec::with_capacity(self.buslist.len());
+        let mut remainders = Vec::with_capacity(self.buslist.len());
+
+        for &(busid, idx) in &self.buslist {
+            moduli.push(busid);
+            remainders.push((busid - idx % busid) % busid);
         }
-        Ok(time)
+
+        let time = chinese_remainder(&moduli, &remainders).map_err(|_| AocError::NoSolution)?;
+        u128::try_from(time).map_err(|_| AocError::NoSolution)
     }
 }
 

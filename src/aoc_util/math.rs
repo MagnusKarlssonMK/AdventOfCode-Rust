@@ -57,28 +57,71 @@ pub fn mod_inverse(a: i128, m: i128) -> Option<i128> {
     }
 }
 
-/// Chinese Remainder Theorem calculation
-pub fn chinese_remainder(moduli: &[i128], remainders: &[i128]) -> Option<i128> {
-    if moduli.is_empty() || moduli.len() != remainders.len() || moduli.iter().any(|n| *n <= 0) {
-        return None;
-    }
+/// Errors returned by [`chinese_remainder`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CrtError {
+    /// No moduli were provided.
+    Empty,
+    /// The number of moduli and remainders differs.
+    LengthMismatch,
+    /// A modulus was zero or negative.
+    NonPositiveModulus,
+    /// The congruences have no common solution.
+    Inconsistent,
+    /// A value or intermediate result did not fit in `i128`.
+    Overflow,
+}
 
-    // Calculate the product of all moduli
-    let mut prod: i128 = 1;
-    for &n in moduli {
-        prod = prod.checked_mul(n)?;
+/// Solves `x ≡ remainders[i] (mod moduli[i])` using the generalized CRT.
+///
+/// Moduli do not need to be pairwise coprime. Returns the smallest
+/// non-negative solution. Values that don't fit in `i128`, or intermediate
+/// arithmetic that overflows, yield `CrtError::Overflow`.
+pub fn chinese_remainder<M, R>(moduli: &[M], remainders: &[R]) -> Result<i128, CrtError>
+where
+    M: Copy + TryInto<i128>,
+    R: Copy + TryInto<i128>,
+{
+    if moduli.is_empty() {
+        return Err(CrtError::Empty);
+    }
+    if moduli.len() != remainders.len() {
+        return Err(CrtError::LengthMismatch);
     }
 
     let mut result: i128 = 0;
-    for (&n, &r) in moduli.iter().zip(remainders.iter()) {
-        let partial = prod / n;
-        let inv = mod_inverse(partial, n)?;
+    let mut product: i128 = 1;
 
-        let term = r.checked_mul(inv)?.checked_mul(partial)?;
-        result = result.checked_add(term)?;
+    for (&modulus, &remainder) in moduli.iter().zip(remainders) {
+        let n: i128 = modulus.try_into().map_err(|_| CrtError::Overflow)?;
+        let r: i128 = remainder.try_into().map_err(|_| CrtError::Overflow)?;
+        if n <= 0 {
+            return Err(CrtError::NonPositiveModulus);
+        }
+        let r = r.rem_euclid(n);
+
+        // product * x + n * y == g, so x is the inverse of product / g mod n / g.
+        let (g, x, _) = extended_gcd(product, n);
+        let diff = (r - result).rem_euclid(n);
+        if diff % g != 0 {
+            return Err(CrtError::Inconsistent);
+        }
+
+        let n_g = n / g;
+        let inv = x.rem_euclid(n_g);
+        let k = (diff / g)
+            .checked_mul(inv)
+            .ok_or(CrtError::Overflow)?
+            .rem_euclid(n_g);
+        let new_product = (product / g).checked_mul(n).ok_or(CrtError::Overflow)?;
+        result = result
+            .checked_add(product.checked_mul(k).ok_or(CrtError::Overflow)?)
+            .ok_or(CrtError::Overflow)?
+            .rem_euclid(new_product);
+        product = new_product;
     }
 
-    Some((result % prod + prod) % prod)
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -87,16 +130,50 @@ mod tests {
 
     #[test]
     fn test_crt_successful() {
-        assert_eq!(chinese_remainder(&[3, 5, 7], &[2, 3, 2]).unwrap(), 23);
-        assert_eq!(chinese_remainder(&[5, 11], &[0, 9]).unwrap(), 20);
-        assert_eq!(chinese_remainder(&[4], &[3]).unwrap(), 3);
+        assert_eq!(chinese_remainder(&[3, 5, 7], &[2, 3, 2]), Ok(23));
+        assert_eq!(chinese_remainder(&[5, 11], &[0, 9]), Ok(20));
+        assert_eq!(chinese_remainder(&[4], &[3]), Ok(3));
+        assert_eq!(chinese_remainder(&[6, 10], &[0, 2]), Ok(12)); // non-coprime, consistent
+        assert_eq!(chinese_remainder(&[6, 10], &[0, 8]), Ok(18)); // non-coprime, consistent
+        assert_eq!(chinese_remainder(&[5, 7], &[-1, -2]), Ok(19)); // negative remainders
+        assert_eq!(chinese_remainder(&[1, 1], &[5, 7]), Ok(0));
+        assert_eq!(chinese_remainder(&[6u128, 10], &[0u128, 2]), Ok(12)); // generic input
     }
 
     #[test]
-    fn test_crt_no_solution() {
-        assert_eq!(chinese_remainder(&[0, 5, 7], &[2, 3, 2]), None);
-        assert_eq!(chinese_remainder(&[3, 5, 7], &[2, 3]), None);
-        assert_eq!(chinese_remainder(&[2, 4, 7], &[2, 3, 2]), None);
+    fn test_crt_errors() {
+        assert_eq!(
+            chinese_remainder::<i128, i128>(&[], &[]),
+            Err(CrtError::Empty)
+        );
+        assert_eq!(
+            chinese_remainder(&[3, 5, 7], &[2, 3]),
+            Err(CrtError::LengthMismatch)
+        );
+        assert_eq!(
+            chinese_remainder(&[0, 5, 7], &[2, 3, 2]),
+            Err(CrtError::NonPositiveModulus)
+        );
+        assert_eq!(
+            chinese_remainder(&[2, 4, 7], &[2, 3, 2]),
+            Err(CrtError::Inconsistent)
+        );
+        assert_eq!(
+            chinese_remainder(&[6, 3], &[0, 2]),
+            Err(CrtError::Inconsistent)
+        );
+        assert_eq!(
+            chinese_remainder(&[6, 10], &[0, 9]),
+            Err(CrtError::Inconsistent)
+        );
+        assert_eq!(
+            chinese_remainder(&[i128::MAX, i128::MAX - 1], &[0, 0]),
+            Err(CrtError::Overflow)
+        );
+        assert_eq!(
+            chinese_remainder(&[u128::MAX], &[0u128]),
+            Err(CrtError::Overflow)
+        );
     }
 
     #[test]

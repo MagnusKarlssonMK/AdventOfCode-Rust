@@ -1,12 +1,12 @@
 //! # 2016 day 15 - Timing is Everything
 //!
-//! Disc d (numbered from 1) has n positions and starts at position p, so it is at the goal at time t when
-//! (p + t + d) % n == 0, i.e. t == -(p + d) (mod n). The input's position counts are pairwise coprime, so the
-//! button-press time is the Chinese remainder of those congruences. Part 2 adds an extra 11-position disc
-//! starting at position 0.
+//! Disc d (numbered from 1) has n positions and starts at position p, so it is at the goal at
+//! time t when (p + t + d) % n == 0, i.e. t == -(p + d) (mod n). The input's position counts are
+//! pairwise coprime, so the button-press time is the Chinese remainder of those congruences.
+//! Part 2 adds an extra 11-position disc starting at position 0.
 //!
-//! Any input where the position counts are not pairwise coprime will result in `AocError::NoSolution`, since
-//! the Chinese Remainder calculation will not find any answer.
+//! If the congruences are inconsistent (for example, non-coprime position counts that cannot all
+//! be satisfied), the solver returns `AocError::NoSolution`.
 use crate::aoc_util::{error::*, math::*};
 use std::{error::Error, str::FromStr};
 
@@ -67,7 +67,7 @@ impl InputData {
             remainders.push(((n - (disc.start_position + i + 1) % n) % n) as i128);
         }
 
-        chinese_remainder(&moduli, &remainders).ok_or(AocError::NoSolution)
+        chinese_remainder(&moduli, &remainders).map_err(|_| AocError::NoSolution)
     }
 
     fn solve_part1(&self) -> Result<i128, AocError> {
