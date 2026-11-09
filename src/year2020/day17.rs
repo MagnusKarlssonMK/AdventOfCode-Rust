@@ -1,20 +1,35 @@
 //! # 2020 day 17 - Conway Cubes
 //!
-//! Kind of brute force solution using hashsets. Could perhaps be optimized by making
-//! use of the fact that the map will evolve symmetrically in the z- and w-dimensions.
-use std::hash::{Hash, Hasher};
-use std::ops::{Add, AddAssign};
-use std::{collections::HashSet, error::Error, str::FromStr};
+//! The input is assumed to contain only '.' (inactive) and '#' (active); any other character is
+//! treated as inactive.
+//!
+//! Kind of brute force solution, could perhaps be optimized by making use of the fact that the map
+//! will evolve symmetrically in the z- and w-dimensions.
+//!
+//! ## Part 1
+//!
+//! Simulates the 3D Conway cube rules for six cycles.
+//!
+//! ## Part 2
+//!
+//! Runs the same simulation in four dimensions.
+use crate::aoc_util::error::AocError;
+use std::ops::Add;
+use std::{
+    collections::{HashMap, HashSet},
+    error::Error,
+    str::FromStr,
+};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
     ))
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct ConwayCube {
     x: i32,
     y: i32,
@@ -36,44 +51,22 @@ impl Add for ConwayCube {
     }
 }
 
-impl AddAssign for ConwayCube {
-    #[inline]
-    fn add_assign(&mut self, other: Self) {
-        self.x += other.x;
-        self.y += other.y;
-        self.z += other.z;
-        self.w += other.w;
-    }
-}
-
-impl Hash for ConwayCube {
-    #[inline]
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        state.write_i32(self.x);
-        state.write_i32(self.y);
-        state.write_i32(self.z);
-        state.write_i32(self.w);
-    }
-}
-
 struct InputData {
     startpoints: Vec<ConwayCube>,
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut startpoints = Vec::new();
         for (y, line) in s.lines().enumerate() {
-            for (x, c) in line.chars().enumerate() {
-                if c == '#' {
-                    startpoints.push(ConwayCube {
-                        x: x as i32,
-                        y: y as i32,
-                        z: 0,
-                        w: 0,
-                    });
-                }
+            for (x, _) in line.chars().enumerate().filter(|(_, c)| *c == '#') {
+                startpoints.push(ConwayCube {
+                    x: x as i32,
+                    y: y as i32,
+                    z: 0,
+                    w: 0,
+                });
             }
         }
         Ok(Self { startpoints })
@@ -108,38 +101,21 @@ impl InputData {
     }
 
     fn evolve(&self, neighbors: &[ConwayCube], rounds: usize) -> usize {
-        let mut cubes: HashSet<ConwayCube> = HashSet::from_iter(self.startpoints.clone());
+        let mut cubes: HashSet<_> = self.startpoints.iter().copied().collect();
+
         for _ in 0..rounds {
-            let mut empty = HashSet::new();
-            let mut nextgen = HashSet::new();
+            let mut counts: HashMap<ConwayCube, u8> = HashMap::new();
             for cube in &cubes {
-                let mut count = 0;
-                for n in neighbors.iter().map(|d| *d + *cube) {
-                    if cubes.contains(&n) {
-                        count += 1;
-                    } else {
-                        empty.insert(n);
-                    }
-                }
-                if (2..=3).contains(&count) {
-                    nextgen.insert(*cube);
+                for neighbor in neighbors.iter().map(|offset| *offset + *cube) {
+                    *counts.entry(neighbor).or_default() += 1;
                 }
             }
-            for cube in &empty {
-                let mut count = 0;
-                for n in neighbors.iter().map(|d| *d + *cube) {
-                    if cubes.contains(&n) {
-                        count += 1;
-                        if count > 3 {
-                            break;
-                        }
-                    }
-                }
-                if count == 3 {
-                    nextgen.insert(*cube);
-                }
-            }
-            cubes = nextgen;
+
+            cubes = counts
+                .into_iter()
+                .filter(|(cube, count)| *count == 3 || (*count == 2 && cubes.contains(cube)))
+                .map(|(cube, _)| cube)
+                .collect();
         }
         cubes.len()
     }
@@ -149,19 +125,19 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = ".#.
+    const TEST_OFFICIAL_1: &str = ".#.
 ..#
 ###";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 112);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 848);
     }
 }
