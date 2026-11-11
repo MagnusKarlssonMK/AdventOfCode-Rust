@@ -1,106 +1,94 @@
 //! # 2021 day 3 - Binary Diagnostic
-use std::{collections::HashSet, error::Error, str::FromStr};
+//!
+//! Stores input values as binary values together with the bit width. Then for part 1 it's simply a
+//! matter of calculating the gamma and epsilon ratings for all those values and multiplying them
+//! to get the result. For part 2, the lists of values to consider need to be filtered down
+//! according to the gamma and epsilon ratings one bit at a time, starting at the most significant
+//! bit. The answer is then given by the final remaining number for the oxygen (gamma based) and
+//! scrubber (epsilon based) ratings.
+use crate::aoc_util::error::AocError;
+use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
-        solution_data.solve_part2().to_string(),
+        solution_data.solve_part2()?.to_string(),
     ))
+}
+
+/// Returns whether the most common bit at `mask` is 1; ties resolve to 1 (gamma wins).
+#[inline]
+fn most_common_bit_is_one(numbers: &[u32], mask: u32) -> bool {
+    let ones = numbers.iter().filter(|n| *n & mask != 0).count();
+    2 * ones >= numbers.len()
 }
 
 struct InputData {
     width: usize,
-    numbers: Vec<usize>,
+    numbers: Vec<u32>,
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let nbrs: Vec<&str> = s.lines().collect();
+        let nbrs: Vec<_> = s.lines().collect();
+        // Width should be the same over all numbers; taking the width of the first number and
+        // validate that it's within bounds and that the rest are the same.
+        let first = nbrs.first().unwrap_or(&"");
+        let width = first.len();
+        if width == 0 || width > u32::BITS as usize {
+            return Err(AocError::Invalid(format!("bit width {width}")));
+        }
+        if let Some(line) = nbrs.iter().find(|line| line.len() != width) {
+            return Err(AocError::Invalid(format!(
+                "line width {} differs from {width}",
+                line.len()
+            )));
+        }
         Ok(Self {
-            width: nbrs[0].len(),
+            width,
             numbers: nbrs
                 .iter()
-                .map(|n| usize::from_str_radix(n, 2).unwrap())
-                .collect(),
+                .map(|n| u32::from_str_radix(n, 2))
+                .collect::<Result<_, _>>()?,
         })
     }
 }
 
 impl InputData {
-    fn solve_part1(&self) -> usize {
-        let mut gamma: usize = 0;
-        let mut epsilon: usize = 0;
-        for bit in 0..self.width {
-            let mask: usize = 1 << bit;
-            let onecount: usize = self
-                .numbers
-                .iter()
-                .map(|nbr| if nbr & mask > 0 { 1 } else { 0 })
-                .sum();
-            if onecount > self.numbers.len() / 2 {
+    fn solve_part1(&self) -> u64 {
+        let mut gamma = 0;
+        let mut epsilon = 0;
+        for mask in (0..self.width).map(|bit| 1u32 << bit) {
+            if most_common_bit_is_one(&self.numbers, mask) {
                 gamma |= mask;
             } else {
                 epsilon |= mask;
             }
         }
-        gamma * epsilon
+        u64::from(gamma) * u64::from(epsilon)
     }
 
-    fn solve_part2(&self) -> usize {
-        let mut oxygen_candidates: HashSet<usize> = HashSet::new();
-        let mut scrubber_candidates: HashSet<usize> = HashSet::new();
-        for i in 0..self.numbers.len() {
-            oxygen_candidates.insert(i);
-            scrubber_candidates.insert(i);
-        }
-        // This can probably be made a lot shorter with hashmap instead of two hashsets, and also some way to re-use almost duplicated code.
-        for bit in (0..self.width).rev() {
-            let mask: usize = 1 << bit;
+    fn solve_part2(&self) -> Result<u64, AocError> {
+        let mut oxygen_candidates = self.numbers.to_vec();
+        let mut scrubber_candidates = self.numbers.to_vec();
+
+        for mask in (0..self.width).rev().map(|bit| 1u32 << bit) {
             if oxygen_candidates.len() > 1 {
-                let mut ones: HashSet<usize> = HashSet::new();
-                let mut zeroes: HashSet<usize> = HashSet::new();
-                for c in oxygen_candidates.iter() {
-                    if self.numbers[*c] & mask > 0 {
-                        ones.insert(*c);
-                    } else {
-                        zeroes.insert(*c);
-                    }
-                }
-                if ones.len() >= zeroes.len() {
-                    for z in zeroes {
-                        oxygen_candidates.remove(&z);
-                    }
-                } else {
-                    for o in ones {
-                        oxygen_candidates.remove(&o);
-                    }
-                }
+                let gamma_bit_is_one = most_common_bit_is_one(&oxygen_candidates, mask);
+                oxygen_candidates.retain(|c| (*c & mask != 0) == gamma_bit_is_one);
             }
             if scrubber_candidates.len() > 1 {
-                let mut ones: HashSet<usize> = HashSet::new();
-                let mut zeroes: HashSet<usize> = HashSet::new();
-                for c in scrubber_candidates.iter() {
-                    if self.numbers[*c] & mask > 0 {
-                        ones.insert(*c);
-                    } else {
-                        zeroes.insert(*c);
-                    }
-                }
-                if zeroes.len() > ones.len() {
-                    for z in zeroes {
-                        scrubber_candidates.remove(&z);
-                    }
-                } else {
-                    for o in ones {
-                        scrubber_candidates.remove(&o);
-                    }
-                }
+                let epsilon_bit_is_one = !most_common_bit_is_one(&scrubber_candidates, mask);
+                scrubber_candidates.retain(|c| (*c & mask != 0) == epsilon_bit_is_one);
             }
         }
-        self.numbers[*oxygen_candidates.iter().next().unwrap()]
-            * self.numbers[*scrubber_candidates.iter().next().unwrap()]
+        if oxygen_candidates.len() == 1 && scrubber_candidates.len() == 1 {
+            Ok(u64::from(oxygen_candidates[0]) * u64::from(scrubber_candidates[0]))
+        } else {
+            Err(AocError::NoSolution)
+        }
     }
 }
 
@@ -108,18 +96,45 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str =
+    const TEST_OFFICIAL_1: &str =
         "00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010";
 
+    /// Four three-bit numbers with an even split at bit 1, so the tie-breaking direction decides both answers.
+    const TEST_CUSTOM_1: &str = "010\n110\n101\n100";
+
+    /// Two equal numbers never reduces down to a single number, so no solution is possible for part 2.
+    const TEST_CUSTOM_2: &str = "011\n011";
+
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 198);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
-        assert_eq!(solution_data.solve_part2(), 230);
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part2().unwrap(), 230);
+    }
+
+    #[test]
+    fn part1_2_custom_1() {
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part1(), 6);
+        assert_eq!(solution_data.solve_part2().unwrap(), 10);
+    }
+
+    #[test]
+    fn part1_2_custom_2() {
+        let solution_data: InputData = TEST_CUSTOM_2.parse().unwrap();
+        assert_eq!(solution_data.solve_part2(), Err(AocError::NoSolution));
+    }
+
+    #[test]
+    fn parser_invalid_input() {
+        assert!("".parse::<InputData>().is_err()); // no lines
+        assert!("01\n1".parse::<InputData>().is_err()); // width mismatch
+        assert!("0".repeat(33).parse::<InputData>().is_err()); // width > u32::BITS
+        assert!("012".parse::<InputData>().is_err()); // non-binary digit
     }
 }
