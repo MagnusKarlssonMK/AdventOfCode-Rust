@@ -23,6 +23,10 @@ macro_rules! solvers {
             day_key: &str,
             input: &str,
         ) -> Result<(String, String), Box<dyn Error>> {
+            let input = input.trim_end();
+            if input.is_empty() {
+                return Err(AocError::Invalid("empty input".to_string()).into());
+            }
             match year_key {
                 $(
                     stringify!($ymod) => match day_key {
@@ -99,7 +103,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         .join("AdventOfCode-Input")
         .join(config.year.to_string())
         .join(format!("{day_key}.txt"));
-    let aoc_input = fs::read_to_string(filename)?.trim_end().to_string();
+    let aoc_input = fs::read_to_string(filename)?;
 
     // Run solver
     let timer = Instant::now();
@@ -108,4 +112,20 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     println!("Part 1: {p1}\nPart 2: {p2}\nCompleted in: {t} μs");
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dispatch_rejects_empty_input() {
+        for input in ["", "  \n"] {
+            let err = dispatch("year2021", "day01", input).unwrap_err();
+            assert_eq!(
+                err.downcast_ref::<AocError>(),
+                Some(&AocError::Invalid("empty input".to_string()))
+            );
+        }
+    }
 }

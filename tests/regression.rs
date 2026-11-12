@@ -94,13 +94,12 @@ fn stored_answers_match() {
                 skipped_missing_input.push(format!("{year} {day_key}"));
                 continue;
             };
-            let input = input_raw.trim_end().to_string();
 
             let expected_raw =
                 fs::read_to_string(&answer_path).expect("answer file readable after listing");
             let (exp1, exp2) = parse_answer(&expected_raw);
 
-            match dispatch(&year_key, day_key, &input) {
+            match dispatch(&year_key, day_key, &input_raw) {
                 Ok((p1, p2)) => {
                     checked += 1;
                     // A trailing newline on each part is ignored, on both the
