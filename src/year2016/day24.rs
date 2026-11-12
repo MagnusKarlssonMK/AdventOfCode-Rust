@@ -97,7 +97,7 @@ impl FromStr for InputData {
 
         let mut index_map: Vec<_> = digits.values().copied().collect();
         index_map.sort_unstable();
-        if *index_map.first().ctx_invalid("no nodes")? != '0' {
+        if *index_map.first().ctx("no nodes")? != '0' {
             // is_digit() further up should guarantee that '0' is first after the sort, since negative values are impossible with a single character
             return Err(AocError::Invalid("node zero not found".to_string()));
         }

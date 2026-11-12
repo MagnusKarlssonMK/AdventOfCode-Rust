@@ -100,12 +100,12 @@ impl FromStr for Instruction {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (left, right) = s
             .split_once(' ')
-            .ctx_invalid(format!("instruction {s}").to_string())?;
+            .ctx(format!("instruction {s}"))?;
         match left {
             "cpy" => {
                 let (v1, v2) = right
                     .split_once(' ')
-                    .ctx_invalid(format!("instruction {s}").to_string())?;
+                    .ctx(format!("instruction {s}"))?;
                 Ok(Instruction::Cpy(Value::new(v1)?, str_to_reg(v2)?))
             }
             "inc" => Ok(Instruction::Inc(str_to_reg(right)?)),
@@ -113,11 +113,11 @@ impl FromStr for Instruction {
             "jnz" => {
                 let (v1, v2) = right
                     .split_once(' ')
-                    .ctx_invalid(format!("instruction {s}").to_string())?;
+                    .ctx(format!("instruction {s}"))?;
                 Ok(Instruction::Jnz(Value::new(v1)?, Value::new(v2)?))
             }
             "tgl" => Ok(Instruction::Tgl(str_to_reg(right)?)),
-            _ => Err(AocError::Invalid(format!("instruction {s}").to_string())),
+            _ => Err(AocError::Invalid(format!("instruction {s}"))),
         }
     }
 }

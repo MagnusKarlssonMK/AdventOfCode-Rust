@@ -166,9 +166,9 @@ HCaCaCaCaF";
     #[test]
     fn parse_invalid_input() {
         let err1 = InputData::try_from("F => CaF").unwrap_err();
-        assert_eq!(err1, AocError::Missing("missing newline separator"));
+        assert_eq!(err1, AocError::Invalid("missing newline separator".to_string()));
 
         let err2 = InputData::try_from("F > CaF\n\nAbCD").unwrap_err();
-        assert_eq!(err2, AocError::Missing("missing =>"));
+        assert_eq!(err2, AocError::Invalid("missing =>".to_string()));
     }
 }

@@ -32,7 +32,7 @@ enum Command {
 impl FromStr for Command {
     type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (left, right) = s.split_once(' ').ctx_invalid(format!("command {s:?}"))?;
+        let (left, right) = s.split_once(' ').ctx(format!("command {s:?}"))?;
         let val = right.parse()?;
         match left {
             "up" => Ok(Self::Up(val)),

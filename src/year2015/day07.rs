@@ -168,13 +168,13 @@ d LSHIFT b -> a";
     #[test]
     fn parse_invalid_separator() {
         let err = InputData::from_str("x RSHIFT y - z").unwrap_err();
-        assert_eq!(err, AocError::Missing("-> separator"))
+        assert_eq!(err, AocError::Invalid("-> separator".to_string()))
     }
 
     #[test]
     fn undefined_wire_ref() {
         let solution_data = InputData::from_str("b -> a").unwrap();
         let err = solution_data.solve().unwrap_err();
-        assert_eq!(err, AocError::Missing("undefined wire"));
+        assert_eq!(err, AocError::Invalid("undefined wire".to_string()));
     }
 }

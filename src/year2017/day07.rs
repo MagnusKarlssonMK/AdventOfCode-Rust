@@ -75,7 +75,7 @@ impl FromStr for InputData {
         }
         Ok(Self {
             programs: HashMap::from_iter(name_and_prog_list),
-            root: root.ok_or(AocError::Missing("no root"))?,
+            root: root.ok_or_else(|| AocError::Invalid("no root".to_string()))?,
         })
     }
 }

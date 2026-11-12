@@ -122,7 +122,7 @@ mod tests {
     #[test]
     fn parser_missing_separator() {
         let err = InputData::from_str("1234").unwrap_err();
-        assert_eq!(err, AocError::Missing("dash separator"));
+        assert_eq!(err, AocError::Invalid("dash separator".to_string()));
     }
 
     #[test]

@@ -22,7 +22,7 @@ impl<'a> TryFrom<&'a str> for Room<'a> {
         let (sector_id, checksum) = id_checksum.split_once('[').ctx("[")?;
         let checksum = checksum.strip_suffix(']').ctx("]")?;
         if name.is_empty() {
-            Err(AocError::Missing("name"))
+            Err(AocError::Invalid("name".to_string()))
         } else {
             Ok(Self {
                 name: name.split('-').collect(),
@@ -171,25 +171,25 @@ lmprfnmjc-mzhcar-qrmpyec-548[mcrpa]";
     #[test]
     fn parser_missing_left_bracket() {
         let err = InputData::try_from("abc-def-ghij-1abcde]").unwrap_err();
-        assert_eq!(err, AocError::Missing("["));
+        assert_eq!(err, AocError::Invalid("[".to_string()));
     }
 
     #[test]
     fn parser_missing_right_bracket() {
         let err = InputData::try_from("abc-def-ghij-1[abcde").unwrap_err();
-        assert_eq!(err, AocError::Missing("]"));
+        assert_eq!(err, AocError::Invalid("]".to_string()));
     }
 
     #[test]
     fn parser_missing_sectorid_checksum() {
         let err = InputData::try_from("abcdefghij1[abcde]").unwrap_err();
-        assert_eq!(err, AocError::Missing("sector-id and checksum"));
+        assert_eq!(err, AocError::Invalid("sector-id and checksum".to_string()));
     }
 
     #[test]
     fn parser_missing_name() {
         let err = InputData::try_from("-1[abcde]").unwrap_err();
-        assert_eq!(err, AocError::Missing("name"));
+        assert_eq!(err, AocError::Invalid("name".to_string()));
     }
 
     #[test]

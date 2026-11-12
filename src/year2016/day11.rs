@@ -287,6 +287,6 @@ The third floor contains nothing relevant.";
     #[test]
     fn parser_missing_microchip() {
         let err = InputData::from_str(TEST_PARSER_1).unwrap_err();
-        assert_eq!(err, AocError::Missing("microchip floor"));
+        assert_eq!(err, AocError::Invalid("microchip floor".to_string()));
     }
 }

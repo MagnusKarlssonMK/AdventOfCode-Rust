@@ -77,11 +77,11 @@ impl FromStr for InputData {
             }
         }
         Ok(Self {
-            b_initial: set_b.ok_or(AocError::Missing("set b"))?,
-            mul_b: mul_b.ok_or(AocError::Missing("mul b"))?,
-            sub_b_1: sub_b_1.ok_or(AocError::Missing("sub b 1"))?,
-            sub_b_2: sub_b_2.ok_or(AocError::Missing("sub b 2"))?,
-            sub_c: sub_c.ok_or(AocError::Missing("sub c"))?,
+            b_initial: set_b.ctx("set b")?,
+            mul_b: mul_b.ctx("mul b")?,
+            sub_b_1: sub_b_1.ctx("sub b 1")?,
+            sub_b_2: sub_b_2.ctx("sub b 2")?,
+            sub_c: sub_c.ctx("sub c")?,
         })
     }
 }

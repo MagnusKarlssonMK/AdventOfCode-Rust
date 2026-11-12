@@ -4,11 +4,9 @@ use std::num::ParseIntError;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AocError {
-    /// Mandatory part of the input missing
-    Missing(&'static str),
     /// Failure to parse numeric field
     ParseInt(ParseIntError),
-    /// The input is semantically incorrect
+    /// The input is missing or semantically incorrect
     Invalid(String),
     /// No solution was found with the given input
     NoSolution,
@@ -19,7 +17,6 @@ pub enum AocError {
 impl fmt::Display for AocError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            AocError::Missing(what) => write!(f, "missing input: {what}"),
             AocError::ParseInt(e) => write!(f, "invalid number: {e}"),
             AocError::Invalid(what) => write!(f, "invalid input: {what}"),
             AocError::NoSolution => write!(f, "no solution found"),
@@ -39,21 +36,13 @@ impl From<ParseIntError> for AocError {
 /// Extension trait to turn an `Option` into a `Result<_, AocError>` for
 /// use with `?`, keeping conversions as terse as the old `unwrap()`.
 pub trait OptionExt<T> {
-    /// Map `None` to [`AocError::Missing`] with a static description of
-    /// what was expected.
-    fn ctx(self, what: &'static str) -> Result<T, AocError>;
-
-    /// Map `None` to [`AocError::Invalid`] that is present but doesn't
-    /// make sense. `what` may be built dynamically.
-    fn ctx_invalid(self, what: impl Into<String>) -> Result<T, AocError>;
+    /// Map `None` to [`AocError::Invalid`] with a description of what was
+    /// expected. The description may be built dynamically.
+    fn ctx(self, what: impl Into<String>) -> Result<T, AocError>;
 }
 
 impl<T> OptionExt<T> for Option<T> {
-    fn ctx(self, what: &'static str) -> Result<T, AocError> {
-        self.ok_or(AocError::Missing(what))
-    }
-
-    fn ctx_invalid(self, what: impl Into<String>) -> Result<T, AocError> {
+    fn ctx(self, what: impl Into<String>) -> Result<T, AocError> {
         self.ok_or_else(|| AocError::Invalid(what.into()))
     }
 }
@@ -69,23 +58,17 @@ mod tests {
     }
 
     #[test]
-    fn option_ctx_none_becomes_missing() {
+    fn option_ctx_none_becomes_invalid() {
         let v: Option<u32> = None;
-        assert_eq!(v.ctx("value"), Err(AocError::Missing("value")));
+        assert_eq!(v.ctx("value"), Err(AocError::Invalid("value".to_string())));
     }
 
     #[test]
-    fn option_ctx_invalid_some_passes_through() {
-        let v: Option<u32> = Some(42);
-        assert_eq!(v.ctx_invalid("value"), Ok(42));
-    }
-
-    #[test]
-    fn option_ctx_invalid_none_becomes_invalid() {
+    fn option_ctx_accepts_owned_string() {
         let v: Option<u32> = None;
         assert_eq!(
-            v.ctx_invalid("value"),
-            Err(AocError::Invalid("value".to_string()))
+            v.ctx(format!("value {}", 1)),
+            Err(AocError::Invalid("value 1".to_string()))
         );
     }
 
@@ -97,10 +80,6 @@ mod tests {
 
     #[test]
     fn displays_are_readable() {
-        assert_eq!(
-            AocError::Missing("price x").to_string(),
-            "missing input: price x"
-        );
         assert_eq!(
             AocError::Invalid("color \"x\"".to_string()).to_string(),
             "invalid input: color \"x\""

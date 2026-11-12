@@ -132,7 +132,7 @@ Disc #3 has 5 positions; at time=0, it is at position 2.";
     fn parser_short_input() {
         let broken_text = "Disc #1 has 5a positions; at time=0, it is at";
         let err = InputData::from_str(broken_text).unwrap_err();
-        assert_eq!(err, AocError::Missing("start pos"));
+        assert_eq!(err, AocError::Invalid("start pos".to_string()));
     }
 
     #[test]

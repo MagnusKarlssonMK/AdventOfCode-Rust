@@ -55,7 +55,7 @@ fn get_decompressed_len(filedata: &str, recurse: bool) -> Result<usize, AocError
                 if recurse {
                     let block = filedata
                         .get(fp..fp + a)
-                        .ctx_invalid(format!("marker {m} exceeds input range"))?;
+                        .ctx(format!("marker {m} exceeds input range"))?;
                     total += b * get_decompressed_len(block, true)?;
                 } else {
                     total += a * b;
@@ -150,7 +150,7 @@ mod tests {
         let testdata = "(33)";
         let solution_data = InputData::try_from(testdata).unwrap();
         let err = solution_data.solve_part1().unwrap_err();
-        assert_eq!(err, AocError::Missing("x separator"));
+        assert_eq!(err, AocError::Invalid("x separator".to_string()));
     }
 
     #[test]

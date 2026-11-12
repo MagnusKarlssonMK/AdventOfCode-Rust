@@ -115,16 +115,16 @@ mod tests {
         // Missing metadata count/header
         let solution_data = InputData::from_str("2").unwrap();
         let err = solution_data.solve().unwrap_err();
-        assert_eq!(err, AocError::Missing("node header: metadata count"));
+        assert_eq!(err, AocError::Invalid("node header: metadata count".to_string()));
 
         // Header ok but missing children/metadata
         let solution_data = InputData::from_str("1 1").unwrap();
         let err = solution_data.solve().unwrap_err();
-        assert_eq!(err, AocError::Missing("node header: child count"));
+        assert_eq!(err, AocError::Invalid("node header: child count".to_string()));
 
         // Child exists but metadata slice is truncated
         let solution_data = InputData::from_str("1 2 0 1").unwrap();
         let err = solution_data.solve().unwrap_err();
-        assert_eq!(err, AocError::Missing("node metadata"));
+        assert_eq!(err, AocError::Invalid("node metadata".to_string()));
     }
 }

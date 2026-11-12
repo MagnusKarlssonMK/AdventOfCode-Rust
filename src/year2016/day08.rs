@@ -182,13 +182,13 @@ rotate row y=3 by 0";
     #[test]
     fn parser_operation_rect_dim() {
         let err = InputData::from_str("rect").unwrap_err();
-        assert_eq!(err, AocError::Missing("rect dimensions"));
+        assert_eq!(err, AocError::Invalid("rect dimensions".to_string()));
     }
 
     #[test]
     fn parser_operation_rect_x() {
         let err = InputData::from_str("rect 34").unwrap_err();
-        assert_eq!(err, AocError::Missing("rect x separator"));
+        assert_eq!(err, AocError::Invalid("rect x separator".to_string()));
     }
 
     #[test]
@@ -203,31 +203,31 @@ rotate row y=3 by 0";
     #[test]
     fn parser_operation_rotate_axis() {
         let err = InputData::from_str("rotate").unwrap_err();
-        assert_eq!(err, AocError::Missing("rotate axis"));
+        assert_eq!(err, AocError::Invalid("rotate axis".to_string()));
     }
 
     #[test]
     fn parser_operation_rotate_coord() {
         let err = InputData::from_str("rotate row").unwrap_err();
-        assert_eq!(err, AocError::Missing("rotate coord"));
+        assert_eq!(err, AocError::Invalid("rotate coord".to_string()));
     }
 
     #[test]
     fn parser_operation_rotate_sep() {
         let err = InputData::from_str("rotate row y1 by 1").unwrap_err();
-        assert_eq!(err, AocError::Missing("rotate = separator"));
+        assert_eq!(err, AocError::Invalid("rotate = separator".to_string()));
     }
 
     #[test]
     fn parser_operation_rotate_by() {
         let err = InputData::from_str("rotate row y=1").unwrap_err();
-        assert_eq!(err, AocError::Missing("rotate by"));
+        assert_eq!(err, AocError::Invalid("rotate by".to_string()));
     }
 
     #[test]
     fn parser_operation_rotate_amount() {
         let err = InputData::from_str("rotate row y=1 by").unwrap_err();
-        assert_eq!(err, AocError::Missing("rotate amount"));
+        assert_eq!(err, AocError::Invalid("rotate amount".to_string()));
     }
 
     #[test]

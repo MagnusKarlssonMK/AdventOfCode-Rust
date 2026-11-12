@@ -41,7 +41,7 @@ impl FieldRule {
 }
 
 fn parse_range(s: &str) -> Result<RangeInclusive<u64>, AocError> {
-    let (lower, upper) = s.split_once('-').ctx_invalid(format!("range {s:?}"))?;
+    let (lower, upper) = s.split_once('-').ctx(format!("range {s:?}"))?;
     let lower = lower.parse()?;
     let upper = upper.parse()?;
     if lower > upper {
@@ -55,10 +55,10 @@ impl FromStr for FieldRule {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (name, ranges) = s
             .split_once(": ")
-            .ctx_invalid(format!("field rule {s:?}"))?;
+            .ctx(format!("field rule {s:?}"))?;
         let (range1, range2) = ranges
             .split_once(" or ")
-            .ctx_invalid(format!("field rule {s:?}"))?;
+            .ctx(format!("field rule {s:?}"))?;
         Ok(Self {
             is_departure: name.starts_with("departure"),
             ranges: [parse_range(range1)?, parse_range(range2)?],

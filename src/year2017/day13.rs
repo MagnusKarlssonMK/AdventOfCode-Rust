@@ -130,7 +130,7 @@ mod tests {
     #[test]
     fn parser_invalid_input() {
         let err = InputData::from_str("0 4").unwrap_err();
-        assert_eq!(err, AocError::Missing("separator"));
+        assert_eq!(err, AocError::Invalid("separator".to_string()));
         let err = InputData::from_str("b: 4").unwrap_err();
         assert!(matches!(err, AocError::ParseInt(_)));
         let err = InputData::from_str("0: f").unwrap_err();

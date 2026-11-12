@@ -30,7 +30,7 @@ impl FromStr for Board {
                     .collect::<Result<_, _>>()
             })
             .collect::<Result<_, _>>()?;
-        let width = rows.first().ctx_invalid("board row")?.len();
+        let width = rows.first().ctx("board row")?.len();
         if width == 0 {
             return Err(AocError::Invalid("empty board".to_string()));
         }
