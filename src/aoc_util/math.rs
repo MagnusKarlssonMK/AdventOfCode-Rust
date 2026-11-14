@@ -26,14 +26,10 @@ pub fn lcm(a: usize, b: usize) -> usize {
     a * (b / gcd(a, b))
 }
 
-/// Calculates the Least Common Multiple for a slice of integers.
-///
-/// # Panic
-///
-/// Will panic if the slice is empty.
-pub fn vec_lcm(input: &[usize]) -> usize {
-    assert!(!input.is_empty(), "vec_lcm requires a non-empty slice");
-    input.iter().copied().reduce(lcm).unwrap()
+/// Calculates the Least Common Multiple for a slice of integers. Returns `None` if the input slice
+/// is empty.
+pub fn vec_lcm(input: &[usize]) -> Option<usize> {
+    input.iter().copied().reduce(lcm)
 }
 
 /// Extended Euclidean Algorithm: returns `(g, x, y)` such that
@@ -195,8 +191,9 @@ mod tests {
 
     #[test]
     fn test_vec_lcm() {
-        assert_eq!(vec_lcm(&[7]), 7);
-        assert_eq!(vec_lcm(&[4, 6]), 12);
-        assert_eq!(vec_lcm(&[2, 3, 5]), 30);
+        assert_eq!(vec_lcm(&[7]), Some(7));
+        assert_eq!(vec_lcm(&[4, 6]), Some(12));
+        assert_eq!(vec_lcm(&[2, 3, 5]), Some(30));
+        assert_eq!(vec_lcm(&[]), None);
     }
 }

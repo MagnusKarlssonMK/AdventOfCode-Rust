@@ -1,12 +1,21 @@
 //! # 2022 day 11 - Monkey in the Middle
-use crate::aoc_util::math;
+//!
+//! Each monkey block parses into starting items, a linear operation, and a divisibility test with
+//! two destinations. Both parts replay the same rounds: every monkey inspects all of its items,
+//! applies the operation, and throws each item to one of two monkeys. Part 1 divides the worry
+//! level by 3 after every inspection, while part 2 keeps the numbers bounded by reducing them
+//! modulo the least common multiple of all divisibility tests, which preserves every test result.
+use crate::aoc_util::{
+    error::{AocError, OptionExt},
+    math,
+};
 use std::{collections::VecDeque, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
-        solution_data.solve_part1().to_string(),
-        solution_data.solve_part2().to_string(),
+        solution_data.solve_part1()?.to_string(),
+        solution_data.solve_part2()?.to_string(),
     ))
 }
 
@@ -18,20 +27,13 @@ enum Operation {
 }
 
 impl FromStr for Operation {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (_, right) = s.split_once(" = ").unwrap();
-        let right: Vec<_> = right.split_whitespace().take(3).collect();
-        match right[1] {
-            "+" => Ok(Self::Add(right[2].parse().unwrap())),
-            "*" => {
-                if right[2] == "old" {
-                    Ok(Self::Square)
-                } else {
-                    Ok(Self::Mul(right[2].parse().unwrap()))
-                }
-            }
-            _ => unreachable!(),
+        match s.split_whitespace().collect::<Vec<_>>().as_slice() {
+            ["Operation:", "new", "=", "old", "*", "old"] => Ok(Operation::Square),
+            ["Operation:", "new", "=", "old", "*", v] => Ok(Operation::Mul(v.parse()?)),
+            ["Operation:", "new", "=", "old", "+", v] => Ok(Operation::Add(v.parse()?)),
+            _ => Err(AocError::Invalid(format!("invalid operation: {s}"))),
         }
     }
 }
@@ -57,37 +59,37 @@ struct Monkey {
 }
 
 impl FromStr for Monkey {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        fn last_number(line: Option<&str>, what: &str) -> Result<usize, AocError> {
+            Ok(line
+                .ctx(format!("{what} line missing"))?
+                .split_whitespace()
+                .last()
+                .ctx(format!("{what} line empty"))?
+                .parse()?)
+        }
+
         let mut lines = s.lines();
         lines.next();
-        let (_, nbrs) = lines.next().unwrap().split_once(": ").unwrap();
-        let start_items = nbrs.split(", ").map(|n| n.parse().unwrap()).collect();
-        let operation = Operation::from_str(lines.next().unwrap()).unwrap();
-        let div_test = lines
+        let (_, nbrs) = lines
             .next()
-            .unwrap()
-            .split_whitespace()
-            .last()
-            .unwrap()
-            .parse()
-            .unwrap();
-        let true_monkey = lines
-            .next()
-            .unwrap()
-            .split_whitespace()
-            .last()
-            .unwrap()
-            .parse()
-            .unwrap();
-        let false_monkey = lines
-            .next()
-            .unwrap()
-            .split_whitespace()
-            .last()
-            .unwrap()
-            .parse()
-            .unwrap();
+            .ctx("items line missing")?
+            .split_once(": ")
+            .ctx("items ': ' separator")?;
+        let start_items = nbrs
+            .split(", ")
+            .map(|n| n.parse())
+            .collect::<Result<_, _>>()?;
+        let operation = lines.next().ctx("operation line missing")?.parse()?;
+
+        let div_test = last_number(lines.next(), "div test")?;
+        let true_monkey = last_number(lines.next(), "true monkey")?;
+        let false_monkey = last_number(lines.next(), "false monkey")?;
+
+        if div_test == 0 {
+            return Err(AocError::Invalid("divisor must be non-zero".to_string()));
+        }
         Ok(Self {
             items: start_items,
             operation,
@@ -100,24 +102,24 @@ impl FromStr for Monkey {
 }
 
 impl Monkey {
-    fn inspect(&mut self, apply_relief: bool, r: usize) -> Vec<(usize, usize)> {
-        let mut result = Vec::new();
-        while !self.items.is_empty() {
-            let mut current_item = self.items.pop_front().unwrap();
+    fn inspect(&mut self, apply_relief: bool, r: usize, throws: &mut Vec<(usize, usize)>) {
+        throws.clear();
+        // Note: throws stored in a reused pre-allocated vec instead of returning a freshly
+        // allocated one every time, since this function is called in a hot loop.
+        while let Some(item) = self.items.pop_front() {
             self.inspect_count += 1;
-            current_item = self.operation.calculate_new(current_item);
+            let mut current_item = self.operation.calculate_new(item);
             if apply_relief {
                 current_item /= 3;
             } else {
                 current_item %= r;
             }
             if current_item.is_multiple_of(self.div_test) {
-                result.push((self.true_monkey, current_item));
+                throws.push((self.true_monkey, current_item));
             } else {
-                result.push((self.false_monkey, current_item));
+                throws.push((self.false_monkey, current_item));
             }
         }
-        result
     }
 }
 
@@ -126,43 +128,63 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self {
-            monkeys: s
-                .split("\n\n")
-                .map(|m| Monkey::from_str(m).unwrap())
-                .collect(),
-        })
+        let monkeys: Vec<_> = s
+            .split("\n\n")
+            .map(|m| m.parse())
+            .collect::<Result<_, _>>()?;
+        if monkeys.len() < 2 {
+            Err(AocError::Invalid(
+                "need at least 2 monkeys to play".to_string(),
+            ))
+        } else {
+            Ok(Self { monkeys })
+        }
     }
 }
 
 impl InputData {
-    fn play(&self, rounds: usize, apply_relief: bool) -> usize {
+    fn play(&self, rounds: usize, apply_relief: bool) -> Result<usize, AocError> {
         let mut monkeys = self.monkeys.clone();
         let r = if apply_relief {
             1
         } else {
-            math::vec_lcm(&(monkeys.iter().map(|m| m.div_test).collect::<Vec<usize>>()))
+            monkeys
+                .iter()
+                .map(|m| m.div_test)
+                .reduce(math::lcm)
+                .ok_or_else(|| AocError::Invalid("monkeys can not be empty for LCM".to_string()))?
         };
+        let mut throws = Vec::new();
         for _ in 0..rounds {
             for i in 0..monkeys.len() {
-                for (destination, item) in &monkeys[i].inspect(apply_relief, r) {
-                    monkeys[*destination].items.push_back(*item);
+                monkeys[i].inspect(apply_relief, r, &mut throws);
+                for &(destination, item) in &throws {
+                    monkeys
+                        .get_mut(destination)
+                        .ok_or_else(|| {
+                            AocError::Invalid(format!(
+                                "invalid destination monkey: {}",
+                                destination
+                            ))
+                        })?
+                        .items
+                        .push_back(item);
                 }
             }
         }
-        let mut inspectcounts: Vec<usize> = monkeys.iter().map(|m| m.inspect_count).collect();
+        let mut inspectcounts: Vec<_> = monkeys.iter().map(|m| m.inspect_count).collect();
         inspectcounts.sort_unstable();
         inspectcounts.reverse();
-        inspectcounts[0] * inspectcounts[1]
+        Ok(inspectcounts[0] * inspectcounts[1])
     }
 
-    fn solve_part1(&self) -> usize {
+    fn solve_part1(&self) -> Result<usize, AocError> {
         self.play(20, true)
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> Result<usize, AocError> {
         self.play(10_000, false)
     }
 }
@@ -171,7 +193,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "Monkey 0:
+    const TEST_OFFICIAL_1: &str = "Monkey 0:
   Starting items: 79, 98
   Operation: new = old * 19
   Test: divisible by 23
@@ -200,14 +222,20 @@ Monkey 3:
     If false: throw to monkey 1";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
-        assert_eq!(solution_data.solve_part1(), 10605);
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part1().unwrap(), 10605);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
-        assert_eq!(solution_data.solve_part2(), 2713310158);
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part2().unwrap(), 2713310158);
+    }
+
+    #[test]
+    fn parser_rejects_zero_divisor() {
+        let input = TEST_OFFICIAL_1.replace("divisible by 23", "divisible by 0");
+        assert!(input.parse::<InputData>().is_err());
     }
 }
