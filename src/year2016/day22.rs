@@ -100,11 +100,8 @@ impl FromStr for InputData {
 impl InputData {
     fn solve_part1(&self) -> usize {
         let mut count = 0;
-        let len = self.filesystem.len();
-        for i in 0..len {
-            let a = &self.filesystem[i].1;
-            for j in (i + 1)..len {
-                let b = &self.filesystem[j].1;
+        for (i, (_, a)) in self.filesystem.iter().enumerate() {
+            for (_, b) in self.filesystem.iter().skip(i + 1) {
                 if (a.used > 0 && a.used <= b.avail) || (b.used > 0 && b.used <= a.avail) {
                     count += 1;
                 }
