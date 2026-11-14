@@ -1,30 +1,35 @@
 //! # 2022 day 10 - Cathode-Ray Tube
-use crate::aoc_util::{grid::*, point::*};
+//!
+//! Both parts replay the same program one tick at a time, with the `X` register starting at 1.
+//! `noop` takes a single tick, while `addx` takes two ticks before changing the register. `run`
+//! owns that loop and calls a closure for every tick, so part 1 only sums signal strength at the
+//! six checkpoints, and part 2 only draws a pixel when it falls inside the sprite.
+use crate::aoc_util::{error::AocError, grid::*, point::*};
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2(),
     ))
 }
 
+const P2_CRT_WIDTH: i32 = 40;
+const P2_CRT_HEIGHT: i32 = 6;
+
 enum Opcode {
     Noop,
-    Addx(isize),
+    Addx(i32),
 }
 
 impl FromStr for Opcode {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.chars().nth(0) {
-            Some('n') => Ok(Self::Noop),
-            Some('a') => {
-                let (_, v) = s.split_once(' ').unwrap();
-                Ok(Self::Addx(v.parse().unwrap()))
-            }
-            _ => Err(()),
+        match s.split_once(' ') {
+            None if s == "noop" => Ok(Self::Noop),
+            Some(("addx", v)) => Ok(Self::Addx(v.parse()?)),
+            _ => Err(AocError::Invalid(format!("invalid opcode: {s}"))),
         }
     }
 }
@@ -34,79 +39,57 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
             program: s
                 .lines()
-                .map(|line| Opcode::from_str(line).unwrap())
-                .collect(),
+                .map(|line| line.parse())
+                .collect::<Result<_, _>>()?,
         })
     }
 }
 
 impl InputData {
-    fn solve_part1(&self) -> usize {
-        const INTERVALS: [usize; 6] = [20, 60, 100, 140, 180, 220];
-        let mut total: isize = 0;
-        let mut reg_x: isize = 1;
-        let mut cyclenbr: usize = 0;
-        let mut tick = |x| {
-            cyclenbr += 1;
-            if INTERVALS.contains(&cyclenbr) {
-                total += x * cyclenbr as isize;
-            }
-        };
-        for p in &self.program {
-            match p {
-                Opcode::Noop => {
-                    tick(reg_x);
-                }
+    fn run(&self, mut tick: impl FnMut(i32)) {
+        let mut reg_x = 1;
+        for op in &self.program {
+            match op {
+                Opcode::Noop => tick(reg_x),
                 Opcode::Addx(v) => {
-                    for _ in 0..2 {
-                        tick(reg_x);
-                    }
-                    reg_x += *v;
+                    tick(reg_x);
+                    tick(reg_x);
+                    reg_x += v;
                 }
             }
         }
-        total as usize
+    }
+
+    fn solve_part1(&self) -> i32 {
+        const INTERVALS: [i32; 6] = [20, 60, 100, 140, 180, 220];
+        let mut total = 0;
+        let mut cycle = 0;
+        self.run(|reg_x| {
+            cycle += 1;
+            if INTERVALS.contains(&cycle) {
+                total += reg_x * cycle;
+            }
+        });
+        total
     }
 
     fn solve_part2(&self) -> String {
-        let mut crt = Grid::new(40, 6, &'.');
-        let mut reg_x: isize = 1;
-        let mut cyclenbr: usize = 0;
-        let mut tick = |x: isize| {
-            if (x - (cyclenbr % crt.x_max) as isize).abs() <= 1 {
-                crt.set_point(
-                    &Point::new((cyclenbr % 40) as i32, (cyclenbr / 40) as i32),
-                    '#',
-                );
+        let mut crt = Grid::new(P2_CRT_WIDTH as usize, P2_CRT_HEIGHT as usize, &'.');
+        let mut cycle = 0;
+        self.run(|reg_x| {
+            let x = cycle % P2_CRT_WIDTH;
+            let y = cycle / P2_CRT_WIDTH;
+            if (reg_x - x).abs() <= 1 {
+                crt.set_point(&Point::new(x, y), '#');
             }
-            cyclenbr += 1;
-        };
-        for p in &self.program {
-            match p {
-                Opcode::Noop => {
-                    tick(reg_x);
-                }
-                Opcode::Addx(v) => {
-                    for _ in 0..2 {
-                        tick(reg_x);
-                    }
-                    reg_x += *v;
-                }
-            }
-        }
-        let mut result = Vec::with_capacity(crt.elements.len() + crt.y_max + 1);
-        for y in 0..crt.y_max {
-            result.push('\n');
-            for x in 0..crt.x_max {
-                result.push(crt.get_element(&Point::new(x as i32, y as i32)).unwrap());
-            }
-        }
-        result.iter().collect()
+            cycle += 1;
+        });
+        format!("\n{}", crt)
     }
 }
 
@@ -114,7 +97,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "addx 15
+    const TEST_OFFICIAL_1: &str = "addx 15
 addx -11
 addx 6
 addx -3
@@ -261,18 +244,30 @@ noop
 noop
 noop";
 
+    const OFFICIAL_1_P2_RESULT: &str = "
+##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######.....
+";
+
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
         assert_eq!(solution_data.solve_part1(), 13140);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
-        assert_eq!(
-            solution_data.solve_part2(),
-            "\n##..##..##..##..##..##..##..##..##..##..\n###...###...###...###...###...###...###.\n####....####....####....####....####....\n#####.....#####.....#####.....#####.....\n######......######......######......####\n#######.......#######.......#######....."
-        );
+    fn part2_official_1() {
+        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        assert_eq!(solution_data.solve_part2(), OFFICIAL_1_P2_RESULT);
+    }
+
+    #[test]
+    fn parser_invalid_input() {
+        assert!("bogus".parse::<InputData>().is_err());
+        assert!("addx x".parse::<InputData>().is_err());
     }
 }
