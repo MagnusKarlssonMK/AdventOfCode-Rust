@@ -1,7 +1,16 @@
 //! # 2022 day 15 - Beacon Exclusion Zone
 //!
-//! Transfered straight from python solution; probably room for improvement.
-use crate::aoc_util::point::*;
+//! Part 2 looks for the one position in the search area that no sensor covers. The solution
+//! assumes that this position lies where the outer boundaries of two sensors' covered diamonds
+//! cross, which is true for the puzzle inputs; this lets it test a small number of candidate
+//! points instead of scanning the whole area.
+//!
+//! Each sensor covers a diamond whose four edges are lines of slope +1 or -1. The missing beacon
+//! lies just outside the covered area, so it sits on one of those edges shifted one step outwards
+//! (`range + 1`). Intersecting every rising edge with every falling edge gives the candidate set;
+//! the answer is the first candidate inside the search square that no sensor covers. Only edges
+//! shared by at least two sensors are kept, which shrinks the candidate set further.
+use crate::aoc_util::{error::AocError, point::*};
 use std::{
     collections::{HashMap, HashSet},
     error::Error,
@@ -9,43 +18,68 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
-        solution_data.solve_part2().to_string(),
+        solution_data.solve_part2()?.to_string(),
     ))
 }
+
+const P1_ROW: i32 = 2_000_000;
+const P2_MAX_COORD: i32 = 4_000_000;
 
 #[derive(Debug)]
 struct Sensor {
     position: Point,
     beacon: Point,
-    range: usize,
+    range: i32,
 }
 
 impl FromStr for Sensor {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut nbrs: Vec<i32> = Vec::new();
-        for w in s.split(&['=', ',', ':'][..]) {
-            if let Ok(n) = w.parse() {
-                nbrs.push(n);
+        match s.split(['=', ',', ':']).collect::<Vec<_>>().as_slice() {
+            [
+                "Sensor at x",
+                x1,
+                " y",
+                y1,
+                " closest beacon is at x",
+                x2,
+                " y",
+                y2,
+            ] => {
+                let position = Point::new(x1.parse()?, y1.parse()?);
+                let beacon = Point::new(x2.parse()?, y2.parse()?);
+                let range = i32::try_from(position.manhattan(&beacon))
+                    .map_err(|_| AocError::Invalid(s.to_string()))?;
+                Ok(Self {
+                    position,
+                    beacon,
+                    range,
+                })
             }
+            _ => Err(AocError::Invalid(s.to_string())),
         }
-        let position = Point::new(nbrs[0], nbrs[1]);
-        let beacon = Point::new(nbrs[2], nbrs[3]);
-        let range = position.manhattan(&beacon);
-        Ok(Self {
-            position,
-            beacon,
-            range,
-        })
     }
 }
 
 impl Sensor {
     fn is_inrange(&self, pos: &Point) -> bool {
-        self.range >= self.position.manhattan(pos)
+        self.range as usize >= self.position.manhattan(pos)
+    }
+
+    /// The four edges of the covered area grown by one step, as `(slope, intercept)`
+    /// for `y = slope * x + intercept`.
+    fn outer_edges(&self) -> [(i32, i32); 4] {
+        let r = self.range + 1;
+        let (x, y) = (self.position.x, self.position.y);
+        [
+            (1, y - r - x),
+            (1, y + r - x),
+            (-1, y - r + x),
+            (-1, y + r + x),
+        ]
     }
 }
 
@@ -54,58 +88,59 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
             sensors: s
                 .lines()
-                .map(|line| Sensor::from_str(line).unwrap())
-                .collect(),
+                .map(|line| line.parse())
+                .collect::<Result<_, _>>()?,
         })
     }
 }
 
 impl InputData {
-    fn get_coverage(&self, row: usize) -> usize {
+    fn get_coverage(&self, row: i32) -> u64 {
         let mut x_ranges = Vec::new();
         for sensor in &self.sensors {
-            let x_at_row = sensor.range as i32 - (row as i32 - sensor.position.y).abs();
-            if x_at_row > 0 {
+            let x_at_row = sensor.range - row.abs_diff(sensor.position.y) as i32;
+            if x_at_row >= 0 {
                 x_ranges.push((sensor.position.x - x_at_row, sensor.position.x + x_at_row));
             }
         }
         x_ranges.sort();
         // Merge overlapping ranges
-        let mut merged_x_ranges = Vec::from([*x_ranges.first().unwrap()]);
-        for (r_low, r_high) in x_ranges.iter().skip(1) {
-            let (vx, vy) = merged_x_ranges.last_mut().unwrap();
-            if (*vx..=*vy).contains(r_low) {
-                if !(*vx..=*vy).contains(r_high) {
-                    *vy = *r_high;
-                }
-            } else {
-                merged_x_ranges.push((*r_low, *r_high));
+        let mut merged: Vec<(i32, i32)> = Vec::new();
+        for &(low, high) in &x_ranges {
+            if let Some((_, merged_high)) = merged.last_mut()
+                && low <= *merged_high
+            {
+                *merged_high = (*merged_high).max(high);
+                continue;
             }
+            merged.push((low, high));
         }
-        let mut total: i32 = merged_x_ranges
+
+        let mut total: u64 = merged
             .iter()
-            .map(|(low, high)| 1 + high - low)
+            .map(|&(low, high)| 1 + high as u64 - low as u64)
             .sum();
         // Subtract 1 for every beacon inside those ranges
         let beacon_positions: HashSet<Point> = self
             .sensors
             .iter()
-            .filter(|s| s.beacon.y == row as i32)
+            .filter(|s| s.beacon.y == row)
             .map(|s| s.beacon)
             .collect();
-        for beacon in beacon_positions.iter() {
-            for (r1, r2) in &merged_x_ranges {
-                if (*r1..=*r2).contains(&beacon.x) {
-                    total -= 1;
-                }
+        for beacon in &beacon_positions {
+            if merged
+                .iter()
+                .any(|(low, high)| (*low..=*high).contains(&beacon.x))
+            {
+                total -= 1;
             }
         }
-        total as usize
+        total
     }
 
     fn position_is_dark(&self, pos: &Point) -> bool {
@@ -117,21 +152,14 @@ impl InputData {
         true
     }
 
-    fn get_darkpointfreq(&self, maxsize: usize) -> usize {
+    fn get_darkpointfreq(&self, maxsize: i32) -> Result<u64, AocError> {
         let mut lines = HashMap::new();
-        for sensor in self.sensors.iter() {
-            // Create 4 lines representing the outsides of the sensor's area, y = ax + b, a = [1, -1]
-            // Tuple values (a, b)
-            let range = sensor.range as i32;
-            let upper_left = (1, sensor.position.y - range - 1 - sensor.position.x);
-            let upper_right = (-1, sensor.position.y - range - 1 + sensor.position.x);
-            let lower_left = (-1, sensor.position.y + range + 1 + sensor.position.x);
-            let lower_right = (1, sensor.position.y + range + 1 - sensor.position.x);
-            for line in &[upper_left, upper_right, lower_left, lower_right] {
-                lines.entry(*line).and_modify(|v| *v += 1).or_insert(1);
+        for sensor in &self.sensors {
+            for edge in sensor.outer_edges() {
+                *lines.entry(edge).or_insert(0) += 1;
             }
         }
-        //Filter out and keep only the lines that appear at least twice
+        // Filter out and keep only the lines that appear at least twice
         let mut ascending = Vec::new();
         let mut descending = Vec::new();
         for ((line1, line2), nbr) in &lines {
@@ -152,22 +180,22 @@ impl InputData {
         }
 
         for p in &positions {
-            if (0..maxsize as i32).contains(&p.x)
-                && (0..maxsize as i32).contains(&p.y)
+            if (0..=maxsize).contains(&p.x)
+                && (0..=maxsize).contains(&p.y)
                 && self.position_is_dark(p)
             {
-                return p.x as usize * 4_000_000 + p.y as usize;
+                return Ok(p.x as u64 * P2_MAX_COORD as u64 + p.y as u64);
             }
         }
-        0
+        Err(AocError::NoSolution)
     }
 
-    fn solve_part1(&self) -> usize {
-        self.get_coverage(2_000_000)
+    fn solve_part1(&self) -> u64 {
+        self.get_coverage(P1_ROW)
     }
 
-    fn solve_part2(&self) -> usize {
-        self.get_darkpointfreq(4_000_000)
+    fn solve_part2(&self) -> Result<u64, AocError> {
+        self.get_darkpointfreq(P2_MAX_COORD)
     }
 }
 
@@ -175,7 +203,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
+    const TEST_OFFICIAL_1: &str = "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
 Sensor at x=9, y=16: closest beacon is at x=10, y=16
 Sensor at x=13, y=2: closest beacon is at x=15, y=3
 Sensor at x=12, y=14: closest beacon is at x=10, y=16
@@ -190,15 +218,26 @@ Sensor at x=16, y=7: closest beacon is at x=15, y=3
 Sensor at x=14, y=3: closest beacon is at x=15, y=3
 Sensor at x=20, y=1: closest beacon is at x=15, y=3";
 
+    const TEST_CUSTOM_1: &str = "Sensor at x=0, y=2000000: closest beacon is at x=1, y=2000000
+Sensor at x=0, y=2000001: closest beacon is at x=0, y=2000003
+Sensor at x=3999999, y=2000001: closest beacon is at x=3999998, y=2000001";
+
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.get_coverage(10), 26);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
-        assert_eq!(solution_data.get_darkpointfreq(20), 56000011);
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        assert_eq!(solution_data.get_darkpointfreq(20).unwrap(), 56000011);
+    }
+
+    #[test]
+    fn part1_2_custom_1() {
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part1(), 3);
+        assert_eq!(solution_data.solve_part2().unwrap(), 1999998);
     }
 }

@@ -56,7 +56,7 @@ impl Point {
     /// Calculates the manhattan distance between two points.
     #[inline]
     pub fn manhattan(&self, other: &Self) -> usize {
-        (self.x - other.x).unsigned_abs() as usize + (self.y - other.y).unsigned_abs() as usize
+        self.x.abs_diff(other.x) as usize + self.y.abs_diff(other.y) as usize
     }
 }
 
