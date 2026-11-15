@@ -19,7 +19,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data: InputData = input.parse().unwrap();
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve()?;
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -37,9 +37,16 @@ impl FromStr for InputData {
             rock_joints: s
                 .lines()
                 .map(|line| {
-                    line.split(" -> ")
-                        .map(|s| Point::from_str(s))
-                        .collect::<Result<_, _>>()
+                    let joints = line
+                        .split(" -> ")
+                        .map(Point::from_str)
+                        .collect::<Result<Vec<_>, _>>()?;
+                    if joints.len() < 2 {
+                        return Err(AocError::Invalid(format!(
+                            "line must contain at least two points: {line}"
+                        )));
+                    }
+                    Ok(joints)
                 })
                 .collect::<Result<_, _>>()?,
         })
@@ -50,10 +57,11 @@ impl InputData {
     fn solve(&self) -> Result<(usize, usize), AocError> {
         let mut rocks = HashSet::new();
         for joints in &self.rock_joints {
-            // Note: any joint with a just a single point in it will effectively be ignored; they
-            // don't form any lines at all.
             for (j1, j2) in joints.iter().zip(joints.iter().skip(1)) {
-                let delta = Point::new((j2.x - j1.x).signum(), (j2.y - j1.y).signum());
+                let delta = Point::new(
+                    (j2.x.saturating_sub(j1.x)).signum(),
+                    (j2.y.saturating_sub(j1.y)).signum(),
+                );
                 if delta.x != 0 && delta.y != 0 {
                     // Non-straight lines would likely cause the loop below to hang
                     return Err(AocError::Invalid(format!(
@@ -85,21 +93,21 @@ impl InputData {
                 if let Some(p) = trail.pop_back() {
                     current = p;
                 } else {
-                    // Shouldn't happen, breaking just in case
-                    // Maybe just return NoSolution instead, just to not report a seemingly valid result by accident?
-                    break;
+                    // The trail is empty only when the source itself is covered by rock.
+                    return Err(AocError::Invalid("source point is blocked".to_string()));
                 }
             }
             if current.y > max_y && p1.is_none() {
                 p1 = Some(count);
             }
-            if !rocks.contains(&(current + DOWN)) && current.y < max_y + 1 {
+            let limit = max_y.saturating_add(1);
+            if current.y < limit && !rocks.contains(&(current + DOWN)) {
                 trail.push_back(current);
                 current += DOWN;
-            } else if !rocks.contains(&(current + DOWN + LEFT)) && current.y < max_y + 1 {
+            } else if current.y < limit && !rocks.contains(&(current + DOWN + LEFT)) {
                 trail.push_back(current);
                 current += DOWN + LEFT;
-            } else if !rocks.contains(&(current + DOWN + RIGHT)) && current.y < max_y + 1 {
+            } else if current.y < limit && !rocks.contains(&(current + DOWN + RIGHT)) {
                 trail.push_back(current);
                 current += DOWN + RIGHT;
             } else {
