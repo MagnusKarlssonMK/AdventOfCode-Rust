@@ -1,11 +1,16 @@
 //! # 2022 day 13 - Distress Signal
 //!
-//! Taking the opportunity to work with Box / Cons list and implementing
-//! the ordering trait.
-use std::{cmp::Ordering, error::Error, str::FromStr};
+//! Taking the opportunity to work with Box / Cons list and implementing the ordering trait.
+use crate::aoc_util::error::{AocError, OptionExt};
+use std::{
+    cmp::Ordering,
+    error::Error,
+    iter::Peekable,
+    str::{Chars, FromStr},
+};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -15,7 +20,7 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
 #[derive(PartialEq, Eq)]
 enum Value {
     List(Box<Packet>),
-    Integer(u8),
+    Integer(u32),
 }
 
 #[derive(PartialEq, Eq)]
@@ -25,47 +30,52 @@ enum Packet {
 }
 
 impl FromStr for Packet {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        fn parse_chars(c_input: &mut impl Iterator<Item = char>) -> Packet {
-            let mut int_buffer: Option<u8> = None;
-            while let Some(c) = c_input.next() {
-                match c {
-                    '[' => {
-                        return Packet::Cons(
-                            Value::List(Box::new(parse_chars(c_input))),
-                            Box::new(parse_chars(c_input)),
-                        );
+        fn parse_list(chars: &mut Peekable<Chars>) -> Result<Packet, AocError> {
+            let value = match chars.next().ctx("unexpected end of packet")? {
+                ']' => return Ok(Packet::Empty),
+                '[' => Value::List(Box::new(parse_list(chars)?)),
+                c => {
+                    let mut n = c
+                        .to_digit(10)
+                        .ok_or_else(|| AocError::Invalid(format!("not a digit: {c}")))?;
+                    while let Some(d) = chars.peek().and_then(|&c| c.to_digit(10)) {
+                        chars.next();
+                        n = n
+                            .checked_mul(10)
+                            .and_then(|n| n.checked_add(d))
+                            .ok_or_else(|| {
+                                AocError::Invalid("packet integer overflow".to_string())
+                            })?;
                     }
-                    ']' => {
-                        if let Some(v) = int_buffer {
-                            return Packet::Cons(Value::Integer(v), Box::new(Packet::Empty));
-                        } else {
-                            return Packet::Empty;
-                        }
-                    }
-                    ',' => {
-                        if let Some(v) = int_buffer {
-                            return Packet::Cons(Value::Integer(v), Box::new(parse_chars(c_input)));
-                        }
-                    }
-                    _ => {
-                        let v = c.to_digit(10).unwrap() as u8;
-                        if let Some(n) = int_buffer {
-                            int_buffer = Some(10 * n + v);
-                        } else {
-                            int_buffer = Some(v)
-                        }
-                    }
+                    Value::Integer(n)
                 }
+            };
+            match chars.next().ctx("unexpected end of packet")? {
+                ',' => Ok(Packet::Cons(value, Box::new(parse_list(chars)?))),
+                ']' => Ok(Packet::Cons(value, Box::new(Packet::Empty))),
+                c => Err(AocError::Invalid(format!("expected ',' or ']', got: {c}"))),
             }
-            Packet::Empty
         }
-        let mut chars = s.chars().skip(1);
-        Ok(parse_chars(&mut chars))
+
+        let mut chars = s.chars().peekable();
+        if chars.next() != Some('[') {
+            return Err(AocError::Invalid("packet must start with '['".to_string()));
+        }
+        let packet = parse_list(&mut chars)?;
+        if let Some(c) = chars.next() {
+            return Err(AocError::Invalid(format!(
+                "trailing character after packet: {c}"
+            )));
+        }
+        Ok(packet)
     }
 }
 
+// `Eq` is derived structurally, while `Ord` compares by packet rules, so e.g. `[1]` and `[[1]]`
+// compare `Equal` without being `==`. This is intentional: `sort` uses the packet ordering, while
+// the divider lookup needs exact structural equality.
 impl Ord for Packet {
     fn cmp(&self, other: &Self) -> Ordering {
         match (self, other) {
@@ -111,19 +121,15 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let pairs = s
-            .split("\n\n")
-            .map(|pair| {
-                let (left, right) = pair.split_once('\n').unwrap();
-                (
-                    Packet::from_str(left).unwrap(),
-                    Packet::from_str(right).unwrap(),
-                )
-            })
-            .collect();
-        Ok(Self { pairs })
+        fn parse_pairs(s: &str) -> Result<(Packet, Packet), AocError> {
+            let (left, right) = s.split_once('\n').ctx("pair line break missing")?;
+            Ok((left.parse()?, right.parse()?))
+        }
+        Ok(Self {
+            pairs: s.split("\n\n").map(parse_pairs).collect::<Result<_, _>>()?,
+        })
     }
 }
 
@@ -138,8 +144,8 @@ impl InputData {
     }
 
     fn solve_part2(&self) -> usize {
-        let divider_packet1 = Packet::from_str("[[2]]").unwrap();
-        let divider_packet2 = Packet::from_str("[[6]]").unwrap();
+        let divider_packet1: Packet = "[[2]]".parse().expect("divider packet must be correct");
+        let divider_packet2: Packet = "[[6]]".parse().expect("divider packet must be correct");
         let mut packets = Vec::new();
         for (left, right) in self.pairs.iter() {
             packets.push(left);
@@ -148,8 +154,14 @@ impl InputData {
         packets.push(&divider_packet1);
         packets.push(&divider_packet2);
         packets.sort();
-        let pos1 = 1 + packets.iter().position(|p| **p == divider_packet1).unwrap();
-        let pos2 = 1 + packets.iter().position(|p| **p == divider_packet2).unwrap();
+        let pos1 = 1 + packets
+            .iter()
+            .position(|p| **p == divider_packet1)
+            .expect("divider packet must be present");
+        let pos2 = 1 + packets
+            .iter()
+            .position(|p| **p == divider_packet2)
+            .expect("divider packet must be present");
         pos1 * pos2
     }
 }
@@ -158,7 +170,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "[1,1,3,1,1]
+    const TEST_OFFICIAL_1: &str = "[1,1,3,1,1]
 [1,1,5,1,1]
 
 [[1],[2,3,4]]
@@ -183,14 +195,34 @@ mod tests {
 [1,[2,[3,[4,[5,6,0]]]],8,9]";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 13);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 140);
+    }
+
+    #[test]
+    fn parser_invalid_input() {
+        for input in [
+            "1",        // not a list
+            "[1,2",     // truncated
+            "[1,[2]",   // truncated nested list
+            "[1]x",     // trailing garbage
+            "[1,,2]",   // empty element
+            "[[1][2]]", // missing comma
+        ] {
+            assert!(input.parse::<Packet>().is_err());
+        }
+    }
+
+    #[test]
+    fn parser_large_integer() {
+        assert!("[300]".parse::<Packet>().is_ok());
+        assert!("[4294967296]".parse::<Packet>().is_err());
     }
 }
