@@ -46,7 +46,7 @@ impl FromStr for Packet {
                             .checked_mul(10)
                             .and_then(|n| n.checked_add(d))
                             .ok_or_else(|| {
-                                AocError::Invalid("packet integer overflow".to_string())
+                                AocError::Overflow("packet integer overflow".to_string())
                             })?;
                     }
                     Value::Integer(n)
@@ -223,6 +223,9 @@ mod tests {
     #[test]
     fn parser_large_integer() {
         assert!("[300]".parse::<Packet>().is_ok());
-        assert!("[4294967296]".parse::<Packet>().is_err());
+        assert!(matches!(
+            "[4294967296]".parse::<Packet>(),
+            Err(AocError::Overflow(_))
+        ));
     }
 }
