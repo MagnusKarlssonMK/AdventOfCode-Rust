@@ -8,6 +8,8 @@ pub enum AocError {
     ParseInt(ParseIntError),
     /// The input is missing or semantically incorrect
     Invalid(String),
+    /// An overflow / underflow was detected
+    Overflow(String),
     /// No solution was found with the given input
     NoSolution,
     /// No solver exists for the requested year/day
@@ -19,6 +21,7 @@ impl fmt::Display for AocError {
         match self {
             AocError::ParseInt(e) => write!(f, "invalid number: {e}"),
             AocError::Invalid(what) => write!(f, "invalid input: {what}"),
+            AocError::Overflow(what) => write!(f, "overflow: {what}"),
             AocError::NoSolution => write!(f, "no solution found"),
             AocError::NotImplemented(what) => write!(f, "not implemented: {what}"),
         }
@@ -83,6 +86,10 @@ mod tests {
         assert_eq!(
             AocError::Invalid("color \"x\"".to_string()).to_string(),
             "invalid input: color \"x\""
+        );
+        assert_eq!(
+            AocError::Overflow("number \"n\"".to_string()).to_string(),
+            "overflow: number \"n\""
         );
         assert_eq!(AocError::NoSolution.to_string(), "no solution found");
         assert_eq!(
