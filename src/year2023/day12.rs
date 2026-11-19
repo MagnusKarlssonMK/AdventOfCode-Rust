@@ -1,10 +1,9 @@
 //! # 2023 day 12 - Hot Springs
-//!
-//! Pretty much a straight transfer of my ugly old Python solution.
+use crate::aoc_util::error::AocError;
 use std::{collections::HashMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -18,12 +17,17 @@ struct SpringRow {
 }
 
 impl FromStr for SpringRow {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (springs, group_sizes) = s.split_once(' ').unwrap();
+        let (springs, group_sizes) = s
+            .split_once(' ')
+            .ok_or_else(|| AocError::Invalid(s.to_string()))?;
         Ok(Self {
             springs: springs.to_string(),
-            group_sizes: group_sizes.split(',').map(|c| c.parse().unwrap()).collect(),
+            group_sizes: group_sizes
+                .split(',')
+                .map(|n| n.parse())
+                .collect::<Result<_, _>>()?,
         })
     }
 }
@@ -100,13 +104,13 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
             rows: s
                 .lines()
-                .map(|line| SpringRow::from_str(line).unwrap())
-                .collect(),
+                .map(|line| line.parse())
+                .collect::<Result<_, _>>()?,
         })
     }
 }
@@ -141,87 +145,82 @@ impl InputData {
 mod tests {
     use super::*;
 
+    const TEST_OFFICIAL_1: &str = "???.### 1,1,3";
+    const TEST_OFFICIAL_2: &str = ".??..??...?##. 1,1,3";
+    const TEST_OFFICIAL_3: &str = "?#?#?#?#?#?#?#? 1,3,1,6";
+    const TEST_OFFICIAL_4: &str = "????.#...#... 4,1,1";
+    const TEST_OFFICIAL_5: &str = "????.######..#####. 1,6,5";
+    const TEST_OFFICIAL_6: &str = "?###???????? 3,2,1";
+
     #[test]
-    fn part1_example_1() {
-        let testdata = "???.### 1,1,3";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 1);
     }
 
     #[test]
-    fn part1_example_2() {
-        let testdata = ".??..??...?##. 1,1,3";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_2() {
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 4);
     }
 
     #[test]
-    fn part1_example_3() {
-        let testdata = "?#?#?#?#?#?#?#? 1,3,1,6";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_3() {
+        let solution_data: InputData = TEST_OFFICIAL_3.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 1);
     }
 
     #[test]
-    fn part1_example_4() {
-        let testdata = "????.#...#... 4,1,1";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_4() {
+        let solution_data: InputData = TEST_OFFICIAL_4.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 1);
     }
 
     #[test]
-    fn part1_example_5() {
-        let testdata = "????.######..#####. 1,6,5";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_5() {
+        let solution_data: InputData = TEST_OFFICIAL_5.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 4);
     }
 
     #[test]
-    fn part1_example_6() {
-        let testdata = "?###???????? 3,2,1";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_6() {
+        let solution_data: InputData = TEST_OFFICIAL_6.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 10);
     }
 
     #[test]
-    fn part2_example_1() {
-        let testdata = "???.### 1,1,3";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 1);
     }
 
     #[test]
-    fn part2_example_2() {
-        let testdata = ".??..??...?##. 1,1,3";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_2() {
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 16384);
     }
 
     #[test]
-    fn part2_example_3() {
-        let testdata = "?#?#?#?#?#?#?#? 1,3,1,6";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_3() {
+        let solution_data: InputData = TEST_OFFICIAL_3.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 1);
     }
 
     #[test]
-    fn part2_example_4() {
-        let testdata = "????.#...#... 4,1,1";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_4() {
+        let solution_data: InputData = TEST_OFFICIAL_4.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 16);
     }
 
     #[test]
-    fn part2_example_5() {
-        let testdata = "????.######..#####. 1,6,5";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_5() {
+        let solution_data: InputData = TEST_OFFICIAL_5.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 2500);
     }
 
     #[test]
-    fn part2_example_6() {
-        let testdata = "?###???????? 3,2,1";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part2_official_6() {
+        let solution_data: InputData = TEST_OFFICIAL_6.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 506250);
     }
 }
