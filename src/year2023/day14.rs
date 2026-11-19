@@ -1,97 +1,80 @@
 //! # 2023 day 14 - Parabolic Reflector Dish
+//!
+//! Rocks slide along rows or columns until they hit a wall or another rock. A shared `tilt_axis`
+//! routine handles all four directions via const-generic axis and slide parameters; part 1 tilts
+//! once north. Part 2 repeats the north/west/south/east cycle, detecting a repeated dish state to
+//! skip ahead to the billionth cycle.
+use crate::aoc_util::{error::AocError, grid::Grid, point::Point};
 use std::{collections::HashMap, error::Error, str::FromStr};
 
-use crate::aoc_util::{grid::Grid, point::Point};
-
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
-        solution_data.solve_part2().to_string(),
+        solution_data.solve_part2()?.to_string(),
     ))
 }
 
+const P2_TARGET_CYCLES: usize = 1_000_000_000;
+
 impl Grid<char> {
     fn tilt_north(&mut self) {
-        for x in 0..self.x_max as i32 {
-            let mut floor = 0;
-            for y in 0..self.y_max as i32 {
-                let current_point = Point::new(x, y);
-                if let Some(e) = self.get_element(&current_point) {
-                    match e {
-                        '#' => floor = y + 1,
-                        'O' => {
-                            if y > floor {
-                                self.set_point(&Point::new(x, floor), 'O');
-                                self.set_point(&current_point, '.');
-                            }
-                            floor += 1;
-                        }
-                        _ => {}
-                    }
-                }
-            }
-        }
+        self.tilt_axis::<true, -1>();
     }
 
     fn tilt_south(&mut self) {
-        for x in 0..self.x_max as i32 {
-            let mut floor = self.y_max as i32 - 1;
-            for y in (0..self.y_max as i32).rev() {
-                let current_point = Point::new(x, y);
-                if let Some(e) = self.get_element(&current_point) {
-                    match e {
-                        '#' => floor = y - 1,
-                        'O' => {
-                            if y < floor {
-                                self.set_point(&Point::new(x, floor), 'O');
-                                self.set_point(&current_point, '.');
-                            }
-                            floor -= 1;
-                        }
-                        _ => {}
-                    }
-                }
-            }
-        }
+        self.tilt_axis::<true, 1>();
     }
 
     fn tilt_east(&mut self) {
-        for y in 0..self.y_max as i32 {
-            let mut floor = self.x_max as i32 - 1;
-            for x in (0..self.x_max as i32).rev() {
-                let current_point = Point::new(x, y);
-                if let Some(e) = self.get_element(&current_point) {
-                    match e {
-                        '#' => floor = x - 1,
-                        'O' => {
-                            if x < floor {
-                                self.set_point(&Point::new(floor, y), 'O');
-                                self.set_point(&current_point, '.');
-                            }
-                            floor -= 1;
-                        }
-                        _ => {}
-                    }
-                }
-            }
-        }
+        self.tilt_axis::<false, 1>();
     }
 
     fn tilt_west(&mut self) {
-        for y in 0..self.y_max as i32 {
-            let mut floor = 0;
-            for x in 0..self.x_max as i32 {
-                let current_point = Point::new(x, y);
-                if let Some(e) = self.get_element(&current_point) {
-                    match e {
-                        '#' => floor = x + 1,
+        self.tilt_axis::<false, -1>();
+    }
+
+    /// Slides every 'O' along each row or column toward the destination side. `VERTICAL` selects
+    /// the axis and `STEP` is -1 for north/west (toward coordinate 0) or +1 for south/east. Making
+    /// them const generics gives each direction its own specialised loop with no per-cell branches.
+    fn tilt_axis<const VERTICAL: bool, const STEP: i32>(&mut self) {
+        let (outer_len, inner_len) = if VERTICAL {
+            (self.x_max, self.y_max)
+        } else {
+            (self.y_max, self.x_max)
+        };
+        for outer in 0..outer_len as i32 {
+            // The next free slot on the destination side, advanced past rocks and round walls.
+            let mut floor = if STEP > 0 { inner_len as i32 - 1 } else { 0 };
+            for i in 0..inner_len as i32 {
+                // Scan from the destination side inward.
+                let inner = if STEP > 0 { inner_len as i32 - 1 - i } else { i };
+                let point = if VERTICAL {
+                    Point::new(outer, inner)
+                } else {
+                    Point::new(inner, outer)
+                };
+                // The explicit comparison and `if let` keep this loop scalar; a `let ... else`
+                // with arithmetic here gets auto-vectorized and runs about 3x slower.
+                if let Some(c) = self.get_ref(&point) {
+                    match c {
+                        '#' => floor = inner - STEP,
                         'O' => {
-                            if x > floor {
-                                self.set_point(&Point::new(floor, y), 'O');
-                                self.set_point(&current_point, '.');
+                            let needs_move = if STEP < 0 {
+                                inner > floor
+                            } else {
+                                inner < floor
+                            };
+                            if needs_move {
+                                let dest = if VERTICAL {
+                                    Point::new(outer, floor)
+                                } else {
+                                    Point::new(floor, outer)
+                                };
+                                self.set_point(&dest, 'O');
+                                self.set_point(&point, '.');
                             }
-                            floor += 1;
+                            floor -= STEP;
                         }
                         _ => {}
                     }
@@ -124,7 +107,7 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
             dish: Grid::parse(s),
@@ -139,23 +122,22 @@ impl InputData {
         dish.get_load()
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> Result<usize, AocError> {
         let mut dish = self.dish.clone();
-        let target_cycles: usize = 1_000_000_000;
         let mut seen = HashMap::new();
         let mut loads = Vec::new();
 
         // Keep running cycles until a previously seen state if found, storing load values along the way.
         // Then calculate the index of where we would be in the cycle when reaching the target, and pick out the load value.
-        for cycle in 0..target_cycles {
+        for cycle in 0..P2_TARGET_CYCLES {
             dish.cycle();
             loads.push(dish.get_load());
             if let Some(previous) = seen.insert(dish.clone(), cycle) {
-                let idx = previous + ((target_cycles - 1 - previous) % (cycle - previous));
-                return loads[idx];
+                let idx = previous + ((P2_TARGET_CYCLES - 1 - previous) % (cycle - previous));
+                return Ok(loads[idx]);
             }
         }
-        0
+        Err(AocError::NoSolution)
     }
 }
 
@@ -163,7 +145,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "O....#....
+    const TEST_OFFICIAL_1: &str = "O....#....
 O.OO#....#
 .....##...
 OO.#O....O
@@ -175,14 +157,14 @@ O.#..O.#.#
 #OO..#....";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 136);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
-        assert_eq!(solution_data.solve_part2(), 64);
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part2().unwrap(), 64);
     }
 }
