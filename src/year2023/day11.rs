@@ -1,104 +1,90 @@
 //! # 2023 day 11 - Cosmic Expansion
-use crate::aoc_util::point::*;
-use std::{collections::HashSet, error::Error, str::FromStr};
+//!
+//! Stores the coordinates of the galaxies in the input, together with a vec for each axis marking
+//! the rows / columns that hold at least one galaxy. Part 1 and part 2 differ only in how wide the
+//! empty rows and columns become, so rather than counting the empty lines between each pair of
+//! galaxies, the galaxies are moved to the coordinates they would have if the empty rows and
+//! columns had already been widened, and the answer is then the sum of the manhattan distances
+//! between all pairs.
+use crate::aoc_util::{error::AocError, grid::Grid, point::*};
+use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
-    let (p1, p2) = solution_data.solve(2, 1_000_000);
-    Ok((p1.to_string(), p2.to_string()))
+    let solution_data: InputData = input.parse()?;
+    Ok((
+        solution_data.solve_part1().to_string(),
+        solution_data.solve_part2().to_string(),
+    ))
 }
+
+const P1_EXP_RATE: u64 = 2;
+const P2_EXP_RATE: u64 = 1_000_000;
 
 struct InputData {
     galaxies: Vec<Point>,
-    empty_x: HashSet<usize>,
-    empty_y: HashSet<usize>,
-}
-
-impl Point {
-    fn get_x_ranges(&self, other: &Self) -> (usize, usize) {
-        (
-            self.x.min(other.x).try_into().unwrap(),
-            self.x.max(other.x).try_into().unwrap(),
-        )
-    }
-
-    fn get_y_ranges(&self, other: &Self) -> (usize, usize) {
-        (
-            self.y.min(other.y).try_into().unwrap(),
-            self.y.max(other.y).try_into().unwrap(),
-        )
-    }
+    x_occupied: Vec<bool>,
+    y_occupied: Vec<bool>,
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut gal = Vec::new();
-        let mut x_points = HashSet::new();
-        let mut y_points = HashSet::new();
-        let mut x_min = 0;
-        let mut x_max = 0;
-        let mut y_min = 0;
-        let mut y_max = 0;
-        // My python solution didn't translate all that nicely into rust...
-        for (y, line) in s.lines().enumerate() {
-            for (x, c) in line.chars().enumerate() {
-                if c == '#' {
-                    gal.push(Point::new(x as i32, y as i32));
-                    x_points.insert(x);
-                    y_points.insert(y);
-                    x_min = x_min.min(x);
-                    x_max = x_max.max(x);
-                    y_min = y_min.min(y);
-                    y_max = y_max.max(y);
-                }
-            }
-        }
-        let mut empty_x = HashSet::new();
-        let mut empty_y = HashSet::new();
-        for x in x_min..x_max {
-            if !x_points.contains(&x) {
-                empty_x.insert(x);
-            }
-        }
-        for y in y_min..y_max {
-            if !y_points.contains(&y) {
-                empty_y.insert(y);
-            }
+        let grid = Grid::parse(s);
+        let galaxies: Vec<_> = grid
+            .enumerate_points()
+            .filter(|&(_, c)| *c == '#')
+            .map(|(p, _)| p)
+            .collect();
+        let mut x_occupied = vec![false; grid.x_max];
+        let mut y_occupied = vec![false; grid.y_max];
+        for g in &galaxies {
+            x_occupied[g.x as usize] = true;
+            y_occupied[g.y as usize] = true;
         }
         Ok(Self {
-            galaxies: gal,
-            empty_x,
-            empty_y,
+            galaxies,
+            x_occupied,
+            y_occupied,
         })
     }
 }
 
+fn expanded_positions(occupied: &[bool], exp_rate: u64) -> Vec<u64> {
+    let mut positions = vec![0; occupied.len()];
+    let mut extra = 0;
+    for (i, v) in occupied.iter().enumerate() {
+        if !*v {
+            extra += exp_rate - 1;
+        }
+        positions[i] = i as u64 + extra;
+    }
+    positions
+}
+
 impl InputData {
-    fn solve(&self, small_exp_rate: usize, large_exp_rate: usize) -> (usize, usize) {
-        let mut total_steps: usize = 0;
-        let mut total_empty_space: usize = 0;
-        for (i, g1) in self.galaxies.iter().enumerate() {
-            for g2 in self.galaxies.iter().skip(i + 1) {
-                let x_range = g1.get_x_ranges(g2);
-                let y_range = g1.get_y_ranges(g2);
-                total_empty_space += self
-                    .empty_x
-                    .iter()
-                    .filter(|x| (x_range.0 + 1..x_range.1).contains(x))
-                    .count()
-                    + self
-                        .empty_y
-                        .iter()
-                        .filter(|y| (y_range.0 + 1..y_range.1).contains(y))
-                        .count();
-                total_steps += g1.manhattan(g2);
+    fn distance_sum(&self, exp_rate: u64) -> u64 {
+        let xs = expanded_positions(&self.x_occupied, exp_rate);
+        let ys = expanded_positions(&self.y_occupied, exp_rate);
+        let mut total = 0;
+        let galaxies: Vec<_> = self
+            .galaxies
+            .iter()
+            .map(|g| (xs[g.x as usize], ys[g.y as usize]))
+            .collect();
+        for (i, g1) in galaxies.iter().enumerate() {
+            for g2 in galaxies.iter().skip(i + 1) {
+                total += g1.0.abs_diff(g2.0) + g1.1.abs_diff(g2.1);
             }
         }
-        (
-            total_steps + total_empty_space * (small_exp_rate - 1),
-            total_steps + total_empty_space * (large_exp_rate - 1),
-        )
+        total
+    }
+
+    fn solve_part1(&self) -> u64 {
+        self.distance_sum(P1_EXP_RATE)
+    }
+
+    fn solve_part2(&self) -> u64 {
+        self.distance_sum(P2_EXP_RATE)
     }
 }
 
@@ -106,9 +92,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn parts1_2_example_1() {
-        let testdata = "...#......
+    const TEST_OFFICIAL_1: &str = "...#......
 .......#..
 #.........
 ..........
@@ -118,12 +102,19 @@ mod tests {
 ..........
 .......#..
 #...#.....";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        let (p1, p2) = solution_data.solve(2, 10);
-        assert_eq!(p1, 374);
-        assert_eq!(p2, 1030);
-        let (p1, p2) = solution_data.solve(2, 100);
-        assert_eq!(p1, 374);
-        assert_eq!(p2, 8410);
+
+    #[test]
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part1(), 374);
+        assert_eq!(solution_data.distance_sum(10), 1030);
+        assert_eq!(solution_data.distance_sum(100), 8410);
+    }
+
+    #[test]
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        // Note: answer not given by official description
+        assert_eq!(solution_data.solve_part2(), 82000210);
     }
 }
