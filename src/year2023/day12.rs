@@ -1,6 +1,10 @@
 //! # 2023 day 12 - Hot Springs
-use crate::aoc_util::error::AocError;
-use std::{collections::HashMap, error::Error, str::FromStr};
+//!
+//! Bottom-up dynamic programming over {position in springs, index of next group}. The table is a
+//! flat `Vec` indexed by those integers, so there is no need for string copying or hashing. The
+//! rows in the input are independent and can be processed independently over multiple threads.
+use crate::aoc_util::{error::AocError, thread::spawn_jobs};
+use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data: InputData = input.parse()?;
@@ -10,9 +14,8 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     ))
 }
 
-#[derive(Hash, Eq, PartialEq, Clone)]
 struct SpringRow {
-    springs: String,
+    springs: Vec<u8>,
     group_sizes: Vec<usize>,
 }
 
@@ -22,8 +25,11 @@ impl FromStr for SpringRow {
         let (springs, group_sizes) = s
             .split_once(' ')
             .ok_or_else(|| AocError::Invalid(s.to_string()))?;
+        if !springs.bytes().all(|b| matches!(b, b'.' | b'#' | b'?')) {
+            return Err(AocError::Invalid(s.to_string()));
+        }
         Ok(Self {
-            springs: springs.to_string(),
+            springs: springs.as_bytes().to_vec(),
             group_sizes: group_sizes
                 .split(',')
                 .map(|n| n.parse())
@@ -33,69 +39,51 @@ impl FromStr for SpringRow {
 }
 
 impl SpringRow {
-    fn calculate_combinations(&self, seen: &mut HashMap<SpringRow, usize>) -> usize {
-        if self.group_sizes.is_empty() {
-            return if self.springs.contains("#") { 0 } else { 1 };
+    /// Number of valid arrangements when the row is repeated `copies` times, joined by `?`.
+    fn calculate_combinations(&self, copies: usize) -> usize {
+        // Unfold the row. A trailing '.' means a group can always look at the byte following it,
+        // without special-casing the end of the string.
+        let mut springs = Vec::with_capacity((self.springs.len() + 1) * copies + 1);
+        let mut groups = Vec::with_capacity(self.group_sizes.len() * copies);
+        for c in 0..copies {
+            if c > 0 {
+                springs.push(b'?');
+            }
+            springs.extend_from_slice(&self.springs);
+            groups.extend_from_slice(&self.group_sizes);
         }
-        if self.springs.len() + 1 < self.group_sizes.iter().sum::<usize>() + self.group_sizes.len()
-        {
-            return 0;
+        springs.push(b'.');
+
+        let n = springs.len();
+        let g = groups.len();
+        let width = g + 1;
+
+        // dots[i] = number of '.' in springs[..i], to test "no '.' in range"
+        let mut dots = vec![0usize; n + 1];
+        for (i, &b) in springs.iter().enumerate() {
+            dots[i + 1] = dots[i] + usize::from(b == b'.');
         }
-        let is_substrings = self.springs[0..self.group_sizes[0]].contains(".");
-        if self.springs.len() == self.group_sizes[0] {
-            if is_substrings { 0 } else { 1 }
-        } else {
-            let can_use = !is_substrings
-                && self.group_sizes[0] <= self.springs.len()
-                && self.springs.chars().nth(self.group_sizes[0]).unwrap() != '#';
-            if self.springs.starts_with('#') {
-                if !can_use {
-                    return 0;
-                } else {
-                    let next = SpringRow {
-                        springs: self.springs[self.group_sizes[0] + 1..]
-                            .trim_start_matches('.')
-                            .to_string(),
-                        group_sizes: self.group_sizes[1..].to_vec(),
-                    };
-                    if let Some(v) = seen.get(&next) {
-                        return *v;
-                    } else {
-                        let v = next.calculate_combinations(seen);
-                        seen.insert(next, v);
-                        return v;
+
+        // dp[i * width + j] = ways to arrange springs[i..] using groups[j..]
+        let mut dp = vec![0usize; (n + 1) * width];
+        dp[n * width + g] = 1;
+        for i in (0..n).rev() {
+            for j in 0..=g {
+                let mut total = 0;
+                if springs[i] != b'#' {
+                    total += dp[(i + 1) * width + j];
+                }
+                // A group starts at springs[i]
+                if j < g {
+                    let end = i + groups[j];
+                    if end < n && dots[end] == dots[i] && springs[end] != b'#' {
+                        total += dp[(end + 1) * width + j + 1];
                     }
                 }
+                dp[i * width + j] = total;
             }
-            let skip = SpringRow {
-                springs: self.springs[1..].trim_start_matches('.').to_string(),
-                group_sizes: self.group_sizes.to_vec(),
-            };
-            let skip_v = if let Some(v) = seen.get(&skip) {
-                *v
-            } else {
-                let v = skip.calculate_combinations(seen);
-                seen.insert(skip, v);
-                v
-            };
-            if !can_use {
-                return skip_v;
-            }
-            let next = SpringRow {
-                springs: self.springs[self.group_sizes[0] + 1..]
-                    .trim_start_matches('.')
-                    .to_string(),
-                group_sizes: self.group_sizes[1..].to_vec(),
-            };
-            let next_v = if let Some(v) = seen.get(&next) {
-                *v
-            } else {
-                let v = next.calculate_combinations(seen);
-                seen.insert(next, v);
-                v
-            };
-            skip_v + next_v
         }
+        dp[0]
     }
 }
 
@@ -116,28 +104,22 @@ impl FromStr for InputData {
 }
 
 impl InputData {
+    fn sum_combinations(&self, copies: usize) -> usize {
+        spawn_jobs(self.rows.iter().collect(), |rows: Vec<&SpringRow>| {
+            rows.iter()
+                .map(|row| row.calculate_combinations(copies))
+                .sum::<usize>()
+        })
+        .into_iter()
+        .sum()
+    }
+
     fn solve_part1(&self) -> usize {
-        let mut seen: HashMap<SpringRow, usize> = HashMap::new();
-        self.rows
-            .iter()
-            .map(|row| row.calculate_combinations(&mut seen))
-            .sum()
+        self.sum_combinations(1)
     }
 
     fn solve_part2(&self) -> usize {
-        let mut seen: HashMap<SpringRow, usize> = HashMap::new();
-        self.rows
-            .iter()
-            .map(|row| {
-                let mut extended_row = row.clone();
-                for _ in 0..4 {
-                    extended_row.springs.push('?');
-                    extended_row.springs.push_str(&row.springs);
-                    extended_row.group_sizes.extend(row.group_sizes.iter());
-                }
-                extended_row.calculate_combinations(&mut seen)
-            })
-            .sum()
+        self.sum_combinations(5)
     }
 }
 
