@@ -58,6 +58,13 @@ impl Point {
     pub fn manhattan(&self, other: &Self) -> usize {
         self.x.abs_diff(other.x) as usize + self.y.abs_diff(other.y) as usize
     }
+
+    /// Calculates 2D cross product (z-component); summing over consecutive polygon vertices gives
+    /// twice the summed area (shoelace).
+    #[inline]
+    pub fn cross(&self, other: &Self) -> i64 {
+        (self.x as i64 * other.y as i64) - (self.y as i64 * other.x as i64)
+    }
 }
 
 impl FromStr for Point {

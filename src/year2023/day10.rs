@@ -13,12 +13,6 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     Ok((p1.to_string(), p2.to_string()))
 }
 
-impl Point {
-    fn area(&self, other: &Point) -> i32 {
-        (self.x * other.y) - (other.x * self.y)
-    }
-}
-
 /// Calculates the next direction when moving into a point with element `c` in direction `in_dir`.
 /// Returns `None` if `c` is an invalid value or if there is no connection into that value with
 /// incoming direction `in_dir`.
@@ -87,14 +81,14 @@ impl InputData {
             .ok_or(AocError::NoSolution)?;
         let mut current_pos = self.start + current_dir;
         let mut pipe_len = 1;
-        let mut shoelace_area = current_pos.area(&self.start);
+        let mut shoelace_area = current_pos.cross(&self.start);
         while current_pos != self.start {
             if let Some(c) = self.grid.get_ref(&current_pos) {
                 if let Some(new_dir) = next_direction(c, &current_dir) {
                     current_dir = new_dir;
                     let new_pos = current_pos + current_dir;
                     pipe_len += 1;
-                    shoelace_area += new_pos.area(&current_pos);
+                    shoelace_area += new_pos.cross(&current_pos);
                     current_pos = new_pos;
                 } else {
                     // No connection to next node
