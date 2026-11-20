@@ -1,92 +1,119 @@
 //! # 2023 day 19 - Aplenty
+//!
+//! Rating fields are converted to indices while parsing, so workflow rules can read and split
+//! ranges without re-validating names.
+use crate::aoc_util::error::{AocError, OptionExt};
 use std::{
-    cmp::Ordering,
     collections::{HashMap, VecDeque},
     error::Error,
     str::FromStr,
 };
 
+const X: usize = 0;
+const M: usize = 1;
+const A: usize = 2;
+const S: usize = 3;
+
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
-        solution_data.solve_part1().to_string(),
-        solution_data.solve_part2().to_string(),
+        solution_data.solve_part1()?.to_string(),
+        solution_data.solve_part2()?.to_string(),
     ))
 }
 
-#[derive(Clone, Copy)]
-struct Rating {
-    x: usize,
-    m: usize,
-    a: usize,
-    s: usize,
+fn field_index(name: &str) -> Option<usize> {
+    match name {
+        "x" => Some(X),
+        "m" => Some(M),
+        "a" => Some(A),
+        "s" => Some(S),
+        _ => None,
+    }
 }
 
+#[derive(Clone, Copy)]
+struct Rating([usize; 4]);
+
 impl FromStr for Rating {
-    type Err = ();
+    type Err = AocError;
+
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts: Vec<&str> = s.trim_matches(['{', '}']).split(&[',', '=']).collect();
-        Ok(Self {
-            x: parts[1].parse().unwrap(),
-            m: parts[3].parse().unwrap(),
-            a: parts[5].parse().unwrap(),
-            s: parts[7].parse().unwrap(),
-        })
+        let body = s
+            .strip_prefix('{')
+            .and_then(|s| s.strip_suffix('}'))
+            .ok_or_else(|| AocError::Invalid(format!("invalid rating: {s}")))?;
+        let mut values = [0usize; 4];
+        let mut seen = [false; 4];
+        for part in body.split(',') {
+            let (name, value) = part
+                .split_once('=')
+                .ok_or_else(|| AocError::Invalid(format!("invalid rating field: {part}")))?;
+            let idx = field_index(name)
+                .ok_or_else(|| AocError::Invalid(format!("unknown rating field: {name}")))?;
+            if seen[idx] {
+                return Err(AocError::Invalid(format!("duplicate rating field: {name}")));
+            }
+            seen[idx] = true;
+            values[idx] = value.parse()?;
+        }
+        if !seen.iter().all(|&found| found) {
+            return Err(AocError::Invalid(format!("incomplete rating: {s}")));
+        }
+        Ok(Self(values))
     }
 }
 
 impl Rating {
-    fn get_value(&self, s: &str) -> Option<usize> {
-        match s {
-            "x" => Some(self.x),
-            "m" => Some(self.m),
-            "a" => Some(self.a),
-            "s" => Some(self.s),
-            _ => None,
-        }
+    fn get_value(&self, idx: usize) -> usize {
+        self.0[idx]
     }
 
-    fn set_value(&mut self, s: &str, v: usize) {
-        match s {
-            "x" => self.x = v,
-            "m" => self.m = v,
-            "a" => self.a = v,
-            "s" => self.s = v,
-            _ => (),
-        }
+    fn set_value(&mut self, idx: usize, value: usize) {
+        self.0[idx] = value;
     }
 
     fn get_combinations(&self, other: &Self) -> usize {
-        self.x.abs_diff(other.x)
-            * self.m.abs_diff(other.m)
-            * self.a.abs_diff(other.a)
-            * self.s.abs_diff(other.s)
+        self.0
+            .iter()
+            .zip(other.0.iter())
+            .map(|(high, low)| high.abs_diff(*low))
+            .product()
     }
 }
 
 type PartRangeRating = (Rating, Rating);
 
+/// Only the two comparisons that can appear in a rule.
+#[derive(Clone, Copy)]
+enum Comparison {
+    Less,
+    Greater,
+}
+
 struct Rule {
-    condition: Option<(String, Ordering, usize)>,
+    condition: Option<(usize, Comparison, usize)>,
     next: String,
 }
 
 impl FromStr for Rule {
-    type Err = ();
+    type Err = AocError;
+
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Some((left, right)) = s.split_once(':') {
-            if let Some((label, val)) = left.split_once('<') {
-                return Ok(Self {
-                    condition: Some((label.to_string(), Ordering::Less, val.parse().unwrap())),
-                    next: right.to_string(),
-                });
-            }
-            if let Some((label, val)) = left.split_once('>') {
-                return Ok(Self {
-                    condition: Some((label.to_string(), Ordering::Greater, val.parse().unwrap())),
-                    next: right.to_string(),
-                });
-            }
+            let (name, comparison, val) = if let Some((name, val)) = left.split_once('<') {
+                (name, Comparison::Less, val)
+            } else if let Some((name, val)) = left.split_once('>') {
+                (name, Comparison::Greater, val)
+            } else {
+                return Err(AocError::Invalid(format!("invalid rule: {s}")));
+            };
+            let idx = field_index(name)
+                .ok_or_else(|| AocError::Invalid(format!("unknown rating field: {name}")))?;
+            return Ok(Self {
+                condition: Some((idx, comparison, val.parse()?)),
+                next: right.to_string(),
+            });
         }
         Ok(Self {
             condition: None,
@@ -97,49 +124,38 @@ impl FromStr for Rule {
 
 impl Rule {
     fn process_rule(&self, r: &Rating) -> Option<String> {
-        if let Some((name, order, val)) = &self.condition {
-            match order {
-                Ordering::Less => {
-                    if r.get_value(name).unwrap() < *val {
-                        Some(self.next.to_string())
-                    } else {
-                        None
-                    }
-                }
-                Ordering::Greater => {
-                    if r.get_value(name).unwrap() > *val {
-                        Some(self.next.to_string())
-                    } else {
-                        None
-                    }
-                }
-                Ordering::Equal => unreachable!(),
+        match self.condition {
+            Some((idx, Comparison::Less, val)) if r.get_value(idx) < val => Some(self.next.clone()),
+            Some((idx, Comparison::Greater, val)) if r.get_value(idx) > val => {
+                Some(self.next.clone())
             }
-        } else {
-            Some(self.next.to_string())
+            Some(_) => None,
+            None => Some(self.next.clone()),
         }
     }
 
+    /// Splits the incoming range around the condition's threshold. The `None` name is the branch
+    /// that fails the condition and continues through the remaining rules of this workflow.
     fn get_range_split(&self, ranges: &PartRangeRating) -> Vec<(Option<String>, PartRangeRating)> {
-        if let Some((name, order, val)) = &self.condition {
-            if (ranges.0.get_value(name).unwrap()..ranges.1.get_value(name).unwrap()).contains(val)
-            {
-                let mut new_low = *ranges;
-                let mut new_high = *ranges;
-                if *order == Ordering::Greater {
-                    new_low.1.set_value(name, *val + 1);
-                    new_high.0.set_value(name, *val + 1);
-                    vec![(None, new_low), (Some(self.next.to_string()), new_high)]
-                } else {
-                    new_low.1.set_value(name, *val);
-                    new_high.0.set_value(name, *val);
-                    vec![(None, new_high), (Some(self.next.to_string()), new_low)]
-                }
-            } else {
-                vec![(Some(self.next.to_string()), *ranges)]
-            }
-        } else {
-            vec![(Some(self.next.to_string()), *ranges)]
+        let Some((idx, comparison, val)) = self.condition else {
+            return vec![(Some(self.next.clone()), *ranges)];
+        };
+        if !(ranges.0.get_value(idx)..ranges.1.get_value(idx)).contains(&val) {
+            return vec![(Some(self.next.clone()), *ranges)];
+        }
+
+        // The boundary is inclusive for `>` and exclusive for `<`, matching the half-open range.
+        let split = match comparison {
+            Comparison::Greater => val + 1,
+            Comparison::Less => val,
+        };
+        let mut failing = *ranges;
+        let mut passing = *ranges;
+        failing.1.set_value(idx, split);
+        passing.0.set_value(idx, split);
+        match comparison {
+            Comparison::Greater => vec![(None, failing), (Some(self.next.clone()), passing)],
+            Comparison::Less => vec![(None, passing), (Some(self.next.clone()), failing)],
         }
     }
 }
@@ -150,76 +166,67 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
+
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (wf, rt) = s.split_once("\n\n").unwrap();
+        let (wf, rt) = s.split_once("\n\n").ctx("block separator missing")?;
         let mut workflows = HashMap::new();
         for line in wf.lines() {
-            let (label, flow) = line.trim_end_matches('}').split_once('{').unwrap();
+            let (label, flow) = line
+                .trim_end_matches('}')
+                .split_once('{')
+                .ok_or_else(|| AocError::Invalid(format!("bracket missing: {line}")))?;
             workflows.insert(
                 label.to_string(),
                 flow.split(',')
-                    .map(|r| Rule::from_str(r).unwrap())
-                    .collect(),
+                    .map(|r| r.parse())
+                    .collect::<Result<_, _>>()?,
             );
         }
         let ratings = rt
             .lines()
-            .map(|line| Rating::from_str(line).unwrap())
-            .collect();
+            .map(|line| line.parse())
+            .collect::<Result<_, _>>()?;
         Ok(Self { workflows, ratings })
     }
 }
 
 impl InputData {
-    fn solve_part1(&self) -> usize {
+    fn get_workflow(&self, name: &str) -> Result<&Vec<Rule>, AocError> {
+        self.workflows
+            .get(name)
+            .ok_or_else(|| AocError::Invalid(format!("unknown workflow: {name}")))
+    }
+
+    fn solve_part1(&self) -> Result<usize, AocError> {
         const START: &str = "in";
         self.ratings
             .iter()
             .map(|r| {
                 let mut flow = START.to_string();
                 while flow != "A" && flow != "R" {
-                    for rule in self.workflows.get(&flow).unwrap() {
+                    for rule in self.get_workflow(&flow)? {
                         if let Some(n) = rule.process_rule(r) {
                             flow = n;
                             break;
                         }
                     }
                 }
-                if flow == "A" {
-                    r.x + r.m + r.a + r.s
-                } else {
-                    0
-                }
+                Ok(if flow == "A" { r.0.iter().sum() } else { 0 })
             })
             .sum()
     }
 
-    fn solve_part2(&self) -> usize {
-        let startrange: PartRangeRating = (
-            Rating {
-                x: 1,
-                m: 1,
-                a: 1,
-                s: 1,
-            },
-            Rating {
-                x: 4001,
-                m: 4001,
-                a: 4001,
-                s: 4001,
-            },
-        );
+    fn solve_part2(&self) -> Result<usize, AocError> {
+        let startrange: PartRangeRating = (Rating([1; 4]), Rating([4001; 4]));
         let mut queue = VecDeque::from([("in".to_string(), startrange)]);
         let mut accepted = Vec::new();
         while let Some((workflow, mut ranges)) = queue.pop_front() {
             match workflow.as_str() {
-                "A" => {
-                    accepted.push(ranges);
-                }
+                "A" => accepted.push(ranges),
                 "R" => (),
                 _ => {
-                    for rule in self.workflows.get(&workflow).unwrap() {
+                    for rule in self.get_workflow(&workflow)? {
                         let mut done = true;
                         for (new_name, new_ranges) in rule.get_range_split(&ranges) {
                             if let Some(n) = new_name {
@@ -236,10 +243,10 @@ impl InputData {
                 }
             }
         }
-        accepted
+        Ok(accepted
             .iter()
-            .map(|(a_low, a_high)| a_high.get_combinations(a_low))
-            .sum()
+            .map(|(low, high)| high.get_combinations(low))
+            .sum())
     }
 }
 
@@ -247,7 +254,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "px{a<2006:qkq,m>2090:A,rfg}
+    const TEST_OFFICIAL_1: &str = "px{a<2006:qkq,m>2090:A,rfg}
 pv{a>1716:R,A}
 lnx{m>1548:A,A}
 rfg{s<537:gd,x>2440:R,A}
@@ -266,14 +273,50 @@ hdj{m>838:A,pv}
 {x=2127,m=1623,a=2188,s=1013}";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
-        assert_eq!(solution_data.solve_part1(), 19114);
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part1().unwrap(), 19114);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
-        assert_eq!(solution_data.solve_part2(), 167409079868000);
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part2().unwrap(), 167409079868000);
+    }
+
+    #[test]
+    fn parser_invalid_rating() {
+        for input in [
+            "x=1,m=2,a=3",
+            "{x=1,m=2,a=3}",
+            "{x=1,m=2,a=3,q=4}",
+            "{x=1,m=2,a=3,a=4}",
+        ] {
+            assert!(matches!(input.parse::<Rating>(), Err(AocError::Invalid(_))));
+        }
+        assert!(matches!(
+            "{x=1,m=2,a=nope,s=4}".parse::<Rating>(),
+            Err(AocError::ParseInt(_))
+        ));
+    }
+
+    #[test]
+    fn parser_invalid_rule() {
+        for input in ["z<10:A", "x?10:A", "x:10"] {
+            assert!(matches!(input.parse::<Rule>(), Err(AocError::Invalid(_))));
+        }
+    }
+
+    #[test]
+    fn unknown_workflow_is_an_error() {
+        let solution_data: InputData = "in{nowhere}\n\n{x=1,m=1,a=1,s=1}".parse().unwrap();
+        assert!(matches!(
+            solution_data.solve_part1(),
+            Err(AocError::Invalid(_))
+        ));
+        assert!(matches!(
+            solution_data.solve_part2(),
+            Err(AocError::Invalid(_))
+        ));
     }
 }
