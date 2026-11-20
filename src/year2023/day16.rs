@@ -1,27 +1,26 @@
 //! # 2023 day 16 - The Floor Will Be Lava
 //!
-//! Creates a map of connections between all splitters/mirrors to avoid having to walk step by step every time.
-//! Slightly messy code, can probably be made prettier.
+//! Creates a map of connections between all splitters/mirrors to avoid having to walk step by step
+//! every time.
+use crate::aoc_util::{error::AocError, grid::Grid, point::*};
 use std::{
     collections::{HashMap, HashSet, VecDeque},
     error::Error,
     str::FromStr,
 };
 
-use crate::aoc_util::{grid::Grid, point::*};
-
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
     ))
 }
 
-type NextPoint = Option<(Point, Vec<Point>)>; // <Next point, new directions>
+type Edge = (Point, Vec<Point>); // <Next point, new directions>
 
 struct InputData {
-    nodes: HashMap<Point, HashMap<Point, NextPoint>>, // From point: {out_direction: next_point}
+    nodes: HashMap<(Point, Point), Edge>, // (point, direction) -> next point and new directions
     x_max: i32,
     y_max: i32,
 }
@@ -65,7 +64,7 @@ fn get_next_directions(c: &char, direction: &Point) -> Vec<Point> {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let grid = Grid::parse(s);
         let mut nodes = HashMap::new();
@@ -85,32 +84,22 @@ impl FromStr for InputData {
             points.push(Point::new(grid.x_max as i32, y));
         }
         for p in &points {
-            nodes.insert(*p, HashMap::new());
             // Find the closest neighbor in each direction that splits or bounces the light
             'neighbors: for d in &NEIGHBORS_STRAIGHT {
                 let mut next = *p + *d;
                 while let Some(n) = grid.get_element(&next) {
                     if bounces(&n, d) {
-                        nodes.entry(*p).and_modify(|directionmap| {
-                            directionmap.insert(*d, Some((next, get_next_directions(&n, d))));
-                        });
+                        nodes.insert((*p, *d), (next, get_next_directions(&n, d)));
                         continue 'neighbors;
                     }
                     next += *d;
                 }
                 // We reached the edge of the grid without hitting any bouncers
-                // Take a step back
+                // Take a step back. If we never moved, this node is already on the edge in this
+                // direction, so no edge is recorded and the light simply leaves the grid.
                 next -= *d;
                 if next != *p {
-                    // We moved at least one step
-                    nodes.entry(*p).and_modify(|directionmap| {
-                        directionmap.insert(*d, Some((next, Vec::new())));
-                    });
-                } else {
-                    // The node we started from is already on the edge in this direction
-                    nodes.entry(*p).and_modify(|directionmap| {
-                        directionmap.insert(*d, None);
-                    });
+                    nodes.insert((*p, *d), (next, Vec::new()));
                 }
             }
         }
@@ -123,17 +112,19 @@ impl FromStr for InputData {
 }
 
 impl InputData {
-    fn solve_part1(&self) -> usize {
+    /// Counts tiles reached by a beam starting at `(point, direction)`, following precomputed
+    /// edges until it leaves the grid or revisits a point/direction pair.
+    fn energized_from(&self, start: (Point, Point)) -> usize {
         let mut energized: HashSet<Point> = HashSet::new();
         let mut seen: HashSet<(Point, Point)> = HashSet::new();
-        let mut queue = VecDeque::from([(Point::new(-1, 0), RIGHT)]);
+        let mut queue = VecDeque::from([start]);
 
         while let Some((p, d)) = queue.pop_front() {
             if seen.contains(&(p, d)) {
                 continue;
             }
             seen.insert((p, d));
-            if let Some((next_p, next_d)) = self.nodes.get(&p).unwrap().get(&d).unwrap() {
+            if let Some((next_p, next_d)) = self.nodes.get(&(p, d)) {
                 let mut tile = p + d;
                 loop {
                     energized.insert(tile);
@@ -151,6 +142,10 @@ impl InputData {
         energized.len()
     }
 
+    fn solve_part1(&self) -> usize {
+        self.energized_from((Point::new(-1, 0), RIGHT))
+    }
+
     fn solve_part2(&self) -> usize {
         let mut starting_points = Vec::new();
         // Also insert all starting points one step outside the grid in each direction
@@ -162,36 +157,11 @@ impl InputData {
             starting_points.push((Point::new(-1, y), RIGHT));
             starting_points.push((Point::new(self.x_max, y), LEFT));
         }
-        let mut best = 0;
-
-        for s in &starting_points {
-            let mut energized: HashSet<Point> = HashSet::new();
-            let mut seen: HashSet<(Point, Point)> = HashSet::new();
-            let mut queue = VecDeque::from([*s]);
-
-            while let Some((p, d)) = queue.pop_front() {
-                if seen.contains(&(p, d)) {
-                    continue;
-                }
-                seen.insert((p, d));
-                if let Some((next_p, next_d)) = self.nodes.get(&p).unwrap().get(&d).unwrap() {
-                    let mut tile = p + d;
-                    loop {
-                        energized.insert(tile);
-                        if tile == *next_p {
-                            break;
-                        } else {
-                            tile += d;
-                        }
-                    }
-                    for n_d in next_d {
-                        queue.push_back((*next_p, *n_d));
-                    }
-                }
-            }
-            best = best.max(energized.len());
-        }
-        best
+        starting_points
+            .iter()
+            .map(|s| self.energized_from(*s))
+            .max()
+            .unwrap_or(0)
     }
 }
 
@@ -200,7 +170,7 @@ mod tests {
     use super::*;
 
     // Note: the test input needs to be adjusted to add an escape backslash before every backslash character
-    const TEST_DATA: &str = ".|...\\....
+    const TEST_OFFICIAL_1: &str = ".|...\\....
 |.-.\\.....
 .....|-...
 ........|.
@@ -212,14 +182,14 @@ mod tests {
 ..//.|....";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 46);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 51);
     }
 }
