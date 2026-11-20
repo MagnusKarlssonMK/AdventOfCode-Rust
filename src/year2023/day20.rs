@@ -2,7 +2,7 @@
 //!
 //! It would probably make more sense to model this with a Module enum instead, but I wanted to
 //! take the opportunity to mess around with the trait and dyn box system.
-use crate::aoc_util::math::lcm;
+use crate::aoc_util::{error::AocError, math::lcm};
 use std::{
     collections::{HashMap, VecDeque},
     error::Error,
@@ -10,7 +10,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let mut solution_data = InputData::from_str(input).unwrap();
+    let mut solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -137,15 +137,17 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut network: HashMap<String, Box<dyn ProcessSignal>> = HashMap::new();
         let mut conjunctions = HashMap::new();
         let mut rx_input = "".to_string();
         for line in s.lines() {
-            let (left, right) = line.split_once(" -> ").unwrap();
-            match left.chars().nth(0).unwrap() {
-                '%' => {
+            let (left, right) = line
+                .split_once(" -> ")
+                .ok_or_else(|| AocError::Invalid(format!("invalid line: {line}")))?;
+            match left.chars().nth(0) {
+                Some('%') => {
                     // Flip Flop
                     network.insert(
                         left[1..].to_string(),
@@ -156,7 +158,7 @@ impl FromStr for InputData {
                         }),
                     );
                 }
-                '&' => {
+                Some('&') => {
                     // Conjunction
                     network.insert(
                         left[1..].to_string(),
@@ -169,14 +171,18 @@ impl FromStr for InputData {
                     conjunctions.insert(left[1..].to_string(), vec![]);
                 }
                 _ => {
-                    // Broadcaster
-                    network.insert(
-                        left[0..].to_string(),
-                        Box::new(Broadcaster {
-                            name: left[0..].to_string(),
-                            outputs: right.split(", ").map(|s| s.to_string()).collect(),
-                        }),
-                    );
+                    if left == "broadcaster" {
+                        // Broadcaster
+                        network.insert(
+                            left[0..].to_string(),
+                            Box::new(Broadcaster {
+                                name: left[0..].to_string(),
+                                outputs: right.split(", ").map(|s| s.to_string()).collect(),
+                            }),
+                        );
+                    } else {
+                        return Err(AocError::Invalid(format!("invalid line: {line}")));
+                    }
                 }
             }
         }
@@ -194,9 +200,12 @@ impl FromStr for InputData {
             }
         }
         for (n, inputs) in &conjunctions {
+            let module = network
+                .get_mut(n)
+                .ok_or_else(|| AocError::Invalid(format!("conjunction {n} missing from network")))?;
             for i in inputs {
                 // Add the input to the conjunction's memory by inserting a low pulse and ignoring the returned output
-                network.get_mut(n).unwrap().handle_pulse(&Signal {
+                module.handle_pulse(&Signal {
                     receiver: n.to_string(),
                     sender: i.to_string(),
                     pulse: Pulse::Low,
@@ -260,13 +269,11 @@ impl InputData {
                 // Note - "rx" exists as receiver in the input, but not as sender, i.e. get_mut can return None
                 if let Some(module) = self.network.get_mut(&msg.receiver) {
                     for new_msg in module.handle_pulse(&msg) {
-                        if rx_input_inputs.contains_key(&msg.receiver)
-                            && *rx_input_inputs.get(&msg.receiver).unwrap() == 0
+                        if let Some(v) = rx_input_inputs.get_mut(&msg.receiver)
+                            && *v == 0
                             && new_msg.pulse == Pulse::High
                         {
-                            rx_input_inputs
-                                .entry(msg.receiver.to_string())
-                                .and_modify(|v| *v = push_count);
+                            *v = push_count;
                         }
                         msg_queue.push_back(new_msg);
                     }
@@ -282,25 +289,37 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = "broadcaster -> a, b, c
+    const TEST_OFFICIAL_1: &str = "broadcaster -> a, b, c
 %a -> b
 %b -> c
 %c -> inv
 &inv -> a";
-        let mut solution_data = InputData::from_str(testdata).unwrap();
-        assert_eq!(solution_data.solve_part1(), 32000000);
-    }
 
-    #[test]
-    fn part1_example_2() {
-        let testdata = "broadcaster -> a
+    const TEST_OFFICIAL_2: &str = "broadcaster -> a
 %a -> inv, con
 &inv -> b
 %b -> con
 &con -> output";
-        let mut solution_data = InputData::from_str(testdata).unwrap();
+
+    #[test]
+    fn part1_official_1() {
+        let mut solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        assert_eq!(solution_data.solve_part1(), 32000000);
+    }
+
+    #[test]
+    fn part1_official_2() {
+        let mut solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 11687500);
+    }
+
+    #[test]
+    fn parser_invalid_input() {
+        for input in ["broadcaster a, b", "?a -> b"] {
+            assert!(matches!(
+                input.parse::<InputData>(),
+                Err(AocError::Invalid(_))
+            ));
+        }
     }
 }
