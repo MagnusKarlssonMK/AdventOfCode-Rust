@@ -121,9 +121,9 @@ impl InputData {
             merged.push((low, high));
         }
 
-        let mut total: u64 = merged
+        let mut total: i64 = merged
             .iter()
-            .map(|&(low, high)| 1 + high as u64 - low as u64)
+            .map(|&(low, high)| 1 + i64::from(high) - i64::from(low))
             .sum();
         // Subtract 1 for every beacon inside those ranges
         let beacon_positions: HashSet<Point> = self
@@ -140,7 +140,7 @@ impl InputData {
                 total -= 1;
             }
         }
-        total
+        total as u64
     }
 
     fn position_is_dark(&self, pos: &Point) -> bool {
