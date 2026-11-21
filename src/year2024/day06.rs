@@ -11,7 +11,11 @@
 //! Then for part 2, iterate through each consecutive pair in the base path and put a
 //! temporary obstacle in the second point, then use the jump table to step through the
 //! grid and see if a loop is established. The number of loops found is the answer to part 2.
-use crate::aoc_util::{grid::Grid, point::*};
+use crate::aoc_util::{
+    error::{AocError, OptionExt},
+    grid::Grid,
+    point::*,
+};
 use std::{
     collections::{HashMap, HashSet},
     error::Error,
@@ -19,34 +23,33 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData {
     grid: Grid<char>,
+    guard_start_pos: Point,
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let grid = Grid::parse(s);
-        let mut obstacles = HashSet::new();
-        for (p, _) in grid.enumerate_points().filter(|(_, c)| **c == '#') {
-            obstacles.insert(p);
-        }
-        Ok(Self { grid })
+        let guard_start_pos = grid.find(&'^').ctx("guard start position missing")?;
+        Ok(Self {
+            grid,
+            guard_start_pos,
+        })
     }
 }
 
 impl InputData {
     fn solve(&self) -> (usize, usize) {
-        let guard_start_pos = self.grid.find(&'^').unwrap();
-
         // Simulate part 1 and record the base path
         let mut base_path: Vec<_> = Vec::new();
-        let mut guard = guard_start_pos;
+        let mut guard = self.guard_start_pos;
         let mut guard_dir = UP;
         while self.grid.get_element(&guard).is_some() {
             base_path.push((guard, guard_dir));
@@ -135,9 +138,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = "....#.....
+    const TEST_OFFICIAL_1: &str = "....#.....
 .........#
 ..........
 ..#.......
@@ -147,7 +148,10 @@ mod tests {
 ........#.
 #.........
 ......#...";
-        let solution_data = InputData::from_str(testdata).unwrap();
+
+    #[test]
+    fn parts1_2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 41);
         assert_eq!(p2, 6);
