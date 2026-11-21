@@ -1,8 +1,14 @@
 //! # 2024 day 5 - Print Queue
+//!
+//! Store the rules as a map from `(before, after)` pairs to `Less`. For each update, use
+//! `is_sorted_by` to check whether its pages are already in rule order and add the middle page to
+//! part 1. Otherwise, use `select_nth_unstable_by` with the same ordering to find the corrected
+//! middle page for part 2 without sorting the whole update.
+use crate::aoc_util::error::{AocError, OptionExt};
 use std::{cmp::Ordering, collections::HashMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -17,13 +23,15 @@ struct PageOrderingRules {
 }
 
 impl FromStr for PageOrderingRules {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut rules = HashMap::new();
         for line in s.lines() {
-            let (left, right) = line.split_once('|').unwrap();
-            let left: usize = left.parse().unwrap();
-            let right: usize = right.parse().unwrap();
+            let (left, right) = line
+                .split_once('|')
+                .ok_or_else(|| AocError::Invalid(format!("invalid rule: {line}")))?;
+            let left = left.parse()?;
+            let right = right.parse()?;
             rules.insert((left, right), Ordering::Less);
         }
         Ok(Self { rules })
@@ -57,15 +65,15 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (r, u) = s.split_once("\n\n").unwrap();
+        let (r, u) = s.split_once("\n\n").ctx("block separator missing")?;
         Ok(Self {
-            rules: PageOrderingRules::from_str(r).unwrap(),
+            rules: r.parse()?,
             updates: u
                 .lines()
-                .map(|line| line.split(',').map(|n| n.parse().unwrap()).collect())
-                .collect(),
+                .map(|line| line.split(',').map(|n| n.parse()).collect::<Result<_, _>>())
+                .collect::<Result<_, _>>()?,
         })
     }
 }
@@ -88,9 +96,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn parts1_2_example_1() {
-        let testdata = "47|53
+    const TEST_OFFICIAL_1: &str = "47|53
 97|13
 97|61
 97|47
@@ -118,7 +124,10 @@ mod tests {
 75,97,47,61,53
 61,13,29
 97,13,75,29,47";
-        let solution_data = InputData::from_str(testdata).unwrap();
+
+    #[test]
+    fn parts1_2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 143);
         assert_eq!(p2, 123);
