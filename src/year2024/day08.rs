@@ -1,12 +1,11 @@
 //! # 2024 day 8 - Resonant Collinearity
 //!
-//! Solves both part 1 and part 2 in one go. For all points belonging to
-//! the same frequency (grid character), loop through the pair combinations
-//! and generate their antinode-points until both points are outside the grid.
-//! Add those antinode-points to hashsets and determine the answers to the
-//! respective part from their final lengths. Remember that also the original
-//! nodes needs to be included for the part2 calculation.
-use crate::aoc_util::point::*;
+//! Solves both part 1 and part 2 in one go. For all points belonging to the same frequency (grid
+//! character), loop through the pair combinations and generate their antinode-points until both
+//! points are outside the grid. Add those antinode-points to hashsets and determine the answers to
+//! the respective part from their final lengths. Remember that also the original nodes needs to be
+//! included for the part2 calculation.
+use crate::aoc_util::{error::AocError, grid::Grid, point::*};
 use std::{
     collections::{HashMap, HashSet},
     error::Error,
@@ -14,7 +13,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -41,29 +40,17 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let grid = Grid::parse(s);
         let mut antennas = HashMap::new();
-        let mut map_height = 0;
-        let mut map_width = 0;
-        for (y, line) in s.lines().enumerate() {
-            map_height += 1;
-            if y == 0 {
-                map_width = line.len();
-            }
-            for (x, c) in line.chars().enumerate() {
-                if c != '.' {
-                    antennas
-                        .entry(c)
-                        .or_insert_with(Vec::new)
-                        .push(Point::new(x as i32, y as i32));
-                }
-            }
+        for (p, &c) in grid.enumerate_points().filter(|(_, c)| **c != '.') {
+            antennas.entry(c).or_insert_with(Vec::new).push(p);
         }
         Ok(Self {
             antennas,
-            map_width,
-            map_height,
+            map_width: grid.x_max,
+            map_height: grid.y_max,
         })
     }
 }
@@ -111,9 +98,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = "............
+    const TEST_OFFICIAL_1: &str = "............
 ........0...
 .....0......
 .......0....
@@ -125,7 +110,10 @@ mod tests {
 .........A..
 ............
 ............";
-        let solution_data = InputData::from_str(testdata).unwrap();
+
+    #[test]
+    fn parts1_2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 14);
         assert_eq!(p2, 34);
