@@ -1,53 +1,59 @@
 //! # 2024 day 11 - Plutonian Pebbles
 //!
-//! Solves both parts in the same loop, since part 2 simply requires way more
-//! iterations of the same method. Since the number of stones will quickly become
-//! enormous but many will have the same value, the stones are stored in a hash-map
-//! rather than a vector, with the stone's number as key and number of stones with
-//! that number as value. Despite the desceptive description, the order of the stones
-//! is actually not important!
+//! Solves both parts in the same loop, since part 2 simply requires way more iterations of the
+//! same method. Since the number of stones will quickly become enormous but many will have the
+//! same value, the stones are stored in a hash-map rather than a vector, with the stone's number
+//! as key and number of stones with that number as value. Despite the desceptive description, the
+//! order of the stones is actually not important!
+use crate::aoc_util::error::AocError;
 use std::{collections::HashMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve(25, 75);
     Ok((p1.to_string(), p2.to_string()))
 }
 
 struct InputData {
-    stones: Vec<usize>,
+    stones: Vec<u64>,
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            stones: s.split_whitespace().map(|n| n.parse().unwrap()).collect(),
+            stones: s
+                .split_whitespace()
+                .map(|n| n.parse())
+                .collect::<Result<_, _>>()?,
         })
     }
 }
 
 impl InputData {
-    fn solve(&self, blinks1: usize, blinks2: usize) -> (usize, usize) {
-        let mut p1 = None;
-        let mut p2 = None;
-        let mut blink_counter = 0;
-        let mut stones: HashMap<usize, usize> = self.stones.iter().map(|n| (*n, 1)).collect();
-        while p1.is_none() || p2.is_none() {
-            blink_counter += 1;
+    fn solve(&self, blinks1: usize, blinks2: usize) -> (u64, u64) {
+        let mut stones: HashMap<u64, u64> = HashMap::new();
+        for n in &self.stones {
+            stones.entry(*n).and_modify(|v| *v += 1).or_insert(1);
+        }
+        let mut p1 = stones.values().sum();
+        let mut p2 = p1;
+
+        for blink_counter in 1..=blinks1.max(blinks2) {
             stones = blink(&stones);
-            if p1.is_none() && blink_counter == blinks1 {
-                p1 = Some(stones.values().sum());
+            if blink_counter == blinks1 {
+                p1 = stones.values().sum();
             }
-            if p2.is_none() && blink_counter == blinks2 {
-                p2 = Some(stones.values().sum());
+            if blink_counter == blinks2 {
+                p2 = stones.values().sum();
             }
         }
-        (p1.unwrap(), p2.unwrap())
+
+        (p1, p2)
     }
 }
 
-fn blink(stones: &HashMap<usize, usize>) -> HashMap<usize, usize> {
+fn blink(stones: &HashMap<u64, u64>) -> HashMap<u64, u64> {
     let mut newstones = HashMap::new();
     for (stone, val) in stones.iter() {
         if *stone == 0 {
@@ -58,7 +64,7 @@ fn blink(stones: &HashMap<usize, usize>) -> HashMap<usize, usize> {
         } else {
             let digits = 1 + stone.ilog10();
             if digits % 2 == 0 {
-                let power = 10_usize.pow(digits / 2);
+                let power = 10u64.pow(digits / 2);
                 newstones
                     .entry(stone / power)
                     .and_modify(|v| *v += *val)
@@ -83,19 +89,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part1_example_1() {
-        let testdata = "0 1 10 99 999";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = "0 1 10 99 999".parse().unwrap();
         let (p1, _) = solution_data.solve(1, 1);
         assert_eq!(p1, 7);
     }
 
     #[test]
-    fn part1_example_2() {
-        let testdata = "125 17";
-        let solution_data = InputData::from_str(testdata).unwrap();
+    fn parts1_2_official_2() {
+        let solution_data: InputData = "125 17".parse().unwrap();
         let (p1, p2) = solution_data.solve(6, 25);
         assert_eq!(p1, 22);
         assert_eq!(p2, 55312);
+    }
+
+    #[test]
+    fn parts1_2_duplicate_stones() {
+        let solution_data: InputData = "1 1".parse().unwrap();
+        let (p1, p2) = solution_data.solve(1, 1);
+        assert_eq!(p1, 2);
+        assert_eq!(p2, 2);
     }
 }
