@@ -1,12 +1,11 @@
 //! # 2024 day 10 - Hoof It
 //!
-//! Solves both parts in one go by using BFS to find trails, but with the
-//! simplification that there is no need to keep track of previously visited
-//! nodes. Since the only valid neighbors have a value of +1, all paths
-//! generated during the traversal are guaranteed to be unique. Thus the answer
-//! to part 2 is given by the number of times the number 9 is found, and the
-//! answer to part 1 by throwing all the points found for each trailhead into
-//! a hashset and then calculating its length.
+//! Solves both parts in one go by using BFS to find trails, but with the simplification that there
+//! is no need to keep track of previously visited nodes. Since the only valid neighbors have a
+//! value of +1, all paths generated during the traversal are guaranteed to be unique. Thus the
+//! answer to part 2 is given by the number of times the number 9 is found, and the answer to
+//! part 1 by throwing all the points found for each trailhead into a hashset and then calculating
+//! its length.
 use crate::aoc_util::{error::*, grid::*, point::*};
 use std::{
     collections::{HashSet, VecDeque},
@@ -48,18 +47,17 @@ impl InputData {
         let mut totalrating = 0;
         for head in &self.trailheads {
             let mut peaks = HashSet::new();
-            let mut queue: VecDeque<Point> = VecDeque::new();
-            queue.push_back(*head);
-            while let Some(current) = queue.pop_front() {
-                if self.map.get_element(&current).unwrap() == 9 {
+            let mut queue: VecDeque<_> = VecDeque::from([(*head, 0)]);
+            while let Some((current, value)) = queue.pop_front() {
+                if value == 9 {
                     peaks.insert(current);
                     totalrating += 1;
                 } else {
                     for neighbor in NEIGHBORS_STRAIGHT.map(|dir| dir + current) {
-                        if let Some(neighbor_val) = self.map.get_element(&neighbor)
-                            && neighbor_val == self.map.get_element(&current).unwrap() + 1
+                        if let Some(&neighbor_val) = self.map.get_ref(&neighbor)
+                            && neighbor_val == value + 1
                         {
-                            queue.push_back(neighbor);
+                            queue.push_back((neighbor, neighbor_val));
                         }
                     }
                 }
@@ -75,20 +73,12 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn parts1_2_example_1() {
-        let testdata = "0123
+    const TEST_OFFICIAL_1: &str = "0123
 1234
 8765
 9876";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        let (p1, _) = solution_data.solve();
-        assert_eq!(p1, 1);
-    }
 
-    #[test]
-    fn parts1_2_example_2() {
-        let testdata = "89010123
+    const TEST_OFFICIAL_2: &str = "89010123
 78121874
 87430965
 96549874
@@ -96,7 +86,17 @@ mod tests {
 32019012
 01329801
 10456732";
-        let solution_data = InputData::from_str(testdata).unwrap();
+
+    #[test]
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        let (p1, _) = solution_data.solve();
+        assert_eq!(p1, 1);
+    }
+
+    #[test]
+    fn parts1_2_official_2() {
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 36);
         assert_eq!(p2, 81);
