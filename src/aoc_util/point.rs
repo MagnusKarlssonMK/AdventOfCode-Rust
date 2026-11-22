@@ -3,6 +3,7 @@
 //! Provides a struct and some useful functions for managing a 2D point in x-y plane.
 //!
 //! Similar functionality is provided for a 3D point in x-y-z plane.
+use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 use std::str::FromStr;
@@ -64,6 +65,13 @@ impl Point {
     #[inline]
     pub fn cross(&self, other: &Self) -> i64 {
         (self.x as i64 * other.y as i64) - (self.y as i64 * other.x as i64)
+    }
+}
+
+/// Formats the point as `x,y`.
+impl fmt::Display for Point {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{},{}", self.x, self.y)
     }
 }
 
@@ -156,6 +164,13 @@ impl Point3D {
         (self.x - other.x).unsigned_abs() as usize
             + (self.y - other.y).unsigned_abs() as usize
             + (self.z - other.z).unsigned_abs() as usize
+    }
+}
+
+/// Formats the point as `x,y,z`.
+impl fmt::Display for Point3D {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{},{},{}", self.x, self.y, self.z)
     }
 }
 
