@@ -1,4 +1,16 @@
 //! # 2024 day 16 - Reindeer Maze
+//!
+//! ## Part 1
+//!
+//! Dijkstra over states of (position, direction): moving forward costs 1, turning 90 degrees
+//! costs 1000. Keep the cheapest cost per state, then take the cheapest cost at the exit.
+//!
+//! ## Part 2
+//!
+//! Backtrack from each exit state that reached that cheapest cost. A predecessor is valid when
+//! its stored distance matches the reverse step (cost - 1 for a move, cost - 1000 for a turn).
+//! The union of positions visited across all such paths is the set of good seats.
+use crate::aoc_util::error::{AocError, OptionExt};
 use crate::aoc_util::{grid::*, point::*};
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashSet, VecDeque};
@@ -6,7 +18,7 @@ use std::error::Error;
 use std::str::FromStr;
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -32,7 +44,7 @@ struct State {
 
 impl Ord for State {
     fn cmp(&self, other: &Self) -> Ordering {
-        other.cost.cmp(&self.cost).then_with(|| Ordering::Less)
+        other.cost.cmp(&self.cost)
     }
 }
 
@@ -49,11 +61,11 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let maze = Grid::parse(s);
-        let start = maze.find(&'S').unwrap();
-        let exit = maze.find(&'E').unwrap();
+        let start = maze.find(&'S').ctx("start point not found")?;
+        let exit = maze.find(&'E').ctx("exit point not found")?;
         Ok(Self { maze, start, exit })
     }
 }
@@ -120,15 +132,21 @@ impl InputData {
             if p == self.start {
                 continue;
             }
+            let turn_cost = v.checked_sub(1000);
             let next = [
-                (p - d, d, v - 1),
-                (p, d.rotate_left(), v - 1000),
-                (p, d.rotate_right(), v - 1000),
+                Some((p - d, d, v - 1)),
+                turn_cost.map(|v| (p, d.rotate_left(), v)),
+                turn_cost.map(|v| (p, d.rotate_right(), v)),
             ];
-            for (np, nd, nv) in next {
-                if dist[self.maze.get_index(&np)][nd.dir_to_idx()] == nv {
+            for (np, nd, nv) in next.into_iter().flatten() {
+                if self.maze.get_ref(&np).is_none() {
+                    continue;
+                }
+                let idx = self.maze.get_index(&np);
+                let dir = nd.dir_to_idx();
+                if dist[idx][dir] == nv {
                     queue.push_back((np, nd, nv));
-                    dist[self.maze.get_index(&np)][nd.dir_to_idx()] = usize::MAX;
+                    dist[idx][dir] = usize::MAX;
                 }
             }
         }
@@ -141,9 +159,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_2_example_1() {
-        let testdata = "###############
+    const TEST_OFFICIAL_1: &str = "###############
 #.......#....E#
 #.#.###.#.###.#
 #.....#.#...#.#
@@ -158,15 +174,8 @@ mod tests {
 #.###.#.#.#.#.#
 #S..#.....#...#
 ###############";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        let (p1, p2) = solution_data.solve();
-        assert_eq!(p1, 7036);
-        assert_eq!(p2, 45);
-    }
 
-    #[test]
-    fn part1_2_example_2() {
-        let testdata = "#################
+    const TEST_OFFICIAL_2: &str = "#################
 #...#...#...#..E#
 #.#.#.#.#.#.#.#.#
 #.#.#.#...#...#.#
@@ -183,7 +192,18 @@ mod tests {
 #.#.#.#########.#
 #S#.............#
 #################";
-        let solution_data = InputData::from_str(testdata).unwrap();
+
+    #[test]
+    fn parts1_2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
+        let (p1, p2) = solution_data.solve();
+        assert_eq!(p1, 7036);
+        assert_eq!(p2, 45);
+    }
+
+    #[test]
+    fn parts1_2_official_2() {
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 11048);
         assert_eq!(p2, 64);
