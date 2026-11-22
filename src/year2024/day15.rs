@@ -2,19 +2,23 @@
 //!
 //! ## Part 1
 //!
-//! Uses recursion to investigate each move, and performs the move immediately if found
-//! to be possible.
+//! Uses recursion to investigate each move, and performs the move immediately if found to be
+//! possible.
 //!
 //! ## Part 2
 //!
-//! After expanding the map, horizontal moves are still performed as in part 1. However
-//! for vertical moves, we first need to completely check if the move is possible before
-//! carrying it out, since it can now branch out sideways. This check is also done recursively,
-//! storing the nodes investigated in a hashmap. If the move passes the check, the hashmap
-//! is used to swap those nodes in the direction of the move, by going through the elements
-//! and finding the ones with empty space above and swapping. The number of nodes involved
-//! is mostly quite low, so we can get away with such a simplistic approach.
-use crate::aoc_util::{grid::*, point::*};
+//! After expanding the map, horizontal moves are still performed as in part 1. However for
+//! vertical moves, we first need to completely check if the move is possible before carrying it
+//! out, since it can now branch out sideways. This check is also done recursively, storing the
+//! nodes investigated in a hashmap. If the move passes the check, the hashmap is used to swap
+//! those nodes in the direction of the move, by going through the elements and finding the ones
+//! with empty space above and swapping. The number of nodes involved is mostly quite low, so we
+//! can get away with such a simplistic approach.
+use crate::aoc_util::{
+    error::{AocError, OptionExt},
+    grid::*,
+    point::*,
+};
 use std::{
     collections::{HashSet, VecDeque},
     error::Error,
@@ -22,7 +26,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -34,7 +38,7 @@ impl Grid<char> {
     fn make_wide(&self) -> Self {
         let x_max = 2 * self.x_max;
         let y_max = self.y_max;
-        let mut elements = Vec::with_capacity(2 * x_max * y_max);
+        let mut elements = Vec::with_capacity(x_max * y_max);
         self.elements.iter().for_each(|c| match c {
             '@' => {
                 elements.push(*c);
@@ -56,24 +60,27 @@ impl Grid<char> {
         }
     }
 
+    #[inline]
+    fn swap_points(&mut self, p1: &Point, p2: &Point) {
+        let i1 = self.get_index(p1);
+        let i2 = self.get_index(p2);
+        self.elements.swap(i1, i2);
+    }
+
     fn move_simple(&mut self, pos: &Point, dir: &Point) -> bool {
         let nextpos = *pos + *dir;
         match self.get_element(&nextpos) {
             Some('#') | None => false,
             Some('O') | Some('[') | Some(']') => {
                 if self.move_simple(&nextpos, dir) {
-                    let i1 = self.get_index(pos);
-                    let i2 = self.get_index(&nextpos);
-                    self.elements.swap(i1, i2);
+                    self.swap_points(pos, &nextpos);
                     true
                 } else {
                     false
                 }
             }
             _ => {
-                let i1 = self.get_index(pos);
-                let i2 = self.get_index(&nextpos);
-                self.elements.swap(i1, i2);
+                self.swap_points(pos, &nextpos);
                 true
             }
         }
@@ -81,16 +88,15 @@ impl Grid<char> {
 
     fn move_double(&mut self, pos: &HashSet<Point>, dir: &Point) {
         let mut queue = VecDeque::from_iter(pos.iter());
-        while !queue.is_empty() {
+        while let Some(&from_point) = queue.front() {
             // Move the elements that have empty space on top, keep rotating the queue
             // until one of those nodes are in the first position.
-            let from_point = *queue.front().unwrap();
             let to_point = *from_point + *dir;
-            if self.get_element(&to_point).unwrap() == '.' {
+            if let Some(v) = self.get_ref(&to_point)
+                && *v == '.'
+            {
                 queue.pop_front();
-                let from = self.get_index(from_point);
-                let to = self.get_index(&to_point);
-                self.elements.swap(from, to);
+                self.swap_points(from_point, &to_point);
             } else {
                 queue.rotate_left(1);
             }
@@ -119,13 +125,13 @@ impl Grid<char> {
 
 impl Point {
     #[inline]
-    fn from_dir(input: char) -> Option<Self> {
+    fn from_dir(input: char) -> Result<Self, AocError> {
         match input {
-            '>' => Some(RIGHT),
-            '^' => Some(UP),
-            'v' => Some(DOWN),
-            '<' => Some(LEFT),
-            _ => None, // There are line breaks in the input!
+            '>' => Ok(RIGHT),
+            '^' => Ok(UP),
+            'v' => Ok(DOWN),
+            '<' => Ok(LEFT),
+            _ => Err(AocError::Invalid(format!("invalid direction: {input}"))),
         }
     }
 }
@@ -137,15 +143,19 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (boxstr, movestr) = s.split_once("\n\n").unwrap();
+        let (boxstr, movestr) = s.split_once("\n\n").ctx("missing block separator")?;
         let grid = Grid::parse(boxstr);
-        let robot = grid.find(&'@').unwrap();
+        let robot = grid.find(&'@').ctx("robot missing in grid")?;
         Ok(Self {
             grid,
             robot,
-            moves: movestr.chars().filter_map(Point::from_dir).collect(),
+            moves: movestr
+                .chars()
+                .filter(|&c| c != '\n') // There are line breaks in the input
+                .map(Point::from_dir)
+                .collect::<Result<_, _>>()?,
         })
     }
 }
@@ -160,11 +170,9 @@ impl InputData {
             }
         }
         bumped_grid
-            .elements
-            .iter()
-            .enumerate()
-            .filter(|(_, e)| **e == 'O')
-            .map(|(i, _)| 100 * (i / bumped_grid.x_max) + i % bumped_grid.x_max)
+            .enumerate_points()
+            .filter(|&(_, e)| *e == 'O')
+            .map(|(p, _)| 100 * p.y as usize + p.x as usize)
             .sum()
     }
 
@@ -187,11 +195,9 @@ impl InputData {
             }
         }
         bumped_grid
-            .elements
-            .iter()
-            .enumerate()
-            .filter(|(_, e)| **e == '[')
-            .map(|(i, _)| 100 * (i / bumped_grid.x_max) + i % bumped_grid.x_max)
+            .enumerate_points()
+            .filter(|&(_, e)| *e == '[')
+            .map(|(p, _)| 100 * p.y as usize + p.x as usize)
             .sum()
     }
 }
@@ -200,7 +206,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA_1: &str = "########
+    const TEST_OFFICIAL_1: &str = "########
 #..O.O.#
 ##@.O..#
 #...O..#
@@ -210,7 +216,7 @@ mod tests {
 ########
 
 <^^>>>vv<v>>v<<";
-    const TEST_DATA_2: &str = "##########
+    const TEST_OFFICIAL_2: &str = "##########
 #..O..O.O#
 #......O.#
 #.OO..O.O#
@@ -231,7 +237,8 @@ vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
 <><^^>^^^<><vvvvv^v<v<<>^v<v>v<<^><<><<><<<^^<<<^<<>><<><^^^>^^<>^>v<>
 ^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
 v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^";
-    const TEST_DATA_3: &str = "#######
+
+    const TEST_OFFICIAL_3: &str = "#######
 #...#.#
 #.....#
 #..OO@#
@@ -242,26 +249,26 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^";
 <vv<<^^<<^^";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA_1).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 2028);
     }
 
     #[test]
-    fn part1_example_2() {
-        let solution_data = InputData::from_str(TEST_DATA_2).unwrap();
+    fn part1_official_2() {
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 10092);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA_3).unwrap();
-        assert_eq!(solution_data.solve_part2(), 105 + 207 + 306);
+    fn part2_official_2() {
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
+        assert_eq!(solution_data.solve_part2(), 9021);
     }
 
     #[test]
-    fn part2_example_2() {
-        let solution_data = InputData::from_str(TEST_DATA_2).unwrap();
-        assert_eq!(solution_data.solve_part2(), 9021);
+    fn part2_official_3() {
+        let solution_data: InputData = TEST_OFFICIAL_3.parse().unwrap();
+        assert_eq!(solution_data.solve_part2(), 105 + 207 + 306);
     }
 }
