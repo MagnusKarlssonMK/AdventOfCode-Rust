@@ -1,18 +1,21 @@
 //! # 2024 day 20 - Race Condition
 //!
-//! Parses the grid and stores the non-wall points in a vector in the order
-//! according to THE path from S to E (there is only a single possible path
-//! without cheats).
+//! Parses the grid and stores the non-wall points in a vector in the order according to THE path
+//! from S to E (there is only a single possible path without cheats).
 //!
-//! Then the number of cheats can be found by for each point on the path compare
-//! the manhattan distance with the points 100+ indices away in the vector,
-//! and if that manhattan distance is <=(2/20) and the gain after compensating
-//! with the travel cost for that distance is still 100+, we found a cheat.
+//! Then the number of cheats can be found by for each point on the path compare the manhattan
+//! distance with the points 100+ indices away in the vector, and if that manhattan distance
+//! is <=(2/20) and the gain after compensating with the travel cost for that distance is still
+//! 100+, we found a cheat.
 //!
-//! Although this is already decently fast, since the solution is calculated on
-//! data that doesn't change after parsing, using this to as an opportunity
-//! to check out multi-threading.
-use crate::aoc_util::{grid::*, point::*, thread::*};
+//! Although this is already decently fast, since the solution is calculated on data that doesn't
+//! change after parsing, using this as an opportunity to check out multi-threading.
+use crate::aoc_util::{
+    error::{AocError, OptionExt},
+    grid::*,
+    point::*,
+    thread::*,
+};
 use std::{
     error::Error,
     str::FromStr,
@@ -20,7 +23,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -32,30 +35,24 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let grid = Grid::parse(s);
-        let start = grid.find(&'S').unwrap();
-        let end = grid.find(&'E').unwrap();
+        let start = grid.find(&'S').ctx("start point missing")?;
+        let end = grid.find(&'E').ctx("end point missing")?;
         let mut grid_path = vec![start];
-        while *grid_path.last().unwrap() != end {
-            for neighbor in NEIGHBORS_STRAIGHT
+        while let Some(&v) = grid_path.last()
+            && v != end
+        {
+            let next = NEIGHBORS_STRAIGHT
                 .iter()
-                .map(|&n| *grid_path.last().unwrap() + n)
-            {
-                if let Some(e) = grid.get_element(&neighbor) {
-                    if e == '#' {
-                        continue;
-                    }
-                    if let Some(previous) = grid_path.get(grid_path.len().wrapping_sub(2))
-                        && *previous == neighbor
-                    {
-                        continue;
-                    }
-                    grid_path.push(neighbor);
-                    break;
-                }
-            }
+                .map(|&n| v + n)
+                .find(|neighbor| {
+                    grid.get_ref(neighbor).is_some_and(|&e| e != '#')
+                        && grid_path.iter().rev().nth(1) != Some(neighbor)
+                })
+                .ctx("no path from start to end")?;
+            grid_path.push(next);
         }
         Ok(Self { path: grid_path })
     }
@@ -75,8 +72,8 @@ impl InputData {
             let p = self.path[i];
             cheats += (i + gain..self.path.len())
                 .filter(|&j| {
-                    p.manhattan(&self.path[j]) <= cheat_steps
-                        && j - i - p.manhattan(&self.path[j]) >= gain
+                    let distance = p.manhattan(&self.path[j]);
+                    distance <= cheat_steps && j - i - distance >= gain
                 })
                 .count() as u32;
         }
@@ -96,7 +93,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "###############
+    const TEST_OFFICIAL_1: &str = "###############
 #...#...#.....#
 #.#.#.#.#.###.#
 #S#...#.#.#...#
@@ -113,8 +110,8 @@ mod tests {
 ###############";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.find_cheats(2, 2), 44);
         assert_eq!(solution_data.find_cheats(2, 4), 30);
         assert_eq!(solution_data.find_cheats(2, 6), 16);
@@ -129,8 +126,8 @@ mod tests {
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.find_cheats(20, 50), 285);
         assert_eq!(solution_data.find_cheats(20, 52), 253);
         assert_eq!(solution_data.find_cheats(20, 54), 222);
@@ -145,5 +142,12 @@ mod tests {
         assert_eq!(solution_data.find_cheats(20, 72), 29);
         assert_eq!(solution_data.find_cheats(20, 74), 7);
         assert_eq!(solution_data.find_cheats(20, 76), 3);
+    }
+
+    #[test]
+    fn parser_no_path() {
+        let test_input = "#######\n#S.#.E#\n#######";
+        let err = test_input.parse::<InputData>();
+        assert!(matches!(err, Err(AocError::Invalid(_))));
     }
 }
