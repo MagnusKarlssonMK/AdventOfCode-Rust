@@ -1,10 +1,11 @@
 //! # 2024 day 19 - Linen Layout
 //!
 //! Recursive solution with memo, solving both parts in one go.
+use crate::aoc_util::error::{AocError, OptionExt};
 use std::{collections::HashMap, error::Error};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::try_from(input).unwrap();
+    let solution_data = InputData::try_from(input)?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -15,9 +16,9 @@ struct InputData<'a> {
 }
 
 impl<'a> TryFrom<&'a str> for InputData<'a> {
-    type Error = ();
+    type Error = AocError;
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
-        let (p, d) = s.split_once("\n\n").unwrap();
+        let (p, d) = s.split_once("\n\n").ctx("block separator missing")?;
         Ok(Self {
             patterns: p.split(", ").collect(),
             designs: d.lines().collect(),
@@ -26,26 +27,24 @@ impl<'a> TryFrom<&'a str> for InputData<'a> {
 }
 
 impl InputData<'_> {
-    fn solve(&self) -> (usize, usize) {
-        let seen = &mut HashMap::new();
-        let result: Vec<usize> = self
-            .designs
-            .iter()
-            .map(|design| self.process_designs(seen, design))
-            .collect();
-        (
-            result.iter().filter(|n| **n > 0).count(),
-            result.iter().sum(),
-        )
+    fn solve(&self) -> (usize, u64) {
+        let mut seen = HashMap::new();
+        let mut possible = 0;
+        let total = self.designs.iter().fold(0, |acc, d| {
+            let count = self.process_designs(&mut seen, d);
+            possible += (count > 0) as usize;
+            acc + count
+        });
+        (possible, total)
     }
 
-    fn process_designs<'b>(&self, seen: &mut HashMap<&'b str, usize>, design: &'b str) -> usize {
+    fn process_designs<'b>(&self, seen: &mut HashMap<&'b str, u64>, design: &'b str) -> u64 {
         if design.is_empty() {
             1
         } else if let Some(cache) = seen.get(design) {
             *cache
         } else {
-            let count: usize = self
+            let count = self
                 .patterns
                 .iter()
                 .filter_map(|p| design.strip_prefix(p))
@@ -61,9 +60,7 @@ impl InputData<'_> {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = "r, wr, b, g, bwu, rb, gb, br
+    const TEST_OFFICIAL_1: &str = "r, wr, b, g, bwu, rb, gb, br
 
 brwrr
 bggr
@@ -73,7 +70,10 @@ ubwu
 bwurrg
 brgr
 bbrgwb";
-        let solution_data = InputData::try_from(testdata).unwrap();
+
+    #[test]
+    fn parts1_2_official_1() {
+        let solution_data = InputData::try_from(TEST_OFFICIAL_1).unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 6);
         assert_eq!(p2, 16);
