@@ -2,26 +2,22 @@
 //!
 //! ## Part 1
 //!
-//! Uses the BD algorithm (Brain Dead) - put all instructions in a queue
-//! and cycle through it, gradually ripping out the items that have both
-//! inputs mapped, and keep doing that until the queue is empty. Then
-//! extract the Z-items from all the mapped numbers and bitshift into a
-//! number. It... works.
+//! Pretty straightforward approach - put all instructions in a queue and cycle through it,
+//! gradually ripping out the items that have both inputs mapped, and keep doing that until the
+//! queue is empty. Then extract the Z-items from all the mapped numbers and bitshift into a
+//! number.
 //!
 //! ## Part 2
 //!
-//! BD approach kind of got an anwer in the end, but nothing I'd like to
-//! keep around. So instead resorting to reading up on Ripple Carry Adder
-//! to work out something simpler:
+//! The approach in part 1 can get the job done to brute-force it, but VERY slowly. So instead I
+//! resorted to reading up on Ripple Carry Adder to work out something more efficient:
 //!
-//! - All correct AND gates except for the first one will be connected to
-//!   an OR gate.
-//! - Only XOR gates can connect to output, except for an OR gate for the
-//!   last one.
-//! - A correct OR gate can never connect to another OR gate
-//! - Except for the first XOR, a correct XOR will connect to another XOR,
-//!   which in turn connects to output.
-
+//! - All correct AND gates except for the first one will be connected to an OR gate.
+//! - Only XOR gates can connect to output, except for an OR gate for the last one.
+//! - A correct OR gate can never connect to another OR gate.
+//! - Except for the first XOR, a correct XOR will connect to another XOR, which in turn connects
+//!   to output.
+use crate::aoc_util::error::{AocError, OptionExt};
 use std::{
     collections::{HashMap, HashSet, VecDeque},
     error::Error,
@@ -29,7 +25,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::try_from(input).unwrap();
+    let solution_data = InputData::try_from(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2(),
@@ -44,19 +40,19 @@ enum Operation {
 }
 
 impl FromStr for Operation {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "AND" => Ok(Self::And),
             "OR" => Ok(Self::Or),
             "XOR" => Ok(Self::Xor),
-            _ => Err(()),
+            _ => Err(AocError::Invalid(format!("invalid operation: {s}"))),
         }
     }
 }
 
 impl Operation {
-    const fn process(&self, a: usize, b: usize) -> usize {
+    const fn process(&self, a: u64, b: u64) -> u64 {
         match self {
             Self::And => a & b,
             Self::Or => a | b,
@@ -73,14 +69,26 @@ struct Gate<'b> {
 }
 
 impl<'b> TryFrom<&'b str> for Gate<'b> {
-    type Error = ();
+    type Error = AocError;
     fn try_from(s: &'b str) -> Result<Self, Self::Error> {
         let mut tokens = s.split_whitespace();
-        let in_a = tokens.next().unwrap();
-        let op = Operation::from_str(tokens.next().unwrap()).unwrap();
-        let in_b = tokens.next().unwrap();
-        tokens.next();
-        let out = tokens.next().unwrap();
+        let in_a = tokens
+            .next()
+            .ok_or_else(|| AocError::Invalid(format!("invalid gate: {s}")))?;
+        let op = tokens
+            .next()
+            .ok_or_else(|| AocError::Invalid(format!("invalid gate: {s}")))?
+            .parse()?;
+        let in_b = tokens
+            .next()
+            .ok_or_else(|| AocError::Invalid(format!("invalid gate: {s}")))?;
+        let arrow = tokens.next().ctx("missing '->' in gate")?;
+        if arrow != "->" {
+            return Err(AocError::Invalid(format!("invalid gate: {s}")));
+        }
+        let out = tokens
+            .next()
+            .ok_or_else(|| AocError::Invalid(format!("invalid gate: {s}")))?;
         Ok(Self {
             in_a,
             in_b,
@@ -91,25 +99,22 @@ impl<'b> TryFrom<&'b str> for Gate<'b> {
 }
 
 struct InputData<'a> {
-    initial_values: Vec<(&'a str, usize)>,
+    initial_values: Vec<(&'a str, u64)>,
     gates: Vec<Gate<'a>>,
 }
 
 impl<'a> TryFrom<&'a str> for InputData<'a> {
-    type Error = ();
+    type Error = AocError;
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
-        let (iv, g) = s.split_once("\n\n").unwrap();
+        let (iv, g) = s.split_once("\n\n").ctx("block separator missing")?;
         let initial_values = iv
             .lines()
             .map(|line| {
-                let (left, right) = line.split_once(": ").unwrap();
-                (left, right.parse::<usize>().unwrap())
+                let (name, value) = line.split_once(": ").ctx("missing ': ' in initial value")?;
+                Ok((name, value.parse::<u64>()?))
             })
-            .collect();
-        let gates = g
-            .lines()
-            .map(|line| Gate::try_from(line).unwrap())
-            .collect();
+            .collect::<Result<Vec<_>, AocError>>()?;
+        let gates = g.lines().map(Gate::try_from).collect::<Result<_, _>>()?;
         Ok(Self {
             initial_values,
             gates,
@@ -118,8 +123,8 @@ impl<'a> TryFrom<&'a str> for InputData<'a> {
 }
 
 impl InputData<'_> {
-    fn solve_part1(&self) -> usize {
-        let mut wires: HashMap<&str, usize> = HashMap::new();
+    fn solve_part1(&self) -> u64 {
+        let mut wires: HashMap<&str, u64> = HashMap::new();
         self.initial_values.iter().for_each(|(iv_name, iv_val)| {
             wires.insert(iv_name, *iv_val);
         });
@@ -134,7 +139,7 @@ impl InputData<'_> {
                 wires.insert(g.out, g.op.process(wires[g.in_a], wires[g.in_b]));
             }
         }
-        let mut z = 0;
+        let mut z = 0u64;
         for (wire, val) in wires {
             if let Some(rest) = wire.strip_prefix('z')
                 && let Ok(nbr) = rest.parse::<usize>()
