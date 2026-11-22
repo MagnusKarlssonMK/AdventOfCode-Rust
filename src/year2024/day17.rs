@@ -1,11 +1,23 @@
 //! # 2024 day 17 - Chronospatial Computer
+//!
+//! ## Part 1
+//!
+//! Run the small VM (all instructions are opcode + operand) on the given registers and collect its
+//! output.
+//!
+//! ## Part 2
+//!
+//! Rebuild the required initial value of register A three bits at a time, working backwards
+//! through the program: extend each surviving candidate with every 3-bit value and keep those
+//! whose first output byte matches the current program digit.
+use crate::aoc_util::error::{AocError, OptionExt};
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
-        solution_data.solve_part1(),
-        solution_data.solve_part2().to_string(),
+        solution_data.solve_part1()?,
+        solution_data.solve_part2()?.to_string(),
     ))
 }
 
@@ -37,15 +49,15 @@ impl Opcodes {
 }
 
 struct Computer {
-    a: usize,
-    b: usize,
-    c: usize,
+    a: u64,
+    b: u64,
+    c: u64,
     program: Vec<u8>,
     i_p: usize,
 }
 
 impl Computer {
-    fn new(a: usize, b: usize, c: usize, program: &[u8]) -> Self {
+    fn new(a: u64, b: u64, c: u64, program: &[u8]) -> Self {
         Self {
             a,
             b,
@@ -55,131 +67,118 @@ impl Computer {
         }
     }
 
-    fn reboot(&mut self, new_a: usize) {
+    fn reboot(&mut self, new_a: u64) {
         self.a = new_a;
         self.b = 0;
         self.c = 0;
         self.i_p = 0;
     }
 
-    fn get_combo_op(&self, n: u8) -> Option<usize> {
+    fn get_combo_op(&self, n: u8) -> Result<u64, AocError> {
         match n {
-            0..=3 => Some(n as usize),
-            4 => Some(self.a),
-            5 => Some(self.b),
-            6 => Some(self.c),
-            _ => None,
+            0..=3 => Ok(n as u64),
+            4 => Ok(self.a),
+            5 => Ok(self.b),
+            6 => Ok(self.c),
+            _ => Err(AocError::Invalid(format!("invalid combo op: {n}"))),
         }
     }
 
-    fn run(&mut self) -> Vec<u8> {
+    fn run(&mut self) -> Result<Vec<u8>, AocError> {
         let mut out = Vec::new();
-        while (0..self.program.len()).contains(&self.i_p) {
-            if let Some(op) = Opcodes::from_nbr(self.program[self.i_p]) {
-                match op {
-                    Opcodes::Adv => {
-                        let v = self.get_combo_op(self.program[self.i_p + 1]).unwrap();
-                        self.a /= 2_usize.pow(v as u32);
+        while self.i_p < self.program.len() {
+            let op = Opcodes::from_nbr(self.program[self.i_p]).ctx("invalid opcode")?;
+            let operand = *self.program.get(self.i_p + 1).ctx("missing operand")?;
+            match op {
+                Opcodes::Adv => {
+                    let v = self.get_combo_op(operand)?;
+                    self.a /= 2_u64.pow(v as u32);
+                    self.i_p += 2;
+                }
+                Opcodes::Bxl => {
+                    self.b ^= operand as u64;
+                    self.i_p += 2;
+                }
+                Opcodes::Bst => {
+                    self.b = self.get_combo_op(operand)? % 8;
+                    self.i_p += 2;
+                }
+                Opcodes::Jnz => {
+                    if self.a == 0 {
                         self.i_p += 2;
+                    } else {
+                        self.i_p = operand as usize;
                     }
-                    Opcodes::Bxl => {
-                        let v = self.program[self.i_p + 1] as usize;
-                        self.b ^= v;
-                        self.i_p += 2;
-                    }
-                    Opcodes::Bst => {
-                        self.b = self.get_combo_op(self.program[self.i_p + 1]).unwrap() % 8;
-                        self.i_p += 2;
-                    }
-                    Opcodes::Jnz => {
-                        if self.a == 0 {
-                            self.i_p += 2;
-                        } else {
-                            self.i_p = self.program[self.i_p + 1] as usize;
-                        }
-                    }
-                    Opcodes::Bxc => {
-                        self.b ^= self.c;
-                        self.i_p += 2;
-                    }
-                    Opcodes::Out => {
-                        let v = self.get_combo_op(self.program[self.i_p + 1]).unwrap();
-                        out.push((v % 8) as u8);
-                        self.i_p += 2;
-                    }
-                    Opcodes::Bdv => {
-                        let v = self.get_combo_op(self.program[self.i_p + 1]).unwrap();
-                        self.b = self.a / 2_usize.pow(v as u32);
-                        self.i_p += 2;
-                    }
-                    Opcodes::Cdv => {
-                        let v = self.get_combo_op(self.program[self.i_p + 1]).unwrap();
-                        self.c = self.a / 2_usize.pow(v as u32);
-                        self.i_p += 2;
-                    }
+                }
+                Opcodes::Bxc => {
+                    self.b ^= self.c;
+                    self.i_p += 2;
+                }
+                Opcodes::Out => {
+                    let v = self.get_combo_op(operand)?;
+                    out.push((v % 8) as u8);
+                    self.i_p += 2;
+                }
+                Opcodes::Bdv => {
+                    let v = self.get_combo_op(operand)?;
+                    self.b = self.a / 2_u64.pow(v as u32);
+                    self.i_p += 2;
+                }
+                Opcodes::Cdv => {
+                    let v = self.get_combo_op(operand)?;
+                    self.c = self.a / 2_u64.pow(v as u32);
+                    self.i_p += 2;
                 }
             }
         }
-        out
+        Ok(out)
     }
 }
 
 struct InputData {
-    reg_a: usize,
-    reg_b: usize,
-    reg_c: usize,
+    reg_a: u64,
+    reg_b: u64,
+    reg_c: u64,
     program: Vec<u8>,
 }
 
+/// Consumes the next non-empty line and returns the value after `prefix`.
+fn parse_line<'a>(
+    lines: &mut impl Iterator<Item = &'a str>,
+    prefix: &str,
+) -> Result<&'a str, AocError> {
+    lines
+        .next()
+        .ctx("missing line")?
+        .strip_prefix(prefix)
+        .ctx("unexpected field label")
+}
+
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (regs, prog) = s.split_once("\n\n").unwrap();
-        let mut regs = regs.lines();
-        let reg_a = regs
-            .next()
-            .unwrap()
-            .strip_prefix("Register A: ")
-            .unwrap()
-            .parse()
-            .unwrap();
-        let reg_b = regs
-            .next()
-            .unwrap()
-            .strip_prefix("Register B: ")
-            .unwrap()
-            .parse()
-            .unwrap();
-        let reg_c = regs
-            .next()
-            .unwrap()
-            .strip_prefix("Register C: ")
-            .unwrap()
-            .parse()
-            .unwrap();
+        let mut lines = s.lines().filter(|line| !line.is_empty());
         Ok(Self {
-            reg_a,
-            reg_b,
-            reg_c,
-            program: prog
-                .strip_prefix("Program: ")
-                .unwrap()
+            reg_a: parse_line(&mut lines, "Register A: ")?.parse()?,
+            reg_b: parse_line(&mut lines, "Register B: ")?.parse()?,
+            reg_c: parse_line(&mut lines, "Register C: ")?.parse()?,
+            program: parse_line(&mut lines, "Program: ")?
                 .split(',')
-                .map(|c| c.parse().unwrap())
-                .collect(),
+                .map(str::parse)
+                .collect::<Result<_, _>>()?,
         })
     }
 }
 
 impl InputData {
-    fn solve_part1(&self) -> String {
+    fn solve_part1(&self) -> Result<String, AocError> {
         let mut computer = Computer::new(self.reg_a, self.reg_b, self.reg_c, &self.program);
-        let out = computer.run();
+        let out = computer.run()?;
         let result: String = out.iter().map(|n| n.to_string() + ",").collect();
-        result.strip_suffix(',').unwrap().to_string()
+        Ok(result.trim_end_matches(',').to_string())
     }
 
-    fn solve_part2(&self) -> usize {
+    fn solve_part2(&self) -> Result<u64, AocError> {
         let mut solutions = vec![0];
         let mut computer = Computer::new(self.reg_a, self.reg_b, self.reg_c, &self.program);
         // Add digit by digit in the program in reverse order
@@ -191,7 +190,7 @@ impl InputData {
                 for i in 0..8 {
                     let test_a = (nbr << 3) | i;
                     computer.reboot(test_a);
-                    if computer.run()[0] == *p_digit {
+                    if computer.run()?.first() == Some(p_digit) {
                         subprogram.push(test_a);
                     }
                 }
@@ -199,7 +198,7 @@ impl InputData {
             solutions = subprogram;
         }
         // Choose the smallest value found
-        *solutions.iter().min().unwrap()
+        solutions.iter().min().copied().ok_or(AocError::NoSolution)
     }
 }
 
@@ -207,28 +206,68 @@ impl InputData {
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_example_1() {
-        let testdata = "Register A: 729
+    const TEST_OFFICIAL_1: &str = "Register A: 729
 Register B: 0
 Register C: 0
 
 Program: 0,1,5,4,3,0";
-        let solution_data = InputData::from_str(testdata).unwrap();
+
+    const TEST_OFFICIAL_2: &str = "Register A: 2024
+Register B: 0
+Register C: 0
+
+Program: 0,3,5,4,3,0";
+
+    #[test]
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(
-            solution_data.solve_part1(),
+            solution_data.solve_part1().unwrap(),
             "4,6,3,5,6,3,5,2,1,0".to_string()
         );
     }
 
     #[test]
-    fn part2_example_1() {
-        let testdata = "Register A: 2024
-Register B: 0
-Register C: 0
+    fn part2_official_2() {
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
+        assert_eq!(solution_data.solve_part2().unwrap(), 117440);
+    }
 
-Program: 0,3,5,4,3,0";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), 117440);
+    #[test]
+    fn parser_invalid_input() {
+        for input in [
+            "",
+            "Register A: 1\nRegister B: 2\nRegister C: 3",
+            "Register A: 1\nRegister B: 2\nWrong: 3\n\nProgram: 0,1",
+        ] {
+            assert!(matches!(
+                input.parse::<InputData>(),
+                Err(AocError::Invalid(_))
+            ));
+        }
+
+        let input = "Register A: x\nRegister B: 2\nRegister C: 3\n\nProgram: 0,1";
+        assert!(matches!(
+            input.parse::<InputData>(),
+            Err(AocError::ParseInt(_))
+        ));
+    }
+
+    #[test]
+    fn program_without_operand_is_invalid() {
+        let input = "Register A: 1\nRegister B: 0\nRegister C: 0\n\nProgram: 0";
+        let solution_data: InputData = input.parse().unwrap();
+        assert!(matches!(
+            solution_data.solve_part1(),
+            Err(AocError::Invalid(_))
+        ));
+    }
+
+    #[test]
+    fn program_without_output_has_no_solution() {
+        let input = "Register A: 1\nRegister B: 0\nRegister C: 0\n\nProgram: 0,1";
+        let solution_data: InputData = input.parse().unwrap();
+        assert_eq!(solution_data.solve_part1().unwrap(), "");
+        assert_eq!(solution_data.solve_part2(), Err(AocError::NoSolution));
     }
 }
