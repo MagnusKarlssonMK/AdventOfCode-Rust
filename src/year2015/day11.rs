@@ -1,16 +1,16 @@
 //! # 2015 day 11 - Corporate Policy
 //!
-//! Kind of a brute force solution, simply incrementing the password until it reaches
-//! a valid value.
+//! Kind of a brute force solution, simply incrementing the password until it reaches a valid
+//! value.
 //!
-//! There could be optimizations made to increment in larger interval chunks by evaluating
-//! the current password more intelligently. But the current solution is still decently fast
-//! on modern hardware.
+//! There could be optimizations made to increment in larger interval chunks by evaluating the
+//! current password more intelligently. But the current solution is still decently fast on modern
+//! hardware.
 use crate::aoc_util::error::AocError;
 use std::{collections::HashSet, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1, p2))
 }
@@ -33,7 +33,7 @@ impl FromStr for InputData {
             Err(AocError::Invalid("too short".to_string()))
         } else {
             Ok(Self {
-                current_password: s.chars().map(|c| c as u8 - OFFSET_VAL).collect(),
+                current_password: s.bytes().map(|c| c - OFFSET_VAL).collect(),
             })
         }
     }
@@ -114,7 +114,7 @@ mod tests {
 
     #[test]
     fn part1_2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, "abcdffaa");
         assert_eq!(p2, "abcdffbb");
@@ -122,7 +122,7 @@ mod tests {
 
     #[test]
     fn part1_2_official_2() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_2).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, "ghjaabcc");
         assert_eq!(p2, "ghjbbcdd");
@@ -130,7 +130,7 @@ mod tests {
 
     #[test]
     fn part1_2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, "aabcc");
         assert_eq!(p2, "bbcdd");
@@ -138,7 +138,7 @@ mod tests {
 
     #[test]
     fn part1_2_custom_3() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_2).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_2.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, "aabcck");
         assert_eq!(p2, "aabccm");
@@ -146,7 +146,7 @@ mod tests {
 
     #[test]
     fn part1_2_custom_4() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_3).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_3.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, "aaaaabcc");
         assert_eq!(p2, "aaaabbcd");
@@ -154,13 +154,13 @@ mod tests {
 
     #[test]
     fn parse_invalid_input() {
-        let err = InputData::from_str("abcDefgh").unwrap_err();
+        let err = "abcDefgh".parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid("invalid char".to_string()));
 
-        let err = InputData::from_str("abc{efgh").unwrap_err();
+        let err = "abc{efgh".parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid("invalid char".to_string()));
 
-        let err = InputData::from_str("abce").unwrap_err();
+        let err = "abce".parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid("too short".to_string()));
     }
 }

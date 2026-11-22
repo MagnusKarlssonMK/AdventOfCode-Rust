@@ -1,11 +1,10 @@
 //! # 2017 day 4 - High-Entropy Passphrases
 //!
-//! Split each passphrase into words. Part 1 counts passphrases where all words
-//! are unique. Part 2 counts passphrases where no word is an anagram of
-//! another, which is checked by sorting the letters of each word.
-use std::{collections::HashSet, error::Error};
-
+//! Split each passphrase into words. Part 1 counts passphrases where all words are unique. Part 2
+//! counts passphrases where no word is an anagram of another, which is checked by sorting the
+//! letters of each word.
 use crate::aoc_util::error::AocError;
+use std::{collections::HashSet, error::Error};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data = InputData::try_from(input)?;

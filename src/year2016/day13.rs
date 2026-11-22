@@ -2,9 +2,9 @@
 //!
 //! Simple BFS solution, solving both parts in one sweep.
 //!
-//! Returns AocError::NoSolution if the part 1 target can't be reached in a finite
-//! grid. Has no guard for a theoretical case where the part 1 target is enclosed
-//! and unreachable in an otherwise infinite grid.
+//! Returns AocError::NoSolution if the part 1 target can't be reached in a finite grid. Has no
+//! guard for a theoretical case where the part 1 target is enclosed and unreachable in an
+//! otherwise infinite grid.
 use crate::aoc_util::{error::*, point::*};
 use std::{
     collections::{HashSet, VecDeque},
@@ -13,7 +13,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve(&PART_1_TARGET_POINT)?;
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -91,7 +91,7 @@ mod tests {
 
     #[test]
     fn part1_2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve(&Point::new(7, 4)).unwrap();
         assert_eq!(p1, 11);
         assert_eq!(p2, 151);
@@ -100,14 +100,14 @@ mod tests {
     #[test]
     fn part1_2_official_1_no_p1_solution() {
         // Official favorite number has no solution for part 1 with the real target point
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let err = solution_data.solve(&PART_1_TARGET_POINT).unwrap_err();
         assert_eq!(err, AocError::NoSolution);
     }
 
     #[test]
     fn parser_non_integer() {
-        let err = InputData::from_str("3r").unwrap_err();
+        let err = "3r".parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::ParseInt(_)));
     }
 }

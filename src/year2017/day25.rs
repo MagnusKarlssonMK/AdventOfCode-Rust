@@ -1,7 +1,7 @@
 //! # 2017 day 25 - The Halting Problem
 //!
-//! Brute forcing the simulation using a hashset to store current ones on the tape. The main headache
-//! is parsing the input file.
+//! Brute forcing the simulation using a hashset to store current ones on the tape. The main
+//! headache is parsing the input file.
 use crate::aoc_util::error::*;
 use std::{
     collections::{HashMap, HashSet},
@@ -10,7 +10,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((solution_data.solve_part1()?.to_string(), "-".to_string()))
 }
 
@@ -179,7 +179,7 @@ In state B:
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1().unwrap(), 3);
     }
 }

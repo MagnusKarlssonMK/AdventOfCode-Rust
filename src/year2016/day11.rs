@@ -1,10 +1,11 @@
 //! # 2016 day 11 - Radioisotope Thermoelectric Generators
 //!
-//! Basically a BFS solution, where the most important realization to get decent speed is that the isotope names are not
-//! important in terms of state space, so instead we throw away the names and store the isotopes as pairs of current
-//! floor of its microchip and its generator. (Not doing this abstraction causes the state space to explode with
-//! different permutations of isotopes in the same overall state, just different names on the corresponding positions).
-//! For part 2, simply add 2 isotopes with both generators and microchips on the first floor and run again.
+//! Basically a BFS solution, where the most important realization to get decent speed is that the
+//! isotope names are not important in terms of state space, so instead we throw away the names and
+//! store the isotopes as pairs of current floor of its microchip and its generator. (Not doing
+//! this abstraction causes the state space to explode with different permutations of isotopes in
+//! the same overall state, just different names on the corresponding positions). For part 2,
+//! simply add 2 isotopes with both generators and microchips on the first floor and run again.
 use crate::aoc_util::error::*;
 use std::{
     collections::{HashMap, HashSet, VecDeque},
@@ -13,7 +14,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),
         solution_data.solve_part2()?.to_string(),
@@ -169,7 +170,7 @@ impl FromStr for InputData {
             isotopes: items
                 .values()
                 .map(|floors| Isotope::new(floors))
-                .collect::<Result<Vec<Isotope>, _>>()?,
+                .collect::<Result<_, _>>()?,
             top_floor,
         })
     }
@@ -253,19 +254,19 @@ The third floor contains nothing relevant.";
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1().unwrap(), 11);
     }
 
     #[test]
     fn part1_official_2() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_2).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part1().unwrap(), 25);
     }
 
     #[test]
     fn part1_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(
             solution_data.solve_part1().unwrap_err(),
             AocError::NoSolution
@@ -274,19 +275,19 @@ The third floor contains nothing relevant.";
 
     #[test]
     fn part1_custom_2() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_2).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_2.parse().unwrap();
         assert_eq!(solution_data.solve_part1().unwrap(), 8);
     }
 
     #[test]
     fn part2_official_2() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_2).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part2().unwrap(), 49);
     }
 
     #[test]
     fn parser_missing_microchip() {
-        let err = InputData::from_str(TEST_PARSER_1).unwrap_err();
+        let err = TEST_PARSER_1.parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid("microchip floor".to_string()));
     }
 }

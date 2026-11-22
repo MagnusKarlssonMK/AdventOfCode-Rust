@@ -1,10 +1,9 @@
 //! # 2017 day 7 - Recursive Circus
+use crate::aoc_util::error::AocError;
 use std::{collections::HashMap, error::Error, str::FromStr};
 
-use crate::aoc_util::error::AocError;
-
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1(),
         solution_data.solve_part2().to_string(),
@@ -169,25 +168,25 @@ E (35)";
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), String::from("tknk"));
     }
 
     #[test]
     fn part1_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), String::from("A"));
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 60);
     }
 
     #[test]
     fn part2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 5);
     }
 }

@@ -5,8 +5,8 @@
 //! Takes the input grid, finds the digits and runs a BFS for each one to map out the distances
 //! between them all, and store it in a distance matrix.
 //!
-//! Then to solve the problem, Held-Karp algorithm is used to find the shortest paths for
-//! both part 1 and part 2 in one go.
+//! Then to solve the problem, Held-Karp algorithm is used to find the shortest paths for both
+//! part 1 and part 2 in one go.
 use crate::aoc_util::{error::*, grid::Grid, point::*};
 use std::{
     collections::{HashMap, HashSet, VecDeque},
@@ -15,7 +15,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -178,7 +178,7 @@ mod tests {
 
     #[test]
     fn part1_2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 14);
         assert_eq!(p2, 20);
@@ -186,7 +186,7 @@ mod tests {
 
     #[test]
     fn parser_isolated_nodes() {
-        let err = InputData::from_str(TEST_CUSTOM_ISOLATED).unwrap_err();
+        let err = TEST_CUSTOM_ISOLATED.parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::Invalid(_)));
     }
 }

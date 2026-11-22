@@ -1,15 +1,14 @@
 //! # 2018 day 4 - Repose Record
 //!
-//! Parse chronological guard shift records to track when each guard falls asleep and
-//! wakes up. Build a minute-by-minute sleep count per guard. Part 1 finds the guard
-//! with the most total minutes asleep and returns their ID times the minute they
-//! sleep most. Part 2 finds the guard who sleeps most frequently on a single minute
-//! and returns their ID times that minute.
+//! Parse chronological guard shift records to track when each guard falls asleep and wakes up.
+//! Build a minute-by-minute sleep count per guard. Part 1 finds the guard with the most total
+//! minutes asleep and returns their ID times the minute they sleep most. Part 2 finds the guard
+//! who sleeps most frequently on a single minute and returns their ID times that minute.
 use crate::aoc_util::error::*;
 use std::{collections::BTreeMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -158,7 +157,7 @@ mod tests {
 
     #[test]
     fn part1_2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 240);
         assert_eq!(p2, 4455);
@@ -166,7 +165,7 @@ mod tests {
 
     #[test]
     fn part1_2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 5);
         assert_eq!(p2, 5);

@@ -1,14 +1,14 @@
 //! # 2018 day 9 - Marble Mania
 //!
-//! Simply runs the simulation according to the problem description, but rather than keeping
-//! track of current position, the circle (represented by a VecDeque) is rotated so that the
-//! current position is always the first element. Not the most efficient way to do it, but
-//! gets the job done in a decent time.
+//! Simply runs the simulation according to the problem description, but rather than keeping track
+//! of current position, the circle (represented by a VecDeque) is rotated so that the current
+//! position is always the first element. Not the most efficient way to do it, but gets the job
+//! done in a decent time.
 use crate::aoc_util::error::*;
 use std::{collections::VecDeque, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -99,43 +99,43 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 8317);
     }
 
     #[test]
     fn part1_official_2() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_2).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 146373);
     }
 
     #[test]
     fn part1_official_3() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_3).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_3.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 2764);
     }
 
     #[test]
     fn part1_official_4() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_4).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_4.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 54718);
     }
 
     #[test]
     fn part1_official_5() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_5).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_5.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 37305);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 74765078);
     }
 
     #[test]
     fn part1_2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 32);
         assert_eq!(solution_data.solve_part2(), 22563);
     }

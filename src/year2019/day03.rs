@@ -2,12 +2,14 @@
 //!
 //! ## Part 1
 //!
-//! We can find all intersections by putting all coordinates in sets for each wire, and then find the
-//! common points. Then the answer is given by the smallest manhattan distance from origin to intersection.
+//! We can find all intersections by putting all coordinates in sets for each wire, and then find
+//! the common points. Then the answer is given by the smallest manhattan distance from origin to
+//! intersection.
 //!
 //! ## Part 2
 //!
-//! We can get the distances by finding the index of each intersection's coordinate in the wire lists.
+//! We can get the distances by finding the index of each intersection's coordinate in the wire
+//! lists.
 use crate::aoc_util::{
     error::{AocError, OptionExt},
     point::*,

@@ -1,15 +1,14 @@
 //! # 2016 day 21 - Scrambled Letters and Hash
 //!
-//! Part 1 applies the scrambling operations in order. Part 2 walks the operations
-//! in reverse order and applies the inverse of each one. All operations are
-//! trivially invertible except "rotate based on position of letter", whose rotation
-//! amount depends on the letter's index *before* the rotation, so its inverse has to
-//! be searched for.
+//! Part 1 applies the scrambling operations in order. Part 2 walks the operations in reverse order
+//! and applies the inverse of each one. All operations are trivially invertible except "rotate
+//! based on position of letter", whose rotation amount depends on the letter's index *before* the
+//! rotation, so its inverse has to be searched for.
 use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1(PART_1_PASSWORD)?,
         solution_data.solve_part2(PART_2_PASSWORD)?,
@@ -176,7 +175,7 @@ impl FromStr for InputData {
             operations: s
                 .lines()
                 .map(Operation::from_str)
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<_, _>>()?,
         })
     }
 }
@@ -239,13 +238,13 @@ rotate based on position of letter d";
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1("abcde").unwrap(), "decab");
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2("decab").unwrap(), "abcde");
     }
 

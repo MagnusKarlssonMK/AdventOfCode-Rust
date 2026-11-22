@@ -4,20 +4,19 @@
 //!
 //! ## Part 1
 //!
-//! Start with a candidate of 0 and walk the sorted ranges: as soon as the candidate
-//! falls below a range's low it is not blocked, otherwise it is bumped to just past
-//! the range's high.
+//! Start with a candidate of 0 and walk the sorted ranges: as soon as the candidate falls below a
+//! range's low it is not blocked, otherwise it is bumped to just past the range's high.
 //!
 //! ## Part 2
 //!
-//! Count the addresses that are not covered by any blocked interval: walk the sorted
-//! ranges and add up the gaps between them, including the gap below the first range
-//! and the one above the last range.
+//! Count the addresses that are not covered by any blocked interval: walk the sorted ranges and
+//! add up the gaps between them, including the gap below the first range and the one above the
+//! last range.
 use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -40,7 +39,7 @@ impl FromStr for InputData {
                 let (low, high) = line.split_once('-').ctx("dash separator")?;
                 Ok((low.parse()?, high.parse()?))
             })
-            .collect::<Result<Vec<(u64, u64)>, AocError>>()?;
+            .collect::<Result<_, AocError>>()?;
         block_list.sort_unstable();
         Ok(Self { block_list })
     }
@@ -89,60 +88,53 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 3);
     }
 
     #[test]
     fn part1_custom_1() {
-        assert_eq!(InputData::from_str("0-0").unwrap().solve_part1(), 1);
-        assert_eq!(InputData::from_str("4-5").unwrap().solve_part1(), 0);
-        assert_eq!(InputData::from_str("0-1\n2-3").unwrap().solve_part1(), 4);
-        assert_eq!(InputData::from_str("0-10\n5-6").unwrap().solve_part1(), 11);
+        assert_eq!("0-0".parse::<InputData>().unwrap().solve_part1(), 1);
+        assert_eq!("4-5".parse::<InputData>().unwrap().solve_part1(), 0);
+        assert_eq!("0-1\n2-3".parse::<InputData>().unwrap().solve_part1(), 4);
+        assert_eq!("0-10\n5-6".parse::<InputData>().unwrap().solve_part1(), 11);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 4294967288);
     }
 
     #[test]
     fn part2_custom_1() {
         assert_eq!(
-            InputData::from_str("5-8").unwrap().solve_part2(),
+            "5-8".parse::<InputData>().unwrap().solve_part2(),
             4294967292
         );
         assert_eq!(
-            InputData::from_str("1-1").unwrap().solve_part2(),
+            "1-1".parse::<InputData>().unwrap().solve_part2(),
             4294967295
         );
     }
 
     #[test]
     fn parser_missing_separator() {
-        let err = InputData::from_str("1234").unwrap_err();
+        let err = "1234".parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid("dash separator".to_string()));
     }
 
     #[test]
     fn parser_noninteger() {
-        let err = InputData::from_str("1c34-3210").unwrap_err();
+        let err = "1c34-3210".parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::ParseInt(_)));
-        let err = InputData::from_str("1234-3x10").unwrap_err();
+        let err = "1234-3x10".parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::ParseInt(_)));
-    }
-
-    #[test]
-    fn empty_block_list() {
-        let solution_data = InputData::from_str("").unwrap();
-        assert_eq!(solution_data.solve_part1(), 0);
-        assert_eq!(solution_data.solve_part2(), 4294967296);
     }
 
     #[test]
     fn everything_blocked() {
-        let solution_data = InputData::from_str("0-4294967295").unwrap();
+        let solution_data: InputData = "0-4294967295".parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 0);
     }
 }

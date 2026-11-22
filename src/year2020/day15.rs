@@ -1,8 +1,8 @@
 //! # 2020 day 15 - Rambunctious Recitation
 //!
-//! Basically the Van Eck sequence. Seems to require brute-forcing, so part 2
-//! is really slow and uses a lot of RAM to keep track of the counters for each
-//! number. Use u32 rather than usize to at least keep it somewhat under control.
+//! Basically the Van Eck sequence. Seems to require brute-forcing, so part 2 is really slow and
+//! uses a lot of RAM to keep track of the counters for each number. Use u32 rather than usize to
+//! at least keep it somewhat under control.
 use crate::aoc_util::error::AocError;
 use std::{collections::HashMap, error::Error, str::FromStr};
 

@@ -2,15 +2,15 @@
 //!
 //! ## Part 1
 //!
-//! Stores the infected nodes in a HashSet and simply plays the game-of-life for the
-//! specified number of rounds, adding and removing nodes along the way, counting how
-//! many times nodes gets infected.
+//! Stores the infected nodes in a HashSet and simply plays the game-of-life for the specified
+//! number of rounds, adding and removing nodes along the way, counting how many times nodes gets
+//! infected.
 //!
 //! ## Part 2
 //!
-//! Uses a `NodeState` to apply to each infected node which is now stored in a HashMap
-//! instead. Once a node becomes clean, it is removed from the map, thus there is no
-//! clean value needed in the enum.
+//! Uses a `NodeState` to apply to each infected node which is now stored in a HashMap instead.
+//! Once a node becomes clean, it is removed from the map, thus there is no clean value needed in
+//! the enum.
 use crate::aoc_util::{error::*, grid::Grid, point::*};
 use std::{
     collections::{HashMap, HashSet},
@@ -19,7 +19,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1(PART_1_BURSTS).to_string(),
         solution_data.solve_part2(PART_2_BURSTS).to_string(),
@@ -119,14 +119,14 @@ mod tests {
 ...";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(PART_1_BURSTS), 5587);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(100), 26);
     }
 }

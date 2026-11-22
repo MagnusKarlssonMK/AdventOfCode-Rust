@@ -7,7 +7,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -156,89 +156,89 @@ mod tests {
     use super::*;
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 1000 * 1000);
     }
 
     #[test]
     fn part1_official_2() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_2).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 1000);
     }
 
     #[test]
     fn part1_official_3() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_3).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_3.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 1000 * 1000 - 4);
     }
 
     #[test]
     fn part1_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 1000000);
     }
 
     #[test]
     fn part1_custom_3() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_3).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_3.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
     fn part1_custom_5() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_5).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_5.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 1000);
     }
 
     #[test]
     fn part2_official_4() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_4).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_4.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 1);
     }
 
     #[test]
     fn part2_official_5() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_5).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_5.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 2000000);
     }
 
     #[test]
     fn part2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 3000000);
     }
 
     #[test]
     fn part2_custom_2() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_2).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_2.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 0);
     }
 
     #[test]
     fn part2_custom_3() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_3).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_3.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 4000000);
     }
 
     #[test]
     fn part2_custom_4() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_4).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_4.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 1000000);
     }
 
     #[test]
     fn parser_unknown_operation() {
         let s1 = "turn middle 0,0 through 999,999";
-        let err1 = InputData::from_str(s1).unwrap_err();
+        let err1 = s1.parse::<InputData>().unwrap_err();
         assert_eq!(err1, AocError::Invalid(s1.to_string()));
-        let err2 = InputData::from_str("turn").unwrap_err();
+        let err2 = "turn".parse::<InputData>().unwrap_err();
         assert_eq!(err2, AocError::Invalid("turn".to_string()));
     }
 
     #[test]
     fn parser_invalid_coordinates() {
         let s1 = "turn middle 0,0 through 999999";
-        let err1 = InputData::from_str(s1).unwrap_err();
+        let err1 = s1.parse::<InputData>().unwrap_err();
         assert_eq!(err1, AocError::Invalid(s1.to_string()));
     }
 }

@@ -96,7 +96,7 @@ impl<'a> TryFrom<&'a str> for InputData<'a> {
             rooms: value
                 .lines()
                 .map(Room::try_from)
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<_, _>>()?,
         })
     }
 }

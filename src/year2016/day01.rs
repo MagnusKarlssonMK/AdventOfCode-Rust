@@ -3,7 +3,7 @@ use crate::aoc_util::{error::AocError, point::*};
 use std::{collections::HashSet, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse().unwrap();
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2()?.to_string(),
@@ -58,20 +58,21 @@ impl FromStr for InputData {
             instructions: s
                 .split(", ")
                 .map(Instruction::from_str)
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<_, _>>()?,
         })
     }
 }
 
 impl InputData {
     fn solve_part1(&self) -> usize {
-        let mut pos = ORIGIN;
         let mut direction = UP;
-        for instr in &self.instructions {
-            let steps = instr.apply(&mut direction);
-            pos += direction * steps as i32;
-        }
-        pos.manhattan(&ORIGIN)
+        self.instructions
+            .iter()
+            .fold(ORIGIN, |acc, instr| {
+                let steps = instr.apply(&mut direction);
+                acc + direction * steps as i32
+            })
+            .manhattan(&ORIGIN)
     }
 
     fn solve_part2(&self) -> Result<usize, AocError> {
@@ -98,78 +99,63 @@ mod tests {
     use super::*;
     #[test]
     fn part1_official_1() {
-        let testdata = "R2, L3";
-        let solution_data = InputData::from_str(testdata).unwrap();
+        let solution_data: InputData = "R2, L3".parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 5);
     }
 
     #[test]
     fn part1_official_2() {
-        let testdata = "R2, R2, R2";
-        let solution_data = InputData::from_str(testdata).unwrap();
+        let solution_data: InputData = "R2, R2, R2".parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
     fn part1_official_3() {
-        let testdata = "R5, L5, R5, R3";
-        let solution_data = InputData::from_str(testdata).unwrap();
+        let solution_data: InputData = "R5, L5, R5, R3".parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 12);
     }
 
     #[test]
     fn part2_official_1() {
-        let testdata = "R8, R4, R4, R8";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), Ok(4));
+        let solution_data: InputData = "R8, R4, R4, R8".parse().unwrap();
+        assert_eq!(solution_data.solve_part2().unwrap(), 4);
     }
 
     #[test]
     fn part2_custom_1() {
-        let testdata = "R1, L1, L1, L1, R3";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), Ok(0));
+        let solution_data: InputData = "R1, L1, L1, L1, R3".parse().unwrap();
+        assert_eq!(solution_data.solve_part2().unwrap(), 0);
     }
 
     #[test]
     fn part2_custom_2() {
-        let testdata = "L1, L1, R1, R1, R1";
-        let solution_data = InputData::from_str(testdata).unwrap();
-        assert_eq!(solution_data.solve_part2(), Ok(1));
+        let solution_data: InputData = "L1, L1, R1, R1, R1".parse().unwrap();
+        assert_eq!(solution_data.solve_part2().unwrap(), 1);
     }
 
     #[test]
     fn parser_invalid_int() {
-        let testdata = "R32, LT4, L8";
-        let err = InputData::from_str(testdata).unwrap_err();
-        assert!(matches!(err, AocError::ParseInt(_)));
+        for input in ["R32, LT4, L8", "R32, L-4, L8"] {
+            assert!(matches!(
+                input.parse::<InputData>(),
+                Err(AocError::ParseInt(_))
+            ))
+        }
     }
 
     #[test]
-    fn parser_too_short() {
-        let testdata = "R32, L, L8";
-        let err = InputData::from_str(testdata).unwrap_err();
-        assert_eq!(err, AocError::Invalid("L".to_string()));
-    }
-
-    #[test]
-    fn parser_invalid_direction() {
-        let testdata = "R32, K4, L8";
-        let err = InputData::from_str(testdata).unwrap_err();
-        assert_eq!(err, AocError::Invalid("K4".to_string()));
-    }
-
-    #[test]
-    fn parser_negative_int() {
-        let testdata = "R32, L-4, L8";
-        let err = InputData::from_str(testdata).unwrap_err();
-        assert!(matches!(err, AocError::ParseInt(_)));
+    fn parser_invalid() {
+        for input in ["R32, L, L8", "R32, K4, L8"] {
+            assert!(matches!(
+                input.parse::<InputData>(),
+                Err(AocError::Invalid(_))
+            ));
+        }
     }
 
     #[test]
     fn part2_no_solution() {
-        let testdata = "R2, L3";
-        let solution_data = InputData::from_str(testdata).unwrap();
+        let solution_data: InputData = "R2, L3".parse().unwrap();
         let err = solution_data.solve_part2().unwrap_err();
         assert_eq!(err, AocError::NoSolution);
     }

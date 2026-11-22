@@ -1,21 +1,20 @@
 //! # 2017 day 11 - Hex Ed
 //!
-//! Stores the hexgrid using axial coordinate system, i.e. based on 3d system (q, r, s) but
-//! with the third dimension truncated, since the sum of all three must be zero, meaning
-//! that it can be calculated when necessary.
+//! Stores the hexgrid using axial coordinate system, i.e. based on 3d system (q, r, s) but with
+//! the third dimension truncated, since the sum of all three must be zero, meaning that it can be
+//! calculated when necessary.
 //!
-//! Solves both parts in one go; part 1 is the distance from where we ended up at the end,
-//! and part 2 is the furthest away we were away during the steps.
+//! Solves both parts in one go; part 1 is the distance from where we ended up at the end, and
+//! part 2 is the furthest away we were away during the steps.
+use crate::aoc_util::error::AocError;
 use std::{
     error::Error,
     ops::{Add, AddAssign},
     str::FromStr,
 };
 
-use crate::aoc_util::error::AocError;
-
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -79,10 +78,7 @@ impl FromStr for InputData {
     type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            moves: s
-                .split(',')
-                .map(|d| d.parse())
-                .collect::<Result<Vec<_>, _>>()?,
+            moves: s.split(',').map(|d| d.parse()).collect::<Result<_, _>>()?,
         })
     }
 }
@@ -108,7 +104,7 @@ mod tests {
 
     #[test]
     fn part1_2_official_1() {
-        let solution_data = InputData::from_str("ne,ne,ne").unwrap();
+        let solution_data: InputData = "ne,ne,ne".parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 3);
         assert_eq!(p2, 3);
@@ -116,7 +112,7 @@ mod tests {
 
     #[test]
     fn part1_2_official_2() {
-        let solution_data = InputData::from_str("ne,ne,sw,sw").unwrap();
+        let solution_data: InputData = "ne,ne,sw,sw".parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 0);
         assert_eq!(p2, 2);
@@ -124,7 +120,7 @@ mod tests {
 
     #[test]
     fn part1_2_official_3() {
-        let solution_data = InputData::from_str("ne,ne,s,s").unwrap();
+        let solution_data: InputData = "ne,ne,s,s".parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 2);
         assert_eq!(p2, 2);
@@ -132,7 +128,7 @@ mod tests {
 
     #[test]
     fn part1_2_official_4() {
-        let solution_data = InputData::from_str("se,sw,se,sw,sw").unwrap();
+        let solution_data: InputData = "se,sw,se,sw,sw".parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 3);
         assert_eq!(p2, 3);

@@ -102,7 +102,7 @@ impl<'a> TryFrom<&'a str> for InputData<'a> {
             addresses: s
                 .lines()
                 .map(Ipv7addr::try_from)
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<_, _>>()?,
         })
     }
 }

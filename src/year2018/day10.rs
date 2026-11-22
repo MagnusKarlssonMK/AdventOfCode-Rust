@@ -1,15 +1,14 @@
 //! # 2018 day 10 - The Stars Align
 //!
-//! The message will be visible at the step when the covered area is the smallest. So
-//! start from the starting state, keep taking steps until the area would increase from
-//! taking another step. The answer for part 1 is then given by rendering the image
-//! from the current positions of the lights, and for part 2 the number of steps taken
-//! to get there.
+//! The message will be visible at the step when the covered area is the smallest. So start from
+//! the starting state, keep taking steps until the area would increase from taking another step.
+//! The answer for part 1 is then given by rendering the image from the current positions of the
+//! lights, and for part 2 the number of steps taken to get there.
 use crate::aoc_util::{error::*, grid::Grid, point::*};
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1, p2.to_string()))
 }
@@ -176,14 +175,14 @@ position=<-3,  6> velocity=< 2, -1>";
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, _) = solution_data.solve();
         assert_eq!(p1, EXPECTED_MESSAGE);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (_, p2) = solution_data.solve();
         assert_eq!(p2, 3);
     }

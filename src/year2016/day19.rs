@@ -19,7 +19,7 @@ use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -97,7 +97,7 @@ mod tests {
     #[test]
     fn winners() {
         for &(elves, part1, part2) in TEST_CASES {
-            let solution_data = InputData::from_str(&elves.to_string()).unwrap();
+            let solution_data: InputData = elves.to_string().parse().unwrap();
             assert_eq!(
                 solution_data.solve_part1(),
                 part1,
@@ -113,13 +113,13 @@ mod tests {
 
     #[test]
     fn parser_non_integer() {
-        let err = InputData::from_str("23d4").unwrap_err();
+        let err = "23d4".parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::ParseInt(_)));
     }
 
     #[test]
     fn parser_no_elves() {
-        let err = InputData::from_str("0").unwrap_err();
+        let err = "0".parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid("no elves".to_string()));
     }
 }

@@ -1,8 +1,9 @@
 //! # 2017 day 14 - Disk Defragmentation
 //!
-//! Re-use the knot hasher from day 10 (util.knot) to generate a 128x128 grid of ones and zeroes, which is
-//! turned into an adjacency graph of neighboring ones. Part 1 counts the "1" cells, and part 2 walks the
-//! graph to count the connected groups.
+//! Re-use the knot hasher from day 10 (util.knot) to generate a 128x128 grid of ones and zeroes,
+//! which is turned into an adjacency graph of neighboring ones. Part 1 counts the "1" cells, and
+//! part 2 walks the graph to count the connected groups.
+use super::knothash::*;
 use crate::aoc_util::{
     error::*,
     grid::Grid,
@@ -14,10 +15,8 @@ use std::{
     str::FromStr,
 };
 
-use super::knothash::*;
-
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -96,13 +95,13 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 8108);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 1242);
     }
 }

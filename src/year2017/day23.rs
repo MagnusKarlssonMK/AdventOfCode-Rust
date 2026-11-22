@@ -1,14 +1,14 @@
 //! # 2017 day 23 - Coprocessor Conflagration
 //!
-//! Simply implementing the emulator here won't work; the assemply is far too inefficient
-//! to run within reasonable time. So instead the input is disassembled and analyzed manually,
-//! and the solution is implementing the corresponding calculation after extracting the
-//! relevant numbers from the input.
+//! Simply implementing the emulator here won't work; the assemply is far too inefficient to run
+//! within reasonable time. So instead the input is disassembled and analyzed manually, and the
+//! solution is implementing the corresponding calculation after extracting the relevant numbers
+//! from the input.
 use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -115,14 +115,14 @@ sub c 4
 sub b 3";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+    fn part1_custom_1() {
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 9);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+    fn part2_custom_1() {
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 2);
     }
 }

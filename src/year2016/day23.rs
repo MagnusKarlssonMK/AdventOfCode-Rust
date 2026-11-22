@@ -1,21 +1,19 @@
 //! # 2016 day 23 - Safe Cracking
 //!
-//! Uses emulator for the Assembunny program, which is split off to a separate
-//! module since it is basically identical with what's used in day 12, only with
-//! the addition of the 'tgl' opcode.
+//! Uses emulator for the Assembunny program, which is split off to a separate module since it is
+//! basically identical with what's used in day 12, only with the addition of the 'tgl' opcode.
 //!
-//! The program is doing addition and multiplication with huge numbers, but only
-//! has +1 operations available, causing a ridiculous number of iterations. So
-//! instead, optimize the program by creating two new operations, overwriting it
-//! where necessary and then run the program. This assumes that the new 'tgl'
-//! operation doesn't try to toggle anything within these blocks, which the real
-//! input doesn't seem to do.
+//! The program is doing addition and multiplication with huge numbers, but only has +1 operations
+//! available, causing a ridiculous number of iterations. So instead, optimize the program by
+//! creating two new operations, overwriting it where necessary and then run the program. This
+//! assumes that the new 'tgl' operation doesn't try to toggle anything within these blocks, which
+//! the real input doesn't seem to do.
 use super::assembunny::*;
 use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),
         solution_data.solve_part2()?.to_string(),
@@ -67,14 +65,14 @@ dec a
 dec a";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1().unwrap(), 3);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2().unwrap(), 3);
     }
 }

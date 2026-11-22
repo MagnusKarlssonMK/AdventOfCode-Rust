@@ -1,7 +1,6 @@
 //! # 2019 day 5 - Sunny with a Chance of Asteroids
-use crate::aoc_util::error::AocError;
-
 use super::intcode::*;
+use crate::aoc_util::error::AocError;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {

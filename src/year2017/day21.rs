@@ -1,8 +1,8 @@
 //! # 2017 day 21 - Fractal Art
 //!
-//! First, pre-compute all permutations of the left-hand side of the rules and map to
-//! the right-hand side in a HashMap, to avoid having to do the permutations later in
-//! the enhancement process. Use binary representation of the patterns, e.g.
+//! First, pre-compute all permutations of the left-hand side of the rules and map to the righthand
+//! side in a HashMap, to avoid having to do the permutations later in the enhancement process. Use
+//! binary representation of the patterns, e.g.
 //!
 //! * `.#/##` => `1,3`
 //! * `.#./..#/###` => `2,1,7`
@@ -10,21 +10,19 @@
 //! The enhancement process consists of multiple steps:
 //! * Break up the pattern in smaller parts of 2- or 3-sized patterns.
 //! * Use the input rules to enhance each part.
-//! * Re-combine the parts to a new image, unless the new image would be a 9-sized
-//!   image, in which case it consists of 9 3-sized images that are now independent
-//!   from each other in further enhancement steps. I.e. we can store our image state
-//!   as a counter of different sub-patterns.
+//! * Re-combine the parts to a new image, unless the new image would be a 9-sized image, in which
+//!   case it consists of 9 3-sized images that are now independent from each other in further
+//!   enhancement steps. I.e. we can store our image state as a counter of different sub-patterns.
 //!
-//! So, start with 1 of the starting 3-size pattern => enhance it to one 4-size
-//! pattern => break it up into 4 2-sized patterns, enhance and recombined into a
-//! 6-size pattern => break up into 9 2-size patterns, enhance to 9 3-size patterns,
-//! and instead of recombining; => start over with enhancing each unique shape and
-//! keep track of the counter.
+//! So, start with 1 of the starting 3-size pattern => enhance it to one 4-size pattern => break it
+//! up into 4 2-sized patterns, enhance and recombined into a 6-size pattern => break up into 9
+//! 2-size patterns, enhance to 9 3-size patterns, and instead of recombining; => start over with
+//! enhancing each unique shape and keep track of the counter.
 use crate::aoc_util::error::*;
 use std::{collections::HashMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),
         solution_data.solve_part2()?.to_string(),
@@ -236,7 +234,7 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.enhance_and_count(1).unwrap(), 4);
         assert_eq!(solution_data.enhance_and_count(2).unwrap(), 12);
     }

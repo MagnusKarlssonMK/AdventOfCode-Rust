@@ -2,12 +2,13 @@
 //!
 //! ## Part 1
 //!
-//! Note that the question is which particle will be closest *in the long term*, not the closest ever over the
-//! entire trajectory. In the long term, the closest will be the one with the lowest acceleration. However, with my
-//! input, there's multiple particles sharing the same lowest acceleration, and making a secondary sorting on initial
-//! velocity is not safe since it depends on the relative direction between velocity and acceleration. Instead of
-//! simulating step by step and hoping that a fixed number of steps is enough, we evaluate each particle's position
-//! after `steps` steps in closed form:
+//! Note that the question is which particle will be closest *in the long term*, not the closest
+//! ever over the entire trajectory. In the long term, the closest will be the one with the lowest
+//! acceleration. However, with my input, there's multiple particles sharing the same lowest
+//! acceleration, and making a secondary sorting on initial velocity is not safe since it depends
+//! on the relative direction between velocity and acceleration. Instead of simulating step by step
+//! and hoping that a fixed number of steps is enough, we evaluate each particle's position after
+//! `steps` steps in closed form:
 //!
 //! ### p(t) = p0 + v0 * t + a * t * (t + 1) / 2
 //!
@@ -15,8 +16,8 @@
 //!
 //! ## Part 2
 //!
-//! Simulate the swarm, updating particles in place, and after every step remove all particles that share a
-//! position with another particle.
+//! Simulate the swarm, updating particles in place, and after every step remove all particles that
+//! share a position with another particle.
 use crate::aoc_util::{
     error::*,
     point::{ORIGIN_3D, Point3D},
@@ -24,7 +25,7 @@ use crate::aoc_util::{
 use std::{collections::HashMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -73,7 +74,7 @@ impl FromStr for InputData {
             particles: s
                 .lines()
                 .map(|line| line.parse())
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<_, _>>()?,
         })
     }
 }
@@ -146,40 +147,40 @@ p=<10,0,0>, v=<0,0,0>, a=<0,0,0>";
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 3);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 1);
     }
 
     #[test]
     fn part1_2_custom_1() {
-        let solution_data = InputData::from_str(TEST_STRING_NO_COLLISIONS).unwrap();
+        let solution_data: InputData = TEST_STRING_NO_COLLISIONS.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
         assert_eq!(solution_data.solve_part2(), 3);
     }
 
     #[test]
     fn part1_2_custom_2() {
-        let solution_data = InputData::from_str(TEST_STRING_ALL_COLLIDE).unwrap();
+        let solution_data: InputData = TEST_STRING_ALL_COLLIDE.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
         assert_eq!(solution_data.solve_part2(), 0);
     }
 
     #[test]
     fn part1_2_custom_3() {
-        let solution_data = InputData::from_str(TEST_STRING_PARTIAL_COLLIDE).unwrap();
+        let solution_data: InputData = TEST_STRING_PARTIAL_COLLIDE.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
         assert_eq!(solution_data.solve_part2(), 1);
     }
 
     #[test]
     fn part1_2_custom_4() {
-        let solution_data = InputData::from_str(TEST_STRING_ACCELERATION).unwrap();
+        let solution_data: InputData = TEST_STRING_ACCELERATION.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 1);
         assert_eq!(solution_data.solve_part2(), 0);
     }

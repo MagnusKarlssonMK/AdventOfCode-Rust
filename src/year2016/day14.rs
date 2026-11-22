@@ -1,19 +1,17 @@
 //! # 2016 day 14 - One-Time Pad
 //!
-//! Each candidate index is hashed once (`salt + index`); part 2 additionally
-//! re-hashes the hex digest 2016 more times ("key stretching"). A hash is a
-//! key if it contains a run of three equal characters and one of the next 1000
-//! hashes contains five of that same character in a row.
+//! Each candidate index is hashed once (`salt + index`); part 2 additionally re-hashes the hex
+//! digest 2016 more times ("key stretching"). A hash is a key if it contains a run of three equal
+//! characters and one of the next 1000 hashes contains five of that same character in a row.
 //!
-//! The per-index stretch chains are independent, so they are computed in
-//! parallel in batches; the triple/quintuple matching that follows is
-//! inherently sequential and cheap by comparison.
+//! The per-index stretch chains are independent, so they are computed in parallel in batches; the
+//! triple/quintuple matching that follows is inherently sequential and cheap by comparison.
 use crate::aoc_util::error::AocError;
 use md5::{Digest, Md5};
 use std::{collections::HashMap, error::Error, fmt::Write, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -173,13 +171,13 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str("abc").unwrap();
+        let solution_data: InputData = "abc".parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 22728);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str("abc").unwrap();
+        let solution_data: InputData = "abc".parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 22551);
     }
 }

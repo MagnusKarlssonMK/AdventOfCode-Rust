@@ -10,6 +10,8 @@ pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     ))
 }
 
+const VOWELS: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
+
 struct InputData<'a> {
     santa_strings: Vec<&'a str>,
 }
@@ -25,10 +27,8 @@ impl<'a> TryFrom<&'a str> for InputData<'a> {
 
 impl InputData<'_> {
     fn solve_part1(&self) -> usize {
-        const VOWELS: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
-
         fn is_nice(word: &str) -> bool {
-            let mut previous_char: Option<char> = None;
+            let mut previous_char: Option<_> = None;
             let mut vowel_counter = 0;
             let mut double_char = false;
             for c in word.chars() {

@@ -1,18 +1,17 @@
 //! # 2017 day 2 - Corruption Checksum
 //!
-//! Stores the input in sorted rows of numbers, and then calculates the checksum and result
-//! for each row.
+//! Stores the input in sorted rows of numbers, and then calculates the checksum and result for
+//! each row.
 //!
-//! The puzzle description implies that there won't be any empty rows, and that there will
-//! be exactly one evenly divisible pair for each row. This implementation doesn't prevent
-//! that, it will simply have empty rows / rows with no evenly divisible pairs contribute
-//! with zero, and if any row has multiple evenly divisible pairs, only the first one found
-//! will be used.
+//! The puzzle description implies that there won't be any empty rows, and that there will be
+//! exactly one evenly divisible pair for each row. This implementation doesn't prevent that, it
+//! will simply have empty rows / rows with no evenly divisible pairs contribute with zero, and if
+//! any row has multiple evenly divisible pairs, only the first one found will be used.
 use crate::aoc_util::error::AocError;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -67,10 +66,7 @@ impl FromStr for InputData {
     type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            rows: s
-                .lines()
-                .map(Row::from_str)
-                .collect::<Result<Vec<_>, _>>()?,
+            rows: s.lines().map(Row::from_str).collect::<Result<_, _>>()?,
         })
     }
 }
@@ -99,25 +95,25 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 18);
     }
 
     #[test]
     fn part1_official_2() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_2).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 18);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 7);
     }
 
     #[test]
     fn part2_official_2() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_2).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 9);
     }
 }

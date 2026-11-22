@@ -1,12 +1,11 @@
 //! # 2020 day 11 - Seating System
 //!
-//! For each cycle, count the number of visible neighbors for each point
-//! by scanning the room in all eight directions, then generate the next
-//! iteration of the room based on that.
+//! For each cycle, count the number of visible neighbors for each point by scanning the room in
+//! all eight directions, then generate the next iteration of the room based on that.
 //!
-//! The scan loops have been combined as much as possible both to shrink the
-//! code and to minimize the number of loops, at the cost of making it a
-//! bit harder to understand the logic from reading the code.
+//! The scan loops have been combined as much as possible both to shrink the code and to minimize
+//! the number of loops, at the cost of making it a bit harder to understand the logic from reading
+//! the code.
 use crate::aoc_util::{error::AocError, grid::*, point::*};
 use std::{error::Error, str::FromStr};
 

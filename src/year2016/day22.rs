@@ -2,18 +2,17 @@
 //!
 //! ## Part 1
 //!
-//! Parse the data into vector of the coordinates and node data. Then count the number
-//! of pairs where a non-empty node's data would fit in another node's available space.
+//! Parse the data into vector of the coordinates and node data. Then count the number of pairs
+//! where a non-empty node's data would fit in another node's available space.
 //!
 //! ## Part 2
 //!
-//! Convert the input vector to a hashmap to be able to lookup per x-y point.
-//! The empty node (used == 0) is the only node that can move data around, so first
-//! BFS the empty node to the position just left of the goal node G in the top-right
-//! corner, treating nodes whose used is larger than the empty node's capacity as walls.
-//! Once there, moving G one column to the left takes a single move; each further
-//! column takes 5 moves (the empty node has to loop around G), so add
-//! 1 + 5 * (max_x - 1) for walking G to the top-left.
+//! Convert the input vector to a hashmap to be able to lookup per x-y point. The empty node
+//! (used == 0) is the only node that can move data around, so first BFS the empty node to the
+//! position just left of the goal node G in the top-right corner, treating nodes whose used is
+//! larger than the empty node's capacity as walls. Once there, moving G one column to the left
+//! takes a single move; each further column takes 5 moves (the empty node has to loop around G),
+//! so add 1 + 5 * (max_x - 1) for walking G to the top-left.
 use crate::aoc_util::{error::*, point::*};
 use std::{
     collections::{HashMap, HashSet, VecDeque},
@@ -22,7 +21,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2()?.to_string(),
@@ -152,13 +151,13 @@ Filesystem            Size  Used  Avail  Use%
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 7);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2().unwrap(), 7);
     }
 
@@ -172,7 +171,7 @@ Filesystem              Size  Used  Avail  Use%
 
     #[test]
     fn part1_empty_node_not_a_source() {
-        let solution_data = InputData::from_str(TEST_EMPTY_NOT_SOURCE).unwrap();
+        let solution_data: InputData = TEST_EMPTY_NOT_SOURCE.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
@@ -187,7 +186,7 @@ Filesystem              Size  Used  Avail  Use%
 
     #[test]
     fn part2_unreachable_goal() {
-        let solution_data = InputData::from_str(TEST_UNREACHABLE_GOAL).unwrap();
+        let solution_data: InputData = TEST_UNREACHABLE_GOAL.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), Err(AocError::NoSolution));
     }
 
@@ -197,7 +196,7 @@ Filesystem              Size  Used  Avail  Use%
 Filesystem              Size  Used  Avail  Use%
 /dev/grid/node-x0-y6     94T   64T    30T   68%
 /dev/grid/node-x0-y7     87T   0T    50T   82%";
-        let solution_data = InputData::from_str(testdata).unwrap();
+        let solution_data: InputData = testdata.parse().unwrap();
         assert_eq!(solution_data.filesystem[0].0, Point::new(0, 6));
         assert_eq!(solution_data.filesystem[0].1.size, 94);
         assert_eq!(solution_data.filesystem[0].1.used, 64);
@@ -212,7 +211,7 @@ Filesystem              Size  Used  Avail  Use%
 Filesystem              Size  Used  Avail  Use%
 /dev/grid/node-x0-y6     94T   64T    30T   68%
 /dev/grid/node-x0-y7     87T   30T    50T   82%";
-        let err = InputData::from_str(testdata).unwrap_err();
+        let err = testdata.parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid("no zero-node".to_string()))
     }
 }

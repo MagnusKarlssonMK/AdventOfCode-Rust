@@ -1,17 +1,16 @@
 //! # 2016 day 18 - Like a Rogue
 //!
-//! Represent the trap row as binary number where trap=1, safe=0. Then the state
-//! for a tile in the next step will be the XOR of the tiles to the left and right.
-//! So (tiles << 1) ^ (tiles >> 1), and then mask it with the original bitwidth so
-//! it doesn't expand towards the left.
+//! Represent the trap row as binary number where trap=1, safe=0. Then the state for a tile in the
+//! next step will be the XOR of the tiles to the left and right. So (tiles << 1) ^ (tiles >> 1),
+//! and then mask it with the original bitwidth so it doesn't expand towards the left.
 //!
-//! Real input is 100 bits long, so we can use an u128 to represent its binary form.
-//! Any input longer than 128 will cause the input parser to return AocError::Invalid.
+//! Real input is 100 bits long, so we can use an u128 to represent its binary form. Any input
+//! longer than 128 will cause the input parser to return AocError::Invalid.
 use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -81,26 +80,26 @@ mod tests {
 
     #[test]
     fn get_safe_tiles_1() {
-        let solution_data = InputData::from_str("..^^.").unwrap();
+        let solution_data: InputData = "..^^.".parse().unwrap();
         assert_eq!(solution_data.get_nbr_safe_tiles(1), 3);
         assert_eq!(solution_data.get_nbr_safe_tiles(3), 6);
     }
 
     #[test]
     fn get_safe_tiles_2() {
-        let solution_data = InputData::from_str(".^^.^.^^^^").unwrap();
+        let solution_data: InputData = ".^^.^.^^^^".parse().unwrap();
         assert_eq!(solution_data.get_nbr_safe_tiles(10), 38);
     }
 
     #[test]
     fn get_safe_tiles_3() {
-        let solution_data = InputData::from_str(".....").unwrap();
+        let solution_data: InputData = ".....".parse().unwrap();
         assert_eq!(solution_data.get_nbr_safe_tiles(4), 20);
     }
 
     #[test]
     fn parser_illegal_char() {
-        let err = InputData::from_str(".^^.^.^-^^").unwrap_err();
+        let err = ".^^.^.^-^^".parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid(".^^.^.^-^^".to_string()));
     }
 
@@ -111,7 +110,7 @@ mod tests {
         // shift: a 128 bit shift panics in debug builds and silently yields a
         // zero mask in release builds.
         let all_traps = "^".repeat(128);
-        let solution_data = InputData::from_str(&all_traps).unwrap();
+        let solution_data: InputData = all_traps.parse().unwrap();
         assert_eq!(solution_data.tile_width, 128);
         assert_eq!(solution_data.get_nbr_safe_tiles(1), 0);
         assert_eq!(solution_data.get_nbr_safe_tiles(2), 126);
@@ -119,7 +118,7 @@ mod tests {
         assert_eq!(solution_data.get_nbr_safe_tiles(4), 376);
 
         let alternating = "^.^.".repeat(32);
-        let solution_data = InputData::from_str(&alternating).unwrap();
+        let solution_data: InputData = alternating.parse().unwrap();
         assert_eq!(solution_data.tile_width, 128);
         assert_eq!(solution_data.get_nbr_safe_tiles(1), 64);
         assert_eq!(solution_data.get_nbr_safe_tiles(2), 191);
@@ -132,7 +131,7 @@ mod tests {
         // 129 columns is one too many for a u128. The content is irrelevant
         // here, only the width matters.
         let too_long = "^".repeat(129);
-        let err = InputData::from_str(&too_long).unwrap_err();
+        let err = too_long.parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid("input too long".to_string()));
     }
 }

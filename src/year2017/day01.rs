@@ -3,7 +3,7 @@ use crate::aoc_util::error::AocError;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -56,61 +56,61 @@ mod tests {
     use super::*;
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str("1122").unwrap();
+        let solution_data: InputData = "1122".parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 3);
     }
 
     #[test]
     fn part1_official_2() {
-        let solution_data = InputData::from_str("1111").unwrap();
+        let solution_data: InputData = "1111".parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 4);
     }
 
     #[test]
     fn part1_official_3() {
-        let solution_data = InputData::from_str("1234").unwrap();
+        let solution_data: InputData = "1234".parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
     fn part1_official_4() {
-        let solution_data = InputData::from_str("91212129").unwrap();
+        let solution_data: InputData = "91212129".parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 9);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str("1212").unwrap();
+        let solution_data: InputData = "1212".parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 6);
     }
 
     #[test]
     fn part2_official_2() {
-        let solution_data = InputData::from_str("1221").unwrap();
+        let solution_data: InputData = "1221".parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 0);
     }
 
     #[test]
     fn part2_official_3() {
-        let solution_data = InputData::from_str("123425").unwrap();
+        let solution_data: InputData = "123425".parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 4);
     }
 
     #[test]
     fn part2_official_4() {
-        let solution_data = InputData::from_str("123123").unwrap();
+        let solution_data: InputData = "123123".parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 12);
     }
 
     #[test]
     fn part2_official_5() {
-        let solution_data = InputData::from_str("12131415").unwrap();
+        let solution_data: InputData = "12131415".parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 4);
     }
 
     #[test]
     fn parser_non_integer() {
-        let err = InputData::from_str("123f24").unwrap_err();
+        let err = "123f24".parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid("not a number: f".to_string()));
     }
 }

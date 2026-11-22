@@ -4,7 +4,7 @@ use itertools::Itertools;
 use std::{collections::HashMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve()?;
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -91,7 +91,7 @@ C to D = 2";
 
     #[test]
     fn part1_2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve().unwrap();
         assert_eq!(p1, 605);
         assert_eq!(p2, 982);
@@ -99,7 +99,7 @@ C to D = 2";
 
     #[test]
     fn part1_2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         let (p1, p2) = solution_data.solve().unwrap();
         assert_eq!(p1, 6);
         assert_eq!(p2, 9);
@@ -107,7 +107,7 @@ C to D = 2";
 
     #[test]
     fn part1_2_no_solution() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_2).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_2.parse().unwrap();
         let err = solution_data.solve().unwrap_err();
         assert_eq!(err, AocError::Invalid("disconnected tree".to_string()));
     }

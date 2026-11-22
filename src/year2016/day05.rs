@@ -1,9 +1,8 @@
 //! # 2016 day 5 - How About a Nice Game of Chess?
 //!
-//! Solves both parts in a single pass. They share the same sequence of
-//! qualifying hashes (five leading zeroes) scanned in increasing
-//! index order: part 1 takes the 6th char of each such hash, while part 2
-//! uses the 6th char as a position and the 7th as its value.
+//! Solves both parts in a single pass. They share the same sequence of qualifying hashes (five
+//! leading zeroes) scanned in increasing index order: part 1 takes the 6th char of each such hash,
+//! while part 2 uses the 6th char as a position and the 7th as its value.
 use crate::aoc_util::error::AocError;
 use md5::{Digest, Md5};
 use std::{error::Error, fmt::Write};
@@ -54,10 +53,9 @@ impl InputData<'_> {
     }
 }
 
-/// Computes `md5(door_id + index)` reusing `buffer`, and returns the 6th and
-/// 7th hex digits as `(position, value)` when the digest starts with five zeroes.
-/// The prefix is checked on the raw digest bytes, avoiding the cost of
-/// hex-formatting every candidate.
+/// Computes `md5(door_id + index)` reusing `buffer`, and returns the 6th and 7th hex digits as
+/// `(position, value)` when the digest starts with five zeroes. The prefix is checked on the raw
+/// digest bytes, avoiding the cost of hex-formatting every candidate.
 fn hash_candidate(buffer: &mut String, base_len: usize, index: u32) -> Option<(u8, u8)> {
     buffer.truncate(base_len);
     write!(buffer, "{index}").unwrap();

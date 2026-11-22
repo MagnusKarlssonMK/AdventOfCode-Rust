@@ -1,14 +1,14 @@
 //! # 2018 day 7 - The Sum of Its Parts
 //!
-//! Maps the step characters to vec indices and uses a bitmask for each value to mark
-//! which other steps it depends on being done first.
+//! Maps the step characters to vec indices and uses a bitmask for each value to mark which other
+//! steps it depends on being done first.
 //!
 //! Then the check for which step can be taken becomes a simple bit operation.
 use crate::aoc_util::error::*;
 use std::{collections::HashMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),
         solution_data
@@ -169,19 +169,19 @@ Step F must be finished before step E can begin.";
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1().unwrap(), "CABDFE");
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(2, 0).unwrap(), 15);
     }
 
     #[test]
     fn part1_2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1().unwrap(), "AB");
         assert_eq!(solution_data.solve_part2(2, 0).unwrap(), 3);
     }

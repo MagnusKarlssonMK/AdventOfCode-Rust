@@ -6,13 +6,13 @@
 //!
 //! ## Part 2
 //!
-//! Keep updating the frequency value, storing seen values in a hashset and stopping
-//! once a repeated value is found.
+//! Keep updating the frequency value, storing seen values in a hashset and stopping once a
+//! repeated value is found.
 use crate::aoc_util::error::*;
 use std::{collections::HashSet, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -31,7 +31,7 @@ impl FromStr for InputData {
             changes: s
                 .lines()
                 .map(|line| line.parse())
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<_, _>>()?,
         })
     }
 }
@@ -64,61 +64,61 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str("+1\n-2\n+3\n+1").unwrap();
+        let solution_data: InputData = "+1\n-2\n+3\n+1".parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 3);
     }
 
     #[test]
     fn part1_official_2() {
-        let solution_data = InputData::from_str("+1\n+1\n+1").unwrap();
+        let solution_data: InputData = "+1\n+1\n+1".parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 3);
     }
 
     #[test]
     fn part1_official_3() {
-        let solution_data = InputData::from_str("+1\n+1\n-2").unwrap();
+        let solution_data: InputData = "+1\n+1\n-2".parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 0);
     }
 
     #[test]
     fn part1_official_4() {
-        let solution_data = InputData::from_str("-1\n-2\n-3").unwrap();
+        let solution_data: InputData = "-1\n-2\n-3".parse().unwrap();
         assert_eq!(solution_data.solve_part1(), -6);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str("+1\n-2\n+3\n+1").unwrap();
+        let solution_data: InputData = "+1\n-2\n+3\n+1".parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 2);
     }
 
     #[test]
     fn part2_official_2() {
-        let solution_data = InputData::from_str("+1\n-1").unwrap();
+        let solution_data: InputData = "+1\n-1".parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 0);
     }
 
     #[test]
     fn part2_official_3() {
-        let solution_data = InputData::from_str("+3\n+3\n+4\n-2\n-4").unwrap();
+        let solution_data: InputData = "+3\n+3\n+4\n-2\n-4".parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 10);
     }
 
     #[test]
     fn part2_official_4() {
-        let solution_data = InputData::from_str("-6\n+3\n+8\n+5\n-6").unwrap();
+        let solution_data: InputData = "-6\n+3\n+8\n+5\n-6".parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 5);
     }
 
     #[test]
     fn part2_official_5() {
-        let solution_data = InputData::from_str("+7\n+7\n-2\n-7\n-4").unwrap();
+        let solution_data: InputData = "+7\n+7\n-2\n-7\n-4".parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 14);
     }
 
     #[test]
     fn parser_invalid_input() {
-        let err = InputData::from_str("+7\n-5f\n+2").unwrap_err();
+        let err = "+7\n-5f\n+2".parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::ParseInt(_)));
     }
 }

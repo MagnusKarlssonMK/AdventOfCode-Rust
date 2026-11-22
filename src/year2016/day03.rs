@@ -3,7 +3,7 @@ use crate::aoc_util::error::AocError;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -22,7 +22,7 @@ impl FromStr for InputData {
             sides: s
                 .split_whitespace()
                 .map(|n| n.parse())
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<_, _>>()?,
         })
     }
 }

@@ -1,13 +1,12 @@
 //! # 2017 day 12 - Digital Plumber
 //!
-//! Programs form an undirected graph through their pipes. The answer to part 1 is the size
-//! of the connected component containing program 0, and part 2 counts all connected components.
+//! Programs form an undirected graph through their pipes. The answer to part 1 is the size of the
+//! connected component containing program 0, and part 2 counts all connected components.
+use crate::aoc_util::error::AocError;
 use std::{error::Error, str::FromStr};
 
-use crate::aoc_util::error::AocError;
-
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -30,7 +29,7 @@ impl FromStr for InputData {
                         .map(|n| n.trim_end_matches(',').parse())
                         .collect::<Result<Vec<_>, _>>()
                 })
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<_, _>>()?,
         })
     }
 }
@@ -75,7 +74,7 @@ mod tests {
 
     #[test]
     fn part1_2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 6);
         assert_eq!(p2, 2);
@@ -83,7 +82,7 @@ mod tests {
 
     #[test]
     fn part1_2_custom_1() {
-        let solution_data = InputData::from_str("0 <-> 0").unwrap();
+        let solution_data: InputData = "0 <-> 0".parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 1);
         assert_eq!(p2, 1);

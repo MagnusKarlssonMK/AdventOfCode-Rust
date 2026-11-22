@@ -1,15 +1,13 @@
 //! # 2017 day 5 - Maze of Twisty Trampolines, All Alike
 //!
-//! Straightforward; just step through the program with a stackpointer, while modifying
-//! the program along the way as described in the instructions. The only difference
-//! between part 1 and 2 is the step for the program modification at each jump, although
-//! this takes much longer to run.
+//! Straightforward; just step through the program with a stackpointer, while modifying the program
+//! along the way as described in the instructions. The only difference between part 1 and 2 is the
+//! step for the program modification at each jump, although this takes much longer to run.
+use crate::aoc_util::error::AocError;
 use std::{error::Error, str::FromStr};
 
-use crate::aoc_util::error::AocError;
-
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -24,10 +22,7 @@ impl FromStr for InputData {
     type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            instructions: s
-                .lines()
-                .map(|i| i.parse())
-                .collect::<Result<Vec<_>, _>>()?,
+            instructions: s.lines().map(|i| i.parse()).collect::<Result<_, _>>()?,
         })
     }
 }
@@ -71,25 +66,25 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 5);
     }
 
     #[test]
     fn part1_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 6);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 10);
     }
 
     #[test]
     fn part2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 13);
     }
 }

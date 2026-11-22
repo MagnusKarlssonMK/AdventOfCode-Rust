@@ -7,7 +7,7 @@ use crate::aoc_util::{
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve()?;
     Ok((p1.to_string(), p2))
 }
@@ -113,7 +113,7 @@ impl FromStr for InputData {
             ops: s
                 .lines()
                 .map(Operation::from_str)
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<_, _>>()?,
             width: 50,
             height: 6,
         })
@@ -157,7 +157,7 @@ rotate row y=3 by 0";
 
     #[test]
     fn part1_2_official_1() {
-        let mut solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let mut solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         solution_data.width = 7;
         solution_data.height = 3;
         let (p1, p2) = solution_data.solve().unwrap();
@@ -167,82 +167,45 @@ rotate row y=3 by 0";
 
     #[test]
     fn part1_2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         let (p1, p2) = solution_data.solve().unwrap();
         assert_eq!(p1, 36);
         assert_eq!(p2, ANSWER_P2_CUSTOM_1);
     }
 
     #[test]
-    fn parser_operation_invalid_op() {
-        let err = InputData::from_str("rekt 3x2").unwrap_err();
-        assert_eq!(err, AocError::Invalid("rekt 3x2".to_string()));
+    fn parser_invalid_int() {
+        for input in [
+            "rect 3f2x44",
+            "rect 32x4f4",
+            "rotate row y=1 by 3f",
+            "rotate row y=1e by 3",
+        ] {
+            assert!(matches!(
+                input.parse::<InputData>(),
+                Err(AocError::ParseInt(_))
+            ))
+        }
     }
 
     #[test]
-    fn parser_operation_rect_dim() {
-        let err = InputData::from_str("rect").unwrap_err();
-        assert_eq!(err, AocError::Invalid("rect dimensions".to_string()));
-    }
-
-    #[test]
-    fn parser_operation_rect_x() {
-        let err = InputData::from_str("rect 34").unwrap_err();
-        assert_eq!(err, AocError::Invalid("rect x separator".to_string()));
-    }
-
-    #[test]
-    fn parser_operation_rect_int() {
-        let err = InputData::from_str("rect 3f2x44").unwrap_err();
-        assert!(matches!(err, AocError::ParseInt(_)));
-
-        let err = InputData::from_str("rect 32x4f4").unwrap_err();
-        assert!(matches!(err, AocError::ParseInt(_)));
-    }
-
-    #[test]
-    fn parser_operation_rotate_axis() {
-        let err = InputData::from_str("rotate").unwrap_err();
-        assert_eq!(err, AocError::Invalid("rotate axis".to_string()));
-    }
-
-    #[test]
-    fn parser_operation_rotate_coord() {
-        let err = InputData::from_str("rotate row").unwrap_err();
-        assert_eq!(err, AocError::Invalid("rotate coord".to_string()));
-    }
-
-    #[test]
-    fn parser_operation_rotate_sep() {
-        let err = InputData::from_str("rotate row y1 by 1").unwrap_err();
-        assert_eq!(err, AocError::Invalid("rotate = separator".to_string()));
-    }
-
-    #[test]
-    fn parser_operation_rotate_by() {
-        let err = InputData::from_str("rotate row y=1").unwrap_err();
-        assert_eq!(err, AocError::Invalid("rotate by".to_string()));
-    }
-
-    #[test]
-    fn parser_operation_rotate_amount() {
-        let err = InputData::from_str("rotate row y=1 by").unwrap_err();
-        assert_eq!(err, AocError::Invalid("rotate amount".to_string()));
-    }
-
-    #[test]
-    fn parser_operation_rotate_xy() {
-        let err = InputData::from_str("rotate row x=1 by 2").unwrap_err();
-        assert_eq!(err, AocError::Invalid("rotate row x=1 by 2".to_string()));
-    }
-
-    #[test]
-    fn parser_operation_rotate_int() {
-        let err = InputData::from_str("rotate row y=1 by 3f").unwrap_err();
-        assert!(matches!(err, AocError::ParseInt(_)));
-
-        let err = InputData::from_str("rotate row y=1e by 3").unwrap_err();
-        assert!(matches!(err, AocError::ParseInt(_)));
+    fn parser_invalid() {
+        for input in [
+            "rekt 3x2",
+            "rect",
+            "rect 34",
+            "rotate",
+            "rotate row",
+            "rotate row y1 by 1",
+            "rotate row y=1",
+            "rotate row y=1 by",
+            "rotate row x=1 by 2",
+        ] {
+            assert!(matches!(
+                input.parse::<InputData>(),
+                Err(AocError::Invalid(_))
+            ));
+        }
     }
 
     #[test]

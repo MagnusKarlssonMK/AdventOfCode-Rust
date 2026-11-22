@@ -6,13 +6,14 @@
 //! over those once more and find which one still doesn't have overlap after the entire dict has
 //! been built.
 //!
-//! Not the most efficient solution since it stores and iterates over every single coordinate. It could
-//! be possible to create a solution just based on corners, but it would be MUCH more complicated.
+//! Not the most efficient solution since it stores and iterates over every single coordinate. It
+//! could be possible to create a solution just based on corners, but it would be MUCH more
+//! complicated.
 use crate::aoc_util::{error::*, point::Point};
 use std::{collections::HashMap, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve()?;
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -116,7 +117,7 @@ mod tests {
 
     #[test]
     fn parts1_2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve().unwrap();
         assert_eq!(p1, 4);
         assert_eq!(p2, 3);
@@ -124,7 +125,7 @@ mod tests {
 
     #[test]
     fn parts1_2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve().unwrap_err(), AocError::NoSolution);
     }
 }

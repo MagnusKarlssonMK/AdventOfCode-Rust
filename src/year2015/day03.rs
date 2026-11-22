@@ -3,7 +3,7 @@ use crate::aoc_util::{error::AocError, point::*};
 use std::{collections::HashSet, error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -49,7 +49,7 @@ impl InputData {
         let mut robosanta = ORIGIN;
         let mut visited = HashSet::from([santa]);
         for (count, step) in self.steps.iter().enumerate() {
-            if count % 2 == 0 {
+            if count.is_multiple_of(2) {
                 santa += *step;
                 visited.insert(santa);
             } else {
@@ -73,55 +73,55 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
     fn part1_official_2() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_2).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 4);
     }
 
     #[test]
     fn part1_official_3() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_3).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_3.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 2);
     }
 
     #[test]
     fn part1_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 4);
     }
 
     #[test]
-    fn part2_official_4() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_4).unwrap();
-        assert_eq!(solution_data.solve_part2(), 3);
-    }
-
-    #[test]
     fn part2_official_2() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_2).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_2.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 3);
     }
 
     #[test]
     fn part2_official_3() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_3).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_3.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 11);
     }
 
     #[test]
+    fn part2_official_4() {
+        let solution_data: InputData = TEST_OFFICIAL_4.parse().unwrap();
+        assert_eq!(solution_data.solve_part2(), 3);
+    }
+
+    #[test]
     fn part2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 3);
     }
 
     #[test]
     fn parser_invalid_char() {
-        let err = InputData::from_str("v<K>").unwrap_err();
+        let err = "v<K>".parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid("K".to_string()));
     }
 }

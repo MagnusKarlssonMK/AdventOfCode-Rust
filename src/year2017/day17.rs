@@ -6,21 +6,22 @@
 //!
 //! ## Part 2
 //!
-//! The value 0 never moves from index 0, so we only need to know which value ends up at index 1. A naive
-//! loop over all 50M insertions is slow, so whole stretches are skipped at a time:
+//! The value 0 never moves from index 0, so we only need to know which value ends up at index 1. A
+//! naive loop over all 50M insertions is slow, so whole stretches are skipped at a time:
 //!
-//! Between two wrap-arounds the position simply climbs. Each insertion moves the current position by `steps`
-//! positions plus one extra step for the newly inserted value (steps + 1 in total), while the buffer only
-//! grows by one. The gap between the current position and the end of the buffer therefore shrinks by exactly
-//! `steps` every insertion, and no value can land at index 1 while the position is just climbing. So the climb
-//! up to the next wrap-around can be jumped over in one go: the jump is `(gap - 1) // steps` rounds (a
-//! ceil-div). At a wrap-around the position drops back below `steps`, so the number of wraps - and thus the
-//! number of loop iterations - is tiny.
+//! Between two wrap-arounds the position simply climbs. Each insertion moves the current position
+//! by `steps` positions plus one extra step for the newly inserted value (steps + 1 in total),
+//! while the buffer only grows by one. The gap between the current position and the end of the
+//! buffer therefore shrinks by exactly `steps` every insertion, and no value can land at index 1
+//! while the position is just climbing. So the climb up to the next wrap-around can be jumped over
+//! in one go: the jump is `(gap - 1) // steps` rounds (a ceil-div). At a wrap-around the position
+//! drops back below `steps`, so the number of wraps - and thus the number of loop iterations - is
+//! tiny.
 use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2(PART_2_TARGET).to_string(),
@@ -87,13 +88,13 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 638);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(PART_2_TARGET), 1222153);
     }
 }

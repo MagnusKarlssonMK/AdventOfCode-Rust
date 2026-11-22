@@ -18,7 +18,7 @@ use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((solution_data.solve_part1().to_string(), "-".to_string()))
 }
 
@@ -40,7 +40,7 @@ impl FromStr for InputData {
             .skip(1)
             .take(2)
             .map(extract_number)
-            .collect::<Result<Vec<_>, _>>()?;
+            .collect::<Result<_, _>>()?;
         Ok(Self {
             b: *numbers.first().ctx("b")?,
             c: *numbers.get(1).ctx("c")?,
@@ -70,7 +70,7 @@ cpy 5 b";
 
     #[test]
     fn part1_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.b, 3);
         assert_eq!(solution_data.c, 5);
         assert_eq!(solution_data.solve_part1(), 27);

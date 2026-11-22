@@ -1,15 +1,14 @@
 //! # 2018 day 8 - Memory Maneuver
 //!
-//! Tree encoded as a flat array: each node starts with `(child_count, meta_count)`
-//! followed by the serialized children, followed by `meta_count` metadata entries.
-//! Part 1 sums all metadata entries; part 2 gives the root value where leaves sum
-//! their metadata and internal nodes sum the values of children referenced by
-//! their metadata (metadata entries are 1-indexed).
+//! Tree encoded as a flat array: each node starts with `(child_count, meta_count)` followed by the
+//! serialized children, followed by `meta_count` metadata entries. Part 1 sums all metadata
+//! entries; part 2 gives the root value where leaves sum their metadata and internal nodes sum the
+//! values of children referenced by their metadata (metadata entries are 1-indexed).
 use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve()?;
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -96,7 +95,7 @@ mod tests {
 
     #[test]
     fn part1_2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve().unwrap();
         assert_eq!(p1, 138);
         assert_eq!(p2, 66);
@@ -104,7 +103,7 @@ mod tests {
 
     #[test]
     fn part1_2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         let (p1, p2) = solution_data.solve().unwrap();
         assert_eq!(p1, 7);
         assert_eq!(p2, 0);
@@ -113,17 +112,23 @@ mod tests {
     #[test]
     fn decode_errors_invalid_input() {
         // Missing metadata count/header
-        let solution_data = InputData::from_str("2").unwrap();
+        let solution_data = "2".parse::<InputData>().unwrap();
         let err = solution_data.solve().unwrap_err();
-        assert_eq!(err, AocError::Invalid("node header: metadata count".to_string()));
+        assert_eq!(
+            err,
+            AocError::Invalid("node header: metadata count".to_string())
+        );
 
         // Header ok but missing children/metadata
-        let solution_data = InputData::from_str("1 1").unwrap();
+        let solution_data = "1 1".parse::<InputData>().unwrap();
         let err = solution_data.solve().unwrap_err();
-        assert_eq!(err, AocError::Invalid("node header: child count".to_string()));
+        assert_eq!(
+            err,
+            AocError::Invalid("node header: child count".to_string())
+        );
 
         // Child exists but metadata slice is truncated
-        let solution_data = InputData::from_str("1 2 0 1").unwrap();
+        let solution_data = "1 2 0 1".parse::<InputData>().unwrap();
         let err = solution_data.solve().unwrap_err();
         assert_eq!(err, AocError::Invalid("node metadata".to_string()));
     }

@@ -2,13 +2,13 @@
 //!
 //! ## Part 1
 //!
-//! Simply count the characters in each string with a Counter, and keep track of how many
-//! times a string has a character with exactly 2 / 3 repetitions.
+//! Simply count the characters in each string with a Counter, and keep track of how many times a
+//! string has a character with exactly 2 / 3 repetitions.
 //!
 //! ## Part 2
 //!
-//! Go through the combinations of strings and generate a string of the matching characters;
-//! if its length is exactly 1 smaller, we found the match.
+//! Go through the combinations of strings and generate a string of the matching characters; if its
+//! length is exactly 1 smaller, we found the match.
 
 use crate::aoc_util::error::*;
 use std::{collections::HashMap, error::Error};

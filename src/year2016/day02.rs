@@ -3,7 +3,7 @@ use crate::aoc_util::{error::AocError, grid::*, point::*};
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((solution_data.solve_part1(), solution_data.solve_part2()))
 }
 
@@ -139,25 +139,25 @@ LDDU";
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), "1985");
     }
 
     #[test]
     fn part1_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), "425136275184629538479586");
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), "5DB3");
     }
 
     #[test]
     fn part2_custom_2() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_2).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_2.parse().unwrap();
         assert_eq!(
             solution_data.solve_part2(),
             "3637241836A572B683C7948B6DAC7B8B"
@@ -166,7 +166,7 @@ LDDU";
 
     #[test]
     fn parser_invalid_input() {
-        let err = InputData::from_str("RLUJD").unwrap_err();
+        let err = "RLUJD".parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid("J".to_string()));
     }
 }

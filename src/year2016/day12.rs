@@ -1,17 +1,16 @@
 //! # 2016 day 12 - Leonardo's Monorail
 //!
-//! Uses emulator for the Assembunny program, which is split off to a separate
-//! module since it is reused in day 23.
+//! Uses emulator for the Assembunny program, which is split off to a separate module since it is
+//! reused in day 23.
 //!
-//! The optimizer needed for day 23 can be used here as well, and although it
-//! isn't nearly as critical for this day, it still does cut down the execution
-//! time noticeably.
+//! The optimizer needed for day 23 can be used here as well, and although it isn't nearly as
+//! critical for this day, it still does cut down the execution time noticeably.
 use super::assembunny::*;
 use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),
         solution_data.solve_part2()?.to_string(),
@@ -62,13 +61,13 @@ dec a";
 
     #[test]
     fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1().unwrap(), 42);
     }
 
     #[test]
     fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2().unwrap(), 42);
     }
 }

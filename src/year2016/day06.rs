@@ -1,8 +1,8 @@
 //! # 2016 day 6 - Signals and Noise
 //!
-//! Note: The puzzle description does not specify how to handle a draw, i.e. two
-//! or more characters appears the same number of times in a column. So it is
-//! assumed that the input is constructed in a way that this does not occur.
+//! Note: The puzzle description does not specify how to handle a draw, i.e. two or more characters
+//! appears the same number of times in a column. So it is assumed that the input is constructed in
+//! a way that this does not occur.
 use crate::aoc_util::error::AocError;
 use std::error::Error;
 

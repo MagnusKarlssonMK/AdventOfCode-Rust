@@ -1,17 +1,18 @@
 //! # 2018 day 6 - Chronal Coordinates
 //!
-//! Key point here is that the min and max values in each direction forms a "frame", and any location outside
-//! that will extend to infinity. I.e. any coordinate having a location as 'closest' on or outside that area
-//! will have an infinite area.
+//! Key point here is that the min and max values in each direction forms a "frame", and any
+//! location outside that will extend to infinity. I.e. any coordinate having a location as
+//! 'closest' on or outside that area will have an infinite area.
 //!
 //! ## Part 1
 //!
-//! Just tracks, per cell, the nearest point (first/second smallest manhattan distance) and the area sizes.
+//! Just tracks, per cell, the nearest point (first/second smallest manhattan distance) and the
+//! area sizes.
 //!
 //! ## Part 2
 //!
-//! Uses the fact that the manhattan distance sum separates into an x-part and a y-part, each computed in
-//! O(1) per coordinate with sorted prefix sums.
+//! Uses the fact that the manhattan distance sum separates into an x-part and a y-part, each
+//! computed in O(1) per coordinate with sorted prefix sums.
 use crate::aoc_util::{error::*, point::Point};
 use std::{
     collections::{HashMap, HashSet},
@@ -20,7 +21,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -136,13 +137,13 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 17);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 72);
     }
 }

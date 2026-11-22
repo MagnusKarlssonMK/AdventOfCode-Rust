@@ -1,7 +1,6 @@
 //! # 2019 day 4 - Secure Container
-use std::{error::Error, str::FromStr};
-
 use crate::aoc_util::error::{AocError, OptionExt};
+use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
     let solution_data: InputData = input.parse()?;

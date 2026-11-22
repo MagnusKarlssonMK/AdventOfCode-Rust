@@ -1,9 +1,9 @@
 //! # 2017 day 13 - Packet Scanners
 //!
-//! For part 2, a delay is safe for a scanner if (delay + depth) % cycle != 0, i.e. the scanner is not
-//! back at its start when the packet passes. Fold the scanners in one at a time, keeping every delay
-//! that is valid modulo the LCM of the scanner periods processed so far, expanded to the next LCM each
-//! time.
+//! For part 2, a delay is safe for a scanner if (delay + depth) % cycle != 0, i.e. the scanner is
+//! not back at its start when the packet passes. Fold the scanners in one at a time, keeping every
+//! delay that is valid modulo the LCM of the scanner periods processed so far, expanded to the
+//! next LCM each time.
 use crate::aoc_util::{
     error::{AocError, OptionExt},
     math,
@@ -11,7 +11,7 @@ use crate::aoc_util::{
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -57,7 +57,7 @@ impl FromStr for InputData {
             scanners: s
                 .lines()
                 .map(|line| line.parse())
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<_, _>>()?,
         })
     }
 }
@@ -101,19 +101,19 @@ mod tests {
 
     #[test]
     fn part1_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 24);
     }
 
     #[test]
     fn part2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 10);
     }
 
     #[test]
     fn part1_2_custom_1() {
-        let solution_data = InputData::from_str("0: 4").unwrap();
+        let solution_data: InputData = "0: 4".parse().unwrap();
         // Caught at time 0 (severity 0 * 4 = 0); the first safe delay is 1.
         assert_eq!(solution_data.solve_part1(), 0);
         assert_eq!(solution_data.solve_part2(), 1);
@@ -121,7 +121,7 @@ mod tests {
 
     #[test]
     fn part1_2_custom_2() {
-        let solution_data = InputData::from_str("0: 2\n1: 3").unwrap();
+        let solution_data: InputData = "0: 2\n1: 3".parse().unwrap();
         // Two scanners
         assert_eq!(solution_data.solve_part1(), 0);
         assert_eq!(solution_data.solve_part2(), 1);
@@ -129,11 +129,11 @@ mod tests {
 
     #[test]
     fn parser_invalid_input() {
-        let err = InputData::from_str("0 4").unwrap_err();
+        let err = "0 4".parse::<InputData>().unwrap_err();
         assert_eq!(err, AocError::Invalid("separator".to_string()));
-        let err = InputData::from_str("b: 4").unwrap_err();
+        let err = "b: 4".parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::ParseInt(_)));
-        let err = InputData::from_str("0: f").unwrap_err();
+        let err = "0: f".parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::ParseInt(_)));
     }
 }

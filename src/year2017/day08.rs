@@ -1,10 +1,9 @@
 //! # 2017 day 8 - I Heard You Like Registers
+use crate::aoc_util::error::AocError;
 use std::{collections::HashMap, error::Error, str::FromStr};
 
-use crate::aoc_util::error::AocError;
-
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -98,7 +97,7 @@ impl FromStr for InputData {
             instructions: s
                 .lines()
                 .map(Instruction::from_str)
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<_, _>>()?,
         })
     }
 }
@@ -141,7 +140,7 @@ b inc 1 if a != 1";
 
     #[test]
     fn parts_1_2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 1);
         assert_eq!(p2, 10);
@@ -149,7 +148,7 @@ b inc 1 if a != 1";
 
     #[test]
     fn parts_1_2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 0);
         assert_eq!(p2, 0);
@@ -157,7 +156,7 @@ b inc 1 if a != 1";
 
     #[test]
     fn parts_1_2_custom_2() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_2).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_2.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 2);
         assert_eq!(p2, 2);
@@ -165,13 +164,13 @@ b inc 1 if a != 1";
 
     #[test]
     fn parser_invalid_input() {
-        let err = InputData::from_str("b inc 3 if f <> 3").unwrap_err();
+        let err = "b inc 3 if f <> 3".parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::Invalid(_)));
-        let err = InputData::from_str("b dnc 3 if f > 3").unwrap_err();
+        let err = "b dnc 3 if f > 3".parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::Invalid(_)));
-        let err = InputData::from_str("b dec 3 if f <").unwrap_err();
+        let err = "b dec 3 if f <".parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::Invalid(_)));
-        let err = InputData::from_str("b inc f if f == 3").unwrap_err();
+        let err = "b inc f if f == 3".parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::ParseInt(_)));
     }
 }

@@ -7,7 +7,7 @@ use crate::aoc_util::{
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve()?;
     Ok((p1, p2.to_string()))
 }
@@ -19,9 +19,8 @@ struct InputData {
 impl FromStr for InputData {
     type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        // `Grid::parse` pads every line to the width of the widest line, so
-        // input files with stripped trailing spaces still give a rectangular
-        // grid.
+        // `Grid::parse` pads every line to the width of the widest line, so input files with
+        // stripped trailing spaces still give a rectangular grid.
         Ok(Self {
             grid: Grid::parse(s),
         })
@@ -76,7 +75,7 @@ mod tests {
  F---|----E|--+
      |  |  |  D
      +B-+  +--+ ";
-        let solution_data = InputData::from_str(testdata).unwrap();
+        let solution_data: InputData = testdata.parse().unwrap();
         let (p1, p2) = solution_data.solve().unwrap();
         assert_eq!(p1, "ABCDEF");
         assert_eq!(p2, 38);

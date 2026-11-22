@@ -7,7 +7,7 @@ use std::{
 };
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve()?;
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -186,7 +186,7 @@ bot 0 gives low to output 1 and high to output 0";
 
     #[test]
     fn part1_2_official_1() {
-        let mut solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let mut solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         solution_data.targets = Targets(2, 5);
         let (p1, p2) = solution_data.solve().unwrap();
         assert_eq!(p1, 2);
@@ -195,7 +195,7 @@ bot 0 gives low to output 1 and high to output 0";
 
     #[test]
     fn part1_2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         let (p1, p2) = solution_data.solve().unwrap();
         assert_eq!(p1, 4);
         assert_eq!(p2, 1037);
@@ -203,14 +203,14 @@ bot 0 gives low to output 1 and high to output 0";
 
     #[test]
     fn part1_2_custom_2() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_2).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_2.parse().unwrap();
         let err = solution_data.solve().unwrap_err();
         assert_eq!(err, AocError::NoSolution);
     }
 
     #[test]
     fn parser_value_instruction_ok() {
-        let data = InputData::from_str("value 5 goes to bot 2").unwrap();
+        let data: InputData = "value 5 goes to bot 2".parse().unwrap();
         assert_eq!(data.initial_deliveries.len(), 1);
         let delivery = data.initial_deliveries[0];
         assert_eq!(delivery.value, 5);
@@ -242,20 +242,23 @@ bot 3 gives low to bot 4 and high to output 5",
 
     #[test]
     fn parser_parse_int_error() {
-        let err = InputData::from_str("value x5 goes to bot 2").unwrap_err();
+        let err = "value x5 goes to bot 2".parse::<InputData>().unwrap_err();
         assert!(matches!(err, AocError::ParseInt(_)));
     }
 
     #[test]
     fn parser_unknown_target_kind() {
-        let err = InputData::from_str("bot 0 gives low to bin 1 and high to bot 2").unwrap_err();
+        let err = "bot 0 gives low to bin 1 and high to bot 2"
+            .parse::<InputData>()
+            .unwrap_err();
         assert_eq!(err, AocError::Invalid("unknown target: bin".to_string()));
     }
 
     #[test]
     fn parser_invalid_line() {
-        let err =
-            InputData::from_str("value 5 goes to bot 2\nnot a valid instruction").unwrap_err();
+        let err = "value 5 goes to bot 2\nnot a valid instruction"
+            .parse::<InputData>()
+            .unwrap_err();
         assert_eq!(
             err,
             AocError::Invalid("not a valid instruction".to_string())

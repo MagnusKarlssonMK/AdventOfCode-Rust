@@ -1,19 +1,19 @@
 //! # 2017 day 24 - Electromagnetic Moat
 //!
-//! Uses DFS to try to assemble all possible combinations of components. The main optimization is to
-//! always choose a component with two identical ports when possible and skip exploring other options
-//! at that point in the branch; it's free strength and length without changing the open port, so
-//! there is never a reason not to use it, and there's no benefit in saving it for later. This is done
-//! by first sorting the input such that those components are first in the vector, and then the search
-//! can break early when evaluating the list during the search.
+//! Uses DFS to try to assemble all possible combinations of components. The main optimization is
+//! to always choose a component with two identical ports when possible and skip exploring other
+//! options at that point in the branch; it's free strength and length without changing the open
+//! port, so there is never a reason not to use it, and there's no benefit in saving it for later.
+//! This is done by first sorting the input such that those components are first in the vector, and
+//! then the search can break early when evaluating the list during the search.
 //!
-//! Since the DFS explores all possibilities, we can get the answer for both parts in one pass, just
-//! by tracking the necessary parameters for both parts.
+//! Since the DFS explores all possibilities, we can get the answer for both parts in one pass,
+//! just by tracking the necessary parameters for both parts.
 use crate::aoc_util::error::*;
 use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input)?;
+    let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))
 }
@@ -175,7 +175,7 @@ mod tests {
 
     #[test]
     fn part1_2_official_1() {
-        let solution_data = InputData::from_str(TEST_OFFICIAL_1).unwrap();
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 31);
         assert_eq!(p2, 19);
@@ -183,7 +183,7 @@ mod tests {
 
     #[test]
     fn part1_2_custom_1() {
-        let solution_data = InputData::from_str(TEST_CUSTOM_1).unwrap();
+        let solution_data: InputData = TEST_CUSTOM_1.parse().unwrap();
         let (p1, p2) = solution_data.solve();
         assert_eq!(p1, 29);
         assert_eq!(p2, 29);
