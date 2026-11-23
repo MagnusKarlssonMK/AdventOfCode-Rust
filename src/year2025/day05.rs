@@ -2,25 +2,21 @@
 //!
 //! ## Part 1
 //!
-//! Trivial - for every available ID, iterate over the ID ranges and if any range contains
-//! the available ID, increment the total and skip to the next available ID.
+//! Trivial - for every available ID, iterate over the ID ranges and if any range contains the
+//! available ID, increment the total and skip to the next available ID.
 //!
 //! ## Part 2
 //!
-//! First merge all the overlapping ranges:
-//! 1. Put all the input ranges on a queue, and create a list of processed ranges.
-//! 2. Pull a range from the queue and check if it overlaps with any of the already
-//!    processed ranges. If it does, pull that processed range out of the list and push
-//!    the combined range back to the queue.
-//! 3. Repeat 2 until the queue is empty.
+//! Sort the fresh-ID ranges by their lower bound, then merge them in a single pass: each range
+//! either extends the previous merged range or starts a new one. Merging touching ranges as well
+//! as overlapping ones is harmless for the total, since the sizes simply add up.
 //!
-//! Once the new list of combined ranges is completed, take the total sum of ID:s contained
-//! by each range. Note that the ranges are inclusive, so the number of ID:s for a range
-//! is 1 + upper_range - lower range.
-use std::{collections::VecDeque, error::Error, str::FromStr};
+//! The ranges are inclusive, so the number of IDs in a range is `1 + upper - lower`.
+use crate::aoc_util::error::{AocError, OptionExt};
+use std::{error::Error, str::FromStr};
 
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -33,57 +29,57 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (r, a) = s.split_once("\n\n").unwrap();
-        let ranges: Vec<(u64, u64)> = r
-            .lines()
-            .map(|line| {
-                let (x, y) = line.split_once('-').unwrap();
-                (x.parse().unwrap(), y.parse().unwrap())
-            })
-            .collect();
+        fn parse_range(s: &str) -> Result<(u64, u64), AocError> {
+            let (lo, hi) = s
+                .split_once('-')
+                .ok_or_else(|| AocError::Invalid(format!("invalid range: {s}")))?;
+            let lo: u64 = lo.parse()?;
+            let hi: u64 = hi.parse()?;
+            if lo > hi {
+                return Err(AocError::Invalid(format!("reversed range: {s}")));
+            }
+            Ok((lo, hi))
+        }
+        let (r, a) = s.split_once("\n\n").ctx("block separator missing")?;
+        let ranges: Vec<(u64, u64)> = r.lines().map(parse_range).collect::<Result<_, _>>()?;
         Ok(Self {
             fresh_id_ranges: ranges,
-            available_ids: a.lines().map(|line| line.parse().unwrap()).collect(),
+            available_ids: a
+                .lines()
+                .map(|line| line.parse())
+                .collect::<Result<_, _>>()?,
         })
     }
 }
 
 impl InputData {
     fn solve_part1(&self) -> u64 {
-        let mut total = 0;
-        for a in &self.available_ids {
-            for r in &self.fresh_id_ranges {
-                if (r.0..=r.1).contains(a) {
-                    total += 1;
-                    break;
-                }
-            }
-        }
-        total
+        self.available_ids
+            .iter()
+            .filter(|a| {
+                self.fresh_id_ranges
+                    .iter()
+                    .any(|(lo, hi)| (lo..=hi).contains(a))
+            })
+            .count() as u64
     }
 
     fn solve_part2(&self) -> u64 {
-        let mut processed = VecDeque::new();
-        let mut queue = VecDeque::from(self.fresh_id_ranges.clone());
-        while let Some((r0, r1)) = queue.pop_front() {
-            let mut overlap_idx = None;
-            for (i, (p0, p1)) in processed.iter().enumerate() {
-                if (*p0..=*p1).contains(&r0) || (*p0..=*p1).contains(&r1) || (r0..=r1).contains(p0)
-                {
-                    overlap_idx = Some(i);
-                    break;
-                }
-            }
-            if let Some(i) = overlap_idx {
-                let (p0, p1) = processed.remove(i).unwrap();
-                queue.push_back((p0.min(r0), p1.max(r1)));
+        let mut ranges = self.fresh_id_ranges.clone();
+        ranges.sort_unstable();
+        let mut merged: Vec<(u64, u64)> = Vec::with_capacity(ranges.len());
+        for (lo, hi) in ranges {
+            if let Some(last) = merged.last_mut()
+                && lo <= last.1.saturating_add(1)
+            {
+                last.1 = last.1.max(hi);
             } else {
-                processed.push_back((r0, r1));
+                merged.push((lo, hi));
             }
         }
-        processed.iter().map(|(p0, p1)| 1 + *p1 - *p0).sum()
+        merged.iter().map(|(lo, hi)| 1 + hi - lo).sum()
     }
 }
 
@@ -91,7 +87,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "3-5
+    const TEST_OFFICIAL_1: &str = "3-5
 10-14
 16-20
 12-18
@@ -104,14 +100,34 @@ mod tests {
 32";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 3);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 14);
+    }
+
+    #[test]
+    fn part2_adjacent_ranges() {
+        let solution_data: InputData = "1-5\n6-10\n20-20\n\n0".parse().unwrap();
+        assert_eq!(solution_data.solve_part2(), 11);
+    }
+
+    #[test]
+    fn parser_invalid_input() {
+        for input in ["1-5 6-10\n\n1", "1-x\n\n1", "1-5\n\nx", "1-5"] {
+            assert!(
+                input.parse::<InputData>().is_err(),
+                "expected error for {input:?}"
+            );
+        }
+        assert!(matches!(
+            "1-5\n10-3\n\n1".parse::<InputData>(),
+            Err(AocError::Invalid(_))
+        ));
     }
 }
