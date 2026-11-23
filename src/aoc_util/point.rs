@@ -146,9 +146,9 @@ pub const ORIGIN_3D: Point3D = Point3D::new(0, 0, 0);
 /// Struct for representing a point in 3D space
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Point3D {
-    x: i32,
-    y: i32,
-    z: i32,
+    pub x: i32,
+    pub y: i32,
+    pub z: i32,
 }
 
 impl Point3D {
