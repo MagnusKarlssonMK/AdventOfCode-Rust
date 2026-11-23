@@ -10,21 +10,20 @@
 //! ## Part 2
 //!
 //! Despite initially looking like a game-of-life problem, it's actually not, since no nodes ever
-//! grow back to contain paper. So there is actually no need to iterate in rounds as in the
-//! example in the problem description. Instead, we can remove identified points immediately,
-//! and then add its neighbors back to the queue for re-evaluation. So,
+//! grow back to contain paper. So there is actually no need to iterate in rounds as in the example
+//! in the problem description. Instead, we can remove identified points immediately, and then add
+//! its neighbors back to the queue for re-evaluation. So,
 //!
-//! * Start similar to part 1, but also create a copy of the map to keep track of current state
-//!   as paper gets removed.
+//! * Start similar to part 1, but also create a copy of the map to keep track of current state as
+//!   paper gets removed.
 //! * When a point is identified to be cleared, update that point in the map and push all its
 //!   neighbors containing paper to the back of the queue to be re-evaluated.
 //! * Once the queue is empty, count the number of nodes in the map that still contain paper.
+use crate::aoc_util::{error::AocError, grid::Grid, point::*};
 use std::{collections::VecDeque, error::Error, str::FromStr};
 
-use crate::aoc_util::{grid::Grid, point::*};
-
 pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
-    let solution_data = InputData::from_str(input).unwrap();
+    let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
         solution_data.solve_part2().to_string(),
@@ -36,11 +35,17 @@ struct InputData {
 }
 
 impl FromStr for InputData {
-    type Err = ();
+    type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self {
-            paper_map: Grid::parse(s),
-        })
+        let paper_map = Grid::parse(s);
+        if let Some(&c) = paper_map
+            .elements
+            .iter()
+            .find(|&&c| c != PAPER && c != NOT_PAPER)
+        {
+            return Err(AocError::Invalid(format!("invalid character: {c}")));
+        }
+        Ok(Self { paper_map })
     }
 }
 
@@ -60,7 +65,7 @@ impl InputData {
         while let Some(p) = queue.pop_front() {
             let mut paper_neighbors = 0;
             for neighbor in NEIGHBORS_ALL.iter().map(|n| *n + p) {
-                if let Some(c) = self.paper_map.get_element(&neighbor)
+                if let Some(&c) = self.paper_map.get_ref(&neighbor)
                     && c == PAPER
                 {
                     paper_neighbors += 1;
@@ -84,23 +89,25 @@ impl InputData {
             .collect();
         let mut queue = VecDeque::from(paper);
         while let Some(p) = queue.pop_front() {
-            if paper_map.get_element(&p).unwrap() != PAPER {
+            if paper_map.get_ref(&p) != Some(&PAPER) {
                 // The point has already been cleared after this entry got added to the queue
                 continue;
             }
-            let mut paper_neighbors = Vec::with_capacity(8);
+            let mut paper_neighbors = [ORIGIN; 8];
+            let mut neighbor_count = 0;
             for neighbor in NEIGHBORS_ALL.iter().map(|n| *n + p) {
-                if let Some(c) = paper_map.get_element(&neighbor)
+                if let Some(&c) = paper_map.get_ref(&neighbor)
                     && c == PAPER
                 {
-                    paper_neighbors.push(neighbor);
+                    paper_neighbors[neighbor_count] = neighbor;
+                    neighbor_count += 1;
                 }
             }
-            if paper_neighbors.len() < 4 {
+            if neighbor_count < 4 {
                 total += 1;
                 paper_map.set_point(&p, NOT_PAPER);
-                for np in &paper_neighbors {
-                    queue.push_back(*np);
+                for &np in &paper_neighbors[..neighbor_count] {
+                    queue.push_back(np);
                 }
             }
         }
@@ -112,7 +119,7 @@ impl InputData {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = "..@@.@@@@.
+    const TEST_OFFICIAL_1: &str = "..@@.@@@@.
 @@@.@.@.@@
 @@@@@.@.@@
 @.@@@@..@.
@@ -124,14 +131,24 @@ mod tests {
 @.@.@@@.@.";
 
     #[test]
-    fn part1_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part1_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part1(), 13);
     }
 
     #[test]
-    fn part2_example_1() {
-        let solution_data = InputData::from_str(TEST_DATA).unwrap();
+    fn part2_official_1() {
+        let solution_data: InputData = TEST_OFFICIAL_1.parse().unwrap();
         assert_eq!(solution_data.solve_part2(), 43);
+    }
+
+    #[test]
+    fn parser_invalid_input() {
+        for input in ["@#\n.@", "@@@\n@@", "@ @\n.@."] {
+            assert!(matches!(
+                input.parse::<InputData>(),
+                Err(AocError::Invalid(_))
+            ));
+        }
     }
 }
