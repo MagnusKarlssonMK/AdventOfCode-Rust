@@ -1,8 +1,7 @@
 //! # 2017 day 9 - Stream Processing
 use crate::aoc_util::error::AocError;
-use std::error::Error;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data = InputData::try_from(input)?;
     let (p1, p2) = solution_data.solve_parts_1_2();
     Ok((p1.to_string(), p2.to_string()))

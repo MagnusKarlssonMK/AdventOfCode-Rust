@@ -6,9 +6,9 @@
 //! precedence (plain left to right); part 2 gives "+" higher precedence than "*". The only
 //! difference is the precedence function used by the evaluator.
 use crate::aoc_util::error::AocError;
-use std::{collections::VecDeque, error::Error};
+use std::collections::VecDeque;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data = InputData::try_from(input)?;
     Ok((
         solution_data.solve_part1()?.to_string(),

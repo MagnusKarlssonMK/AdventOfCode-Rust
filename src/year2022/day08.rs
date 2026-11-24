@@ -6,9 +6,9 @@
 //! tallest tree seen so far marks visibility for part 1, while a distance table indexed by tree
 //! height accumulates the four viewing distances used by part 2.
 use crate::aoc_util::{error::*, grid::*};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))

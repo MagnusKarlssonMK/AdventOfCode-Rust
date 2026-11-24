@@ -18,11 +18,10 @@ use crate::aoc_util::{
 };
 use std::{
     collections::{HashMap, HashSet},
-    error::Error,
     str::FromStr,
 };
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))

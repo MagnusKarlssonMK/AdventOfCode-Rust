@@ -5,9 +5,9 @@
 //! Part 2: Solves it with three-point-formula to determine the coefficients in a quadratic
 //! formula, and calculate the answer from that.
 use crate::aoc_util::{error::AocError, grid::Grid, point::*};
-use std::{collections::VecDeque, error::Error, str::FromStr};
+use std::{collections::VecDeque, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
@@ -39,7 +39,10 @@ impl InputData {
         // indexed by that offset avoids hashing Points. Only used with modest limits (the three
         // quadratic-fit samples are at most 327 steps apart), so the array stays small.
         let span = 2 * maxsteps + 1;
-        let origin = Point::new(self.start.x - maxsteps as i32, self.start.y - maxsteps as i32);
+        let origin = Point::new(
+            self.start.x - maxsteps as i32,
+            self.start.y - maxsteps as i32,
+        );
         let mut seen = vec![false; span * span];
         let mut reachable = 0;
         let mut queue = VecDeque::from([(self.start, 0)]);

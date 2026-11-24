@@ -18,9 +18,9 @@
 //! rules and columns yields `AocError::NoSolution`. All nearby tickets must have the same number of
 //! values as our ticket.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{error::Error, ops::RangeInclusive, str::FromStr};
+use std::{ops::RangeInclusive, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
@@ -53,12 +53,8 @@ fn parse_range(s: &str) -> Result<RangeInclusive<u64>, AocError> {
 impl FromStr for FieldRule {
     type Err = AocError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (name, ranges) = s
-            .split_once(": ")
-            .ctx(format!("field rule {s:?}"))?;
-        let (range1, range2) = ranges
-            .split_once(" or ")
-            .ctx(format!("field rule {s:?}"))?;
+        let (name, ranges) = s.split_once(": ").ctx(format!("field rule {s:?}"))?;
+        let (range1, range2) = ranges.split_once(" or ").ctx(format!("field rule {s:?}"))?;
         Ok(Self {
             is_departure: name.starts_with("departure"),
             ranges: [parse_range(range1)?, parse_range(range2)?],

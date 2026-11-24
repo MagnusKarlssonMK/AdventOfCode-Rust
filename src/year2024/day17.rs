@@ -11,9 +11,9 @@
 //! through the program: extend each surviving candidate with every 3-bit value and keep those
 //! whose first output byte matches the current program digit.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?,

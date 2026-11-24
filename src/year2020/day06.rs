@@ -5,9 +5,9 @@
 //! the bitwise-or of all answers in the group, and then take the sum of all groups. Similarly for
 //! part 2, with the only difference that bitwise-and is used instead.
 use crate::aoc_util::error::AocError;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

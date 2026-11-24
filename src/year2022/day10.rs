@@ -5,9 +5,9 @@
 //! owns that loop and calls a closure for every tick, so part 1 only sums signal strength at the
 //! six checkpoints, and part 2 only draws a pixel when it falls inside the sprite.
 use crate::aoc_util::{error::AocError, grid::*, point::*};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

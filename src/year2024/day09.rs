@@ -15,9 +15,9 @@
 //! block that fits before it; trim the free block, or remove it when fully used. Checksum the
 //! resulting occupied positions with the same `file_id` rule.
 use crate::aoc_util::error::AocError;
-use std::{collections::VecDeque, error::Error, str::FromStr};
+use std::{collections::VecDeque, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

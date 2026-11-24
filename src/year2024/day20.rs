@@ -17,12 +17,11 @@ use crate::aoc_util::{
     thread::*,
 };
 use std::{
-    error::Error,
     str::FromStr,
     sync::atomic::{AtomicU32, Ordering},
 };
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

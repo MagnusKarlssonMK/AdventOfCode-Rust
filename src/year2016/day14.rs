@@ -8,9 +8,9 @@
 //! triple/quintuple matching that follows is inherently sequential and cheap by comparison.
 use crate::aoc_util::error::AocError;
 use md5::{Digest, Md5};
-use std::{collections::HashMap, error::Error, fmt::Write, str::FromStr};
+use std::{collections::HashMap, fmt::Write, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

@@ -1,8 +1,8 @@
 //! # 2016 day 7 -Internet Protocol Version 7
 use crate::aoc_util::error::AocError;
-use std::{collections::HashSet, error::Error};
+use std::collections::HashSet;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data = InputData::try_from(input)?;
     Ok((
         solution_data.solve_part1().to_string(),

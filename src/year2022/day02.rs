@@ -5,9 +5,9 @@
 //! The X/Y/Z column is interpreted either as a hand for part 1, or as the desired outcome
 //! (lose/draw/win) for part 2.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

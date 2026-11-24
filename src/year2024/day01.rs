@@ -10,9 +10,9 @@
 //! Make use of the already sorted lists, and iterate over the left side. Keep track of the index
 //! of the last element used on the right side to minimize the amount of looping on the right side.
 use crate::aoc_util::error::AocError;
-use std::{cmp::Ordering, error::Error, str::FromStr};
+use std::{cmp::Ordering, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

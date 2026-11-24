@@ -1,9 +1,8 @@
 //! # 2017 day 10 - Knot Hash
 use super::knothash::*;
 use crate::aoc_util::error::AocError;
-use std::error::Error;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data = InputData::try_from(input)?;
     Ok((
         solution_data.solve_part1(STANDARD_BUFFER_SIZE)?.to_string(),

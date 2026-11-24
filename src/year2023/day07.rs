@@ -1,11 +1,11 @@
 //! # 2023 day 7 - Camel Cards
 use crate::aoc_util::error::AocError;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
 /// The part 1 value of the `J` card; in part 2 it is a wild card instead.
 const JOKER: u8 = 11;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
@@ -138,10 +138,8 @@ impl FromStr for InputData {
 
 /// Sorts hands by power and returns the sum of bid × rank.
 fn rank_hands(hands: &[Hand], jokers: bool) -> usize {
-    let mut ranked: Vec<(usize, u32)> = hands
-        .iter()
-        .map(|h| (h.get_power(jokers), h.bid))
-        .collect();
+    let mut ranked: Vec<(usize, u32)> =
+        hands.iter().map(|h| (h.get_power(jokers), h.bid)).collect();
     ranked.sort_unstable();
     ranked
         .iter()

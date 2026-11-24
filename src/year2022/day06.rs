@@ -5,9 +5,9 @@
 //! to go through the input. For each window, fold the values with a bitwise OR and count the ones
 //! of the result and if it is the same as the window size, we found the solution.
 use crate::aoc_util::error::AocError;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),

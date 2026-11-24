@@ -1,11 +1,8 @@
 //! # 2015 day 19 - Medicine for Rudolph
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{
-    collections::{HashMap, HashSet},
-    error::Error,
-};
+use std::collections::{HashMap, HashSet};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data = InputData::try_from(input)?;
     Ok((
         solution_data.solve_part1().to_string(),
@@ -166,7 +163,10 @@ HCaCaCaCaF";
     #[test]
     fn parse_invalid_input() {
         let err1 = InputData::try_from("F => CaF").unwrap_err();
-        assert_eq!(err1, AocError::Invalid("missing newline separator".to_string()));
+        assert_eq!(
+            err1,
+            AocError::Invalid("missing newline separator".to_string())
+        );
 
         let err2 = InputData::try_from("F > CaF\n\nAbCD").unwrap_err();
         assert_eq!(err2, AocError::Invalid("missing =>".to_string()));

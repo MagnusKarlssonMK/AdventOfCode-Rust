@@ -5,9 +5,9 @@
 //! once north. Part 2 repeats the north/west/south/east cycle, detecting a repeated dish state to
 //! skip ahead to the billionth cycle.
 use crate::aoc_util::{error::AocError, grid::Grid, point::Point};
-use std::{collections::HashMap, error::Error, str::FromStr};
+use std::{collections::HashMap, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
@@ -48,7 +48,11 @@ impl Grid<char> {
             let mut floor = if STEP > 0 { inner_len as i32 - 1 } else { 0 };
             for i in 0..inner_len as i32 {
                 // Scan from the destination side inward.
-                let inner = if STEP > 0 { inner_len as i32 - 1 - i } else { i };
+                let inner = if STEP > 0 {
+                    inner_len as i32 - 1 - i
+                } else {
+                    i
+                };
                 let point = if VERTICAL {
                     Point::new(outer, inner)
                 } else {

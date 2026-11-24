@@ -3,9 +3,9 @@
 //! Reaction the input polymer once for part 1, and then uses the output from that as basis for
 //! part 2, since it shaves down the size of the original input quite a bit.
 use crate::aoc_util::error::*;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

@@ -5,9 +5,9 @@
 //! the bag. For part 2, ignore the bag: require only the largest number of cubes of each color
 //! seen in any set of the game, and the power of the game is the product of those three values.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

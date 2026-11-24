@@ -2,15 +2,14 @@
 //!
 //! Traverses the map with A* algorithm, using the manhattan distance to the target
 //! as heuristic.
-use std::{collections::BinaryHeap, error::Error, str::FromStr};
-
 use crate::aoc_util::{
     error::AocError,
     grid::Grid,
-    point::{Point, NEIGHBORS_STRAIGHT},
+    point::{NEIGHBORS_STRAIGHT, Point},
 };
+use std::{collections::BinaryHeap, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
@@ -111,8 +110,8 @@ impl InputData {
                 return state.heat;
             }
             let cell = self.grid.get_index(&state.pos.point);
-            let idx =
-                (cell * NEIGHBORS_STRAIGHT.len() + state.pos.dir as usize) * stride + state.pos.steps as usize;
+            let idx = (cell * NEIGHBORS_STRAIGHT.len() + state.pos.dir as usize) * stride
+                + state.pos.steps as usize;
             if seen[idx] {
                 continue;
             }

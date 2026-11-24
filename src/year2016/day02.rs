@@ -1,8 +1,8 @@
 //! # 2016 day 2 - Bathroom Security
 use crate::aoc_util::{error::AocError, grid::*, point::*};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((solution_data.solve_part1(), solution_data.solve_part2()))
 }

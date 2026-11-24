@@ -17,7 +17,7 @@ use crate::aoc_util::{
     error::{AocError, OptionExt},
     math,
 };
-use std::{collections::HashMap, error::Error, str::FromStr};
+use std::{collections::HashMap, str::FromStr};
 
 /// Fixed nodes used by the two parts, expressed as base-36 values.
 const START: u32 = 10 * 36 * 36 + 10 * 36 + 10; // AAA
@@ -25,7 +25,7 @@ const TARGET: u32 = 35 * 36 * 36 + 35 * 36 + 35; // ZZZ
 const SUFFIX_START: u32 = 10; // A
 const SUFFIX_TARGET: u32 = 35; // Z
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),

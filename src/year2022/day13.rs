@@ -4,12 +4,11 @@
 use crate::aoc_util::error::{AocError, OptionExt};
 use std::{
     cmp::Ordering,
-    error::Error,
     iter::Peekable,
     str::{Chars, FromStr},
 };
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

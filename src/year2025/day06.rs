@@ -11,9 +11,9 @@
 //! line whose trailing spaces were trimmed are treated as spaces, so the parser does not depend
 //! on that whitespace being preserved.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
@@ -74,7 +74,11 @@ impl FromStr for InputData {
             .split_whitespace()
             .map(|s| s.parse())
             .collect::<Result<_, _>>()?;
-        let width = lines.iter().map(|line| line.len()).max().ctx("no value lines")?;
+        let width = lines
+            .iter()
+            .map(|line| line.len())
+            .max()
+            .ctx("no value lines")?;
 
         let mut columns: Vec<Column> = operations
             .iter()

@@ -7,9 +7,9 @@
 //! the digits of all the times are concatenated into one big time, and the same is done with all
 //! the distances, which turns the whole input into a single race.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

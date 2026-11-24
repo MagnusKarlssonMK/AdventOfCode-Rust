@@ -5,9 +5,9 @@
 //! entries; part 2 gives the root value where leaves sum their metadata and internal nodes sum the
 //! values of children referenced by their metadata (metadata entries are 1-indexed).
 use crate::aoc_util::error::*;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve()?;
     Ok((p1.to_string(), p2.to_string()))

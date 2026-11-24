@@ -3,9 +3,9 @@
 //! Part 1 is minimized by the median (sum of absolute deviations), part 2 by the mean because the
 //! cost is triangular/convex, hence checking the floor mean and its neighbours.
 use crate::aoc_util::error::AocError;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

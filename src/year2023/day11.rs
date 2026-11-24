@@ -7,9 +7,9 @@
 //! columns had already been widened, and the answer is then the sum of the manhattan distances
 //! between all pairs.
 use crate::aoc_util::{error::AocError, grid::Grid, point::*};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

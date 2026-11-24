@@ -10,9 +10,9 @@
 //!
 //! Note that the test input does not follow these assumptions, and can't be used for this solution.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((solution_data.solve_part1().to_string(), "-".to_string()))
 }
@@ -88,11 +88,11 @@ mod tests {
     #[test]
     fn parser_invalid_input() {
         for input in [
-            "0:",                 // missing block separator
-            "0:\n\n3x3 1",        // missing ':'
-            "0:\n\n3: 1",         // missing 'x'
-            "0:\n\nabcx3: 1",     // bad width
-            "0:\n\n3x3: n",       // bad quantity
+            "0:",             // missing block separator
+            "0:\n\n3x3 1",    // missing ':'
+            "0:\n\n3: 1",     // missing 'x'
+            "0:\n\nabcx3: 1", // bad width
+            "0:\n\n3x3: n",   // bad quantity
         ] {
             assert!(
                 input.parse::<InputData>().is_err(),

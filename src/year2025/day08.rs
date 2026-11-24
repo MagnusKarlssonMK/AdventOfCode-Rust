@@ -7,9 +7,9 @@
 //! The squared distance of every pair is precomputed once and sorted, so neither solver needs to
 //! recompute distances during sorting or traversal.
 use crate::aoc_util::{error::AocError, point::Point3D};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1(1000).to_string(),

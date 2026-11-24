@@ -5,9 +5,9 @@
 //! based on position of letter", whose rotation amount depends on the letter's index *before* the
 //! rotation, so its inverse has to be searched for.
 use crate::aoc_util::error::*;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1(PART_1_PASSWORD)?,

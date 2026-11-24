@@ -7,9 +7,9 @@
 //! Real input is 100 bits long, so we can use an u128 to represent its binary form. Any input
 //! longer than 128 will cause the input parser to return AocError::Invalid.
 use crate::aoc_util::error::*;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

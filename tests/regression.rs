@@ -113,11 +113,7 @@ fn stored_answers_match() {
                     }
                 }
                 Err(e) => {
-                    // Reminder: can be simplified once the dispatch macro is updated to use AocError directly as error type
-                    let not_implemented = e
-                        .downcast_ref::<AocError>()
-                        .is_some_and(|e| matches!(e, AocError::NotImplemented(_)));
-                    if !not_implemented {
+                    if !matches!(e, AocError::NotImplemented(_)) {
                         failures.push(format!("{year} {day_key}: solver returned error {e}"));
                     }
                 }

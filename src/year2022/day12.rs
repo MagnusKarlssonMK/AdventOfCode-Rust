@@ -6,9 +6,9 @@
 //! much lower is allowed), while when going backwards for part 2 the current point can be at most
 //! one higher than the candidate neighbor point.
 use crate::aoc_util::{error::AocError, grid::*, point::*};
-use std::{collections::VecDeque, error::Error, str::FromStr};
+use std::{collections::VecDeque, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),

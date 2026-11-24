@@ -4,9 +4,9 @@
 //! values, stopping when a row is all zeroes. The next value is the last value of each row summed
 //! together. Part 2 reuses the same calculation on reversed histories to get the previous value.
 use crate::aoc_util::error::AocError;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),

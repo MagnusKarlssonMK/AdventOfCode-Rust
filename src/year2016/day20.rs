@@ -13,9 +13,9 @@
 //! add up the gaps between them, including the gap below the first range and the one above the
 //! last range.
 use crate::aoc_util::error::*;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

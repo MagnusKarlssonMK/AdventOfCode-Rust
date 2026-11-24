@@ -5,11 +5,10 @@
 use crate::aoc_util::{error::AocError, math::lcm};
 use std::{
     collections::{HashMap, VecDeque},
-    error::Error,
     str::FromStr,
 };
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let mut solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),
@@ -200,9 +199,9 @@ impl FromStr for InputData {
             }
         }
         for (n, inputs) in &conjunctions {
-            let module = network
-                .get_mut(n)
-                .ok_or_else(|| AocError::Invalid(format!("conjunction {n} missing from network")))?;
+            let module = network.get_mut(n).ok_or_else(|| {
+                AocError::Invalid(format!("conjunction {n} missing from network"))
+            })?;
             for i in inputs {
                 // Add the input to the conjunction's memory by inserting a low pulse and ignoring the returned output
                 module.handle_pulse(&Signal {

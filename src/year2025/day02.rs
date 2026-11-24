@@ -24,9 +24,9 @@
 //! Range endpoints are parsed once into `u64`; digit counts and leading blocks are derived
 //! arithmetically instead of repeatedly slicing and re-parsing the original strings.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{collections::HashSet, error::Error, str::FromStr};
+use std::{collections::HashSet, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

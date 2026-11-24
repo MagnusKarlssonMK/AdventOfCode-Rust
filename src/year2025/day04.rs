@@ -20,9 +20,9 @@
 //!   neighbors containing paper to the back of the queue to be re-evaluated.
 //! * Once the queue is empty, count the number of nodes in the map that still contain paper.
 use crate::aoc_util::{error::AocError, grid::Grid, point::*};
-use std::{collections::VecDeque, error::Error, str::FromStr};
+use std::{collections::VecDeque, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

@@ -3,9 +3,9 @@
 //! Note: solution assumes that the gap between an ordered list of the input adapters is in the 1-3
 //! jolts range, so an error in the input will not be detected.
 use crate::aoc_util::error::AocError;
-use std::{collections::HashMap, error::Error, str::FromStr};
+use std::{collections::HashMap, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

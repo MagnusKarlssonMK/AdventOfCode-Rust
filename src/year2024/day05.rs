@@ -5,9 +5,9 @@
 //! part 1. Otherwise, use `select_nth_unstable_by` with the same ordering to find the corrected
 //! middle page for part 2 without sorting the whole update.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{cmp::Ordering, collections::HashMap, error::Error, str::FromStr};
+use std::{cmp::Ordering, collections::HashMap, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve();
     Ok((p1.to_string(), p2.to_string()))

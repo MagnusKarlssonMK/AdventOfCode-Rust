@@ -26,9 +26,9 @@
 //! division, so the code simply halves its level lengths. Once the remaining prefix fits inside
 //! the input, a prefix-sum lookup gives the answer.
 use crate::aoc_util::error::*;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data = InputData::from_str(input)?;
     Ok((solution_data.solve_part1(), solution_data.solve_part2()))
 }

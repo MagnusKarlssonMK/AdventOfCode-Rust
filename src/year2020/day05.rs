@@ -3,9 +3,9 @@
 //! A boarding pass code maps directly onto its seat id in binary: F and L are 0 while B and R are
 //! 1, so translating the letters and parsing the result as a binary 10-bit number gives the id.
 use crate::aoc_util::error::AocError;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),

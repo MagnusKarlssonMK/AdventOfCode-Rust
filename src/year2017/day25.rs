@@ -5,11 +5,10 @@
 use crate::aoc_util::error::*;
 use std::{
     collections::{HashMap, HashSet},
-    error::Error,
     str::FromStr,
 };
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((solution_data.solve_part1()?.to_string(), "-".to_string()))
 }

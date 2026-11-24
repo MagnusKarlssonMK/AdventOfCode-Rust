@@ -4,9 +4,9 @@
 //! flat `Vec` indexed by those integers, so there is no need for string copying or hashing. The
 //! rows in the input are independent and can be processed independently over multiple threads.
 use crate::aoc_util::{error::AocError, thread::spawn_jobs};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

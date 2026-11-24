@@ -18,10 +18,9 @@
 use crate::aoc_util::error::AocError;
 use crate::aoc_util::{grid::*, point::*};
 use std::collections::{HashSet, VecDeque};
-use std::error::Error;
 use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1(TARGET_BYTES)?.to_string(),

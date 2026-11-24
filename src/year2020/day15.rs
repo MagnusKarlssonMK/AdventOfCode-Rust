@@ -4,9 +4,9 @@
 //! uses a lot of RAM to keep track of the counters for each number. Use u32 rather than usize to
 //! at least keep it somewhat under control.
 use crate::aoc_util::error::AocError;
-use std::{collections::HashMap, error::Error, str::FromStr};
+use std::{collections::HashMap, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

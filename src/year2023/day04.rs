@@ -6,9 +6,9 @@
 //! part 2, a card hands out one extra copy of each of the next matches cards, and the answer is
 //! the total number of copies once every card has handed out its copies in card order.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{collections::HashSet, error::Error, str::FromStr, vec};
+use std::{collections::HashSet, str::FromStr, vec};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

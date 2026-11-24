@@ -4,9 +4,8 @@
 //! internally in a one-dimensional vector.
 //!
 //! The core operations are generic over `T`, but with some `char`-specific helpers.
-use core::fmt;
-
 use crate::aoc_util::point::*;
+use core::fmt;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Grid<T> {

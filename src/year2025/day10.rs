@@ -18,11 +18,10 @@
 use crate::aoc_util::error::{AocError, OptionExt};
 use std::{
     collections::{HashMap, VecDeque},
-    error::Error,
     str::FromStr,
 };
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),
@@ -91,7 +90,10 @@ impl FromStr for Machine {
             .strip_prefix('{')
             .and_then(|s| s.strip_suffix('}'))
             .ctx("invalid joltage specification")?;
-        let joltage: Vec<u32> = values.split(',').map(|n| n.parse()).collect::<Result<_, _>>()?;
+        let joltage: Vec<u32> = values
+            .split(',')
+            .map(|n| n.parse())
+            .collect::<Result<_, _>>()?;
         if joltage.len() != lights.len() {
             return Err(AocError::Invalid(format!(
                 "expected {} joltage values, got {}",
@@ -272,12 +274,12 @@ mod tests {
     #[test]
     fn parser_invalid_input() {
         for input in [
-            "[.##.] (1)",             // missing joltage
-            "(.##.) (1) {1,2,3,4,5}", // wrong light brackets
-            "[.?.?] (1) {1,2,3,4,5}", // invalid light character
+            "[.##.] (1)",              // missing joltage
+            "(.##.) (1) {1,2,3,4,5}",  // wrong light brackets
+            "[.?.?] (1) {1,2,3,4,5}",  // invalid light character
             "[.##.] (99) {1,2,3,4,5}", // button index out of range
-            "[.##.] (1) {1,2,x,4,5}", // bad joltage value
-            "[.##.] (1) {1,2,3}",     // joltage width mismatch
+            "[.##.] (1) {1,2,x,4,5}",  // bad joltage value
+            "[.##.] (1) {1,2,3}",      // joltage width mismatch
         ] {
             assert!(
                 input.parse::<Machine>().is_err(),

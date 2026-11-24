@@ -22,33 +22,33 @@ macro_rules! solvers {
             year_key: &str,
             day_key: &str,
             input: &str,
-        ) -> Result<(String, String), Box<dyn Error>> {
+        ) -> Result<(String, String), AocError> {
             let input = input.trim_end();
             if input.is_empty() {
-                return Err(AocError::Invalid("empty input".to_string()).into());
+                return Err(AocError::Invalid("empty input".to_string()));
             }
             match year_key {
                 $(
                     stringify!($ymod) => match day_key {
                         $( stringify!($dmod) => $ymod::$dmod::solve(input), )*
-                        _ => Err(AocError::NotImplemented("day").into()),
+                        _ => Err(AocError::NotImplemented("day")),
                     },
                 )*
-                _ => Err(AocError::NotImplemented("year").into()),
+                _ => Err(AocError::NotImplemented("year")),
             }
         }
 
         /// Returns `Ok(())` if a solver exists for the given keys, or a
         /// descriptive error otherwise.
-        fn is_implemented(year_key: &str, day_key: &str) -> Result<(), Box<dyn Error>> {
+        fn is_implemented(year_key: &str, day_key: &str) -> Result<(), AocError> {
             match year_key {
                 $(
                     stringify!($ymod) => match day_key {
                         $( stringify!($dmod) => Ok(()), )*
-                        _ => Err(AocError::NotImplemented("day").into()),
+                        _ => Err(AocError::NotImplemented("day")),
                     },
                 )*
-                _ => Err(AocError::NotImplemented("year").into()),
+                _ => Err(AocError::NotImplemented("year")),
             }
         }
     };
@@ -122,10 +122,7 @@ mod tests {
     fn dispatch_rejects_empty_input() {
         for input in ["", "  \n"] {
             let err = dispatch("year2021", "day01", input).unwrap_err();
-            assert_eq!(
-                err.downcast_ref::<AocError>(),
-                Some(&AocError::Invalid("empty input".to_string()))
-            );
+            assert_eq!(err, AocError::Invalid("empty input".to_string()));
         }
     }
 }

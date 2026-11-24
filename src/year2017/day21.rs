@@ -19,9 +19,9 @@
 //! 2-size patterns, enhance to 9 3-size patterns, and instead of recombining; => start over with
 //! enhancing each unique shape and keep track of the counter.
 use crate::aoc_util::error::*;
-use std::{collections::HashMap, error::Error, str::FromStr};
+use std::{collections::HashMap, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),

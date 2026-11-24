@@ -7,9 +7,9 @@
 //! For Part 2, recurse through the second dict to get the paths from YOU -> COM and SAN -> COM,
 //! then find where those two paths meet and get the answer from the remaining length of both paths.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data = InputData::try_from(input)?;
     Ok((
         solution_data.solve_part1().to_string(),

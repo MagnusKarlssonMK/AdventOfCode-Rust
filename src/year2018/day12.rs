@@ -35,9 +35,9 @@
 //! limit is added for max number of cycles before declaring NoSolution. Steady state seems to be
 //! reached in a few hundred cycles, so an upper limit of 10_000 should be on the safe side.
 use crate::aoc_util::error::*;
-use std::{collections::HashSet, error::Error, str::FromStr};
+use std::{collections::HashSet, str::FromStr};
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1().to_string(),

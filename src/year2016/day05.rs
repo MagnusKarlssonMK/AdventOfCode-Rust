@@ -5,9 +5,9 @@
 //! while part 2 uses the 6th char as a position and the 7th as its value.
 use crate::aoc_util::error::AocError;
 use md5::{Digest, Md5};
-use std::{error::Error, fmt::Write};
+use std::fmt::Write;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data = InputData::try_from(input)?;
     Ok(solution_data.solve())
 }

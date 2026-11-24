@@ -4,9 +4,8 @@
 //! appears the same number of times in a column. So it is assumed that the input is constructed in
 //! a way that this does not occur.
 use crate::aoc_util::error::AocError;
-use std::error::Error;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data = InputData::try_from(input)?;
     Ok(solution_data.solve())
 }

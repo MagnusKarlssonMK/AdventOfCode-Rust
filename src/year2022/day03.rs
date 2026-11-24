@@ -4,9 +4,9 @@
 //! `p` maps to bit `p - 1`. Finding common items then becomes a single bitwise AND, and a shared
 //! priority is recovered with `trailing_zeros()`.
 use crate::aoc_util::error::AocError;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     Ok((
         solution_data.solve_part1()?.to_string(),

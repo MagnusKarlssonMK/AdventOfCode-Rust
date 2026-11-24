@@ -19,9 +19,8 @@
 //! than it saves. Validation is deliberately fused into that same sweep: a separate pass that
 //! converts the whole input to characters first was measurably slower.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::error::Error;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data = InputData::try_from(input)?;
     Ok((
         solution_data.solve_part1()?.to_string(),

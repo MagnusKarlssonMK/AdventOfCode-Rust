@@ -6,9 +6,9 @@
 //! list of directory sizes answers both parts: sum the directories of at most 100,000, then find
 //! the smallest directory that frees enough space for the update.
 use crate::aoc_util::error::{AocError, OptionExt};
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-pub fn solve(input: &str) -> Result<(String, String), Box<dyn Error>> {
+pub fn solve(input: &str) -> Result<(String, String), AocError> {
     let solution_data: InputData = input.parse()?;
     let (p1, p2) = solution_data.solve()?;
     Ok((p1.to_string(), p2.to_string()))
