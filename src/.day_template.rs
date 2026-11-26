@@ -1,5 +1,5 @@
 //! # 20xx day xx -
-use crate::aoc_util::error::*;
+use crate::aoc_util::error::AocError;
 use std::str::FromStr;
 
 pub fn solve(input: &str) -> Result<(String, String), AocError> {
